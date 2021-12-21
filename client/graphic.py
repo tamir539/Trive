@@ -63,28 +63,27 @@ class LoginPanel(wx.Panel):
         png = wx.Image('C:\\Users\\User\\Downloads\\logo.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         wx.StaticBitmap(self, -1, png, (730, -140), (png.GetWidth(), png.GetHeight()))
 
-        # #create the title of the layout
-        # title = wx.StaticText(self, -1, label="Login Panel")
-        # titlefont = wx.Font(22, wx.DECORATIVE, wx.NORMAL, wx.NORMAL)
-        # title.SetForegroundColour(wx.GREEN)
-        # title.SetFont(titlefont)
+        font = wx.Font(22, wx.DECORATIVE, wx.NORMAL, wx.NORMAL)
 
         #create sizer for the username
         nameBox = wx.BoxSizer(wx.HORIZONTAL)
 
         nameText = wx.StaticText(self, 1, label="UserName: ")
-        self.userNameField = wx.TextCtrl(self, -1, name="username",size = (150, -1))
+        nameText.SetFont(font)
+        self.userNameField = wx.TextCtrl(self, -1, name="username",size = (300 ,25))
+        #self.userNameField = wx.TextCtrl(self, -1, name="username", size=(150, -1))
         nameText.SetForegroundColour(wx.GREEN)
-        nameBox.Add(nameText, 0, wx.ALL, 5)
+        nameBox.Add(nameText, 0, wx.ALL, -10)
         nameBox.Add(self.userNameField, 0, wx.ALL, 5)
 
         #create sizer for the password
         passBox = wx.BoxSizer(wx.HORIZONTAL)
 
         passText = wx.StaticText(self, 1, label="Password: ")
-        self.passWordField = wx.TextCtrl(self, -1, name="password",style = wx.TE_PASSWORD, size = (150, -1))
+        passText.SetFont(font)
+        self.passWordField = wx.TextCtrl(self, -1, name="password",style = wx.TE_PASSWORD, size = (300, 25))
         passText.SetForegroundColour(wx.GREEN)
-        passBox.Add(passText, 0, wx.ALL, 5)
+        passBox.Add(passText, 0, wx.ALL, -10)
         passBox.Add(self.passWordField, 0, wx.ALL, 5)
 
         # login & registration buttons
@@ -100,10 +99,10 @@ class LoginPanel(wx.Panel):
 
         # add all elements to sizer
         #self.sizer.Add(title, 0, wx.CENTER | wx.TOP, 200)
-        self.sizer.AddSpacer(200)
+        self.sizer.AddSpacer(350)
         self.sizer.Add(nameBox,0, wx.CENTER | wx.ALL, 5)
-        self.sizer.Add(passBox,-1, wx.CENTER | wx.ALL, 5)
-        self.sizer.AddSpacer(200)
+        self.sizer.Add(passBox,0, wx.CENTER | wx.ALL, 5)
+        self.sizer.AddSpacer(10)
         self.sizer.Add(btnBox, wx.CENTER | wx.ALL, 5)
 
         # arrange the screen
@@ -155,37 +154,40 @@ class RegisterPanel(wx.Panel):
         # change background colour to black
         self.SetBackgroundColour(wx.BLACK)
 
-        # #create the title of the layout
-        # title = wx.StaticText(self, -1, label="Register Panel")
-        # titlefont = wx.Font(22, wx.DECORATIVE, wx.NORMAL, wx.NORMAL)
-        # title.SetForegroundColour(wx.GREEN)
-        # title.SetFont(titlefont)
+        # add the Trive logo
+        png = wx.Image('C:\\Users\\User\\Downloads\\logo.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        wx.StaticBitmap(self, -1, png, (730, -140), (png.GetWidth(), png.GetHeight()))
+
+        font = wx.Font(22, wx.DECORATIVE, wx.NORMAL, wx.NORMAL)
 
         #create sizer for the username
         nameBox = wx.BoxSizer(wx.HORIZONTAL)
 
         nameText = wx.StaticText(self, 1, label="UserName: ")
-        self.userNameField = wx.TextCtrl(self, -1, name="username",size = (150, -1))
+        self.userNameField = wx.TextCtrl(self, -1, name="username",size = (300, 25))
         nameText.SetForegroundColour(wx.GREEN)
-        nameBox.Add(nameText, 0, wx.ALL, 5)
+        nameText.SetFont(font)
+        nameBox.Add(nameText, 0, wx.ALL, -10)
         nameBox.Add(self.userNameField, 0, wx.ALL, 5)
 
         #create sizer for the password
         passBox = wx.BoxSizer(wx.HORIZONTAL)
 
         passText = wx.StaticText(self, 1, label="Password: ")
-        self.passWordField = wx.TextCtrl(self, -1, name="password",style = wx.TE_PASSWORD, size = (150, -1))
+        self.passWordField = wx.TextCtrl(self, -1, name="password",style = wx.TE_PASSWORD, size = (300, 25))
         passText.SetForegroundColour(wx.GREEN)
-        passBox.Add(passText, 0, wx.ALL, 5)
+        passText.SetFont(font)
+        passBox.Add(passText, 0, wx.ALL, -10)
         passBox.Add(self.passWordField, 0, wx.ALL, 5)
 
         # create sizer for the email
         emailBox = wx.BoxSizer(wx.HORIZONTAL)
 
         emailText = wx.StaticText(self, 1, label="Email: ")
-        self.emailField = wx.TextCtrl(self, -1, name="email", size=(150, -1))
+        self.emailField = wx.TextCtrl(self, -1, name="email", size=(300, 25))
         emailText.SetForegroundColour(wx.GREEN)
-        emailBox.Add(emailText, 0, wx.ALL, 5)
+        emailText.SetFont(font)
+        emailBox.Add(emailText, 0, wx.ALL, -10)
         emailBox.Add(self.emailField, 0, wx.ALL, 5)
 
         #registration button
@@ -195,8 +197,7 @@ class RegisterPanel(wx.Panel):
         btnBox.Add(regBtn, 1, wx.ALL, 5)
 
         # add all elements to sizer
-        #self.sizer.Add(title, 0, wx.CENTER | wx.TOP, 5)
-        self.sizer.AddSpacer(10)
+        self.sizer.AddSpacer(350)
         self.sizer.Add(nameBox,0, wx.CENTER | wx.ALL, 5)
         self.sizer.Add(passBox,-1, wx.CENTER | wx.ALL, 5)
         self.sizer.Add(emailBox, -2, wx.CENTER | wx.ALL, 5)
