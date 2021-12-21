@@ -70,8 +70,9 @@ class LoginPanel(wx.Panel):
 
         nameText = wx.StaticText(self, 1, label="UserName: ")
         nameText.SetFont(font)
-        self.userNameField = wx.TextCtrl(self, -1, name="username",size = (300 ,25))
-        #self.userNameField = wx.TextCtrl(self, -1, name="username", size=(150, -1))
+        self.userNameField = wx.TextCtrl(self, 10, name="username",size = (300 ,25))
+        self.userNameField.SetBackgroundColour(wx.BLACK)
+        self.userNameField.SetForegroundColour(wx.WHITE)
         nameText.SetForegroundColour(wx.GREEN)
         nameBox.Add(nameText, 0, wx.ALL, -10)
         nameBox.Add(self.userNameField, 0, wx.ALL, 5)
@@ -82,6 +83,8 @@ class LoginPanel(wx.Panel):
         passText = wx.StaticText(self, 1, label="Password: ")
         passText.SetFont(font)
         self.passWordField = wx.TextCtrl(self, -1, name="password",style = wx.TE_PASSWORD, size = (300, 25))
+        self.passWordField.SetBackgroundColour(wx.BLACK)
+        self.passWordField.SetForegroundColour(wx.WHITE)
         passText.SetForegroundColour(wx.GREEN)
         passBox.Add(passText, 0, wx.ALL, -10)
         passBox.Add(self.passWordField, 0, wx.ALL, 5)
@@ -165,30 +168,36 @@ class RegisterPanel(wx.Panel):
 
         nameText = wx.StaticText(self, 1, label="UserName: ")
         self.userNameField = wx.TextCtrl(self, -1, name="username",size = (300, 25))
+        self.userNameField.SetBackgroundColour(wx.BLACK)
+        self.userNameField.SetForegroundColour(wx.WHITE)
         nameText.SetForegroundColour(wx.GREEN)
         nameText.SetFont(font)
         nameBox.Add(nameText, 0, wx.ALL, -10)
         nameBox.Add(self.userNameField, 0, wx.ALL, 5)
-
-        #create sizer for the password
-        passBox = wx.BoxSizer(wx.HORIZONTAL)
-
-        passText = wx.StaticText(self, 1, label="Password: ")
-        self.passWordField = wx.TextCtrl(self, -1, name="password",style = wx.TE_PASSWORD, size = (300, 25))
-        passText.SetForegroundColour(wx.GREEN)
-        passText.SetFont(font)
-        passBox.Add(passText, 0, wx.ALL, -10)
-        passBox.Add(self.passWordField, 0, wx.ALL, 5)
 
         # create sizer for the email
         emailBox = wx.BoxSizer(wx.HORIZONTAL)
 
         emailText = wx.StaticText(self, 1, label="Email: ")
         self.emailField = wx.TextCtrl(self, -1, name="email", size=(300, 25))
+        self.emailField.SetBackgroundColour(wx.BLACK)
+        self.emailField.SetForegroundColour(wx.WHITE)
         emailText.SetForegroundColour(wx.GREEN)
         emailText.SetFont(font)
         emailBox.Add(emailText, 0, wx.ALL, -10)
         emailBox.Add(self.emailField, 0, wx.ALL, 5)
+
+        #create sizer for the password
+        passBox = wx.BoxSizer(wx.HORIZONTAL)
+
+        passText = wx.StaticText(self, 1, label="Password: ")
+        self.passWordField = wx.TextCtrl(self, -1, name="password",style = wx.TE_PASSWORD, size = (300, 25))
+        self.passWordField.SetBackgroundColour(wx.BLACK)
+        self.passWordField.SetForegroundColour(wx.WHITE)
+        passText.SetForegroundColour(wx.GREEN)
+        passText.SetFont(font)
+        passBox.Add(passText, 0, wx.ALL, -10)
+        passBox.Add(self.passWordField, 0, wx.ALL, 5)
 
         #registration button
         btnBox = wx.BoxSizer(wx.HORIZONTAL)
