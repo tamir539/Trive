@@ -4,7 +4,7 @@ from login_screen import LoginPanel
 
 class MyFrame(wx.Frame):
     def __init__(self, parent=None):
-        super(MyFrame, self).__init__(parent, title="Example for SDI", size=(500,500))
+        super(MyFrame, self).__init__(parent, title="Trive", size=(500,500))
         # create status bar
         self.CreateStatusBar(1)
         self.SetStatusText("Developed by Merry Geva 1/1/2000")
