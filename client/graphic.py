@@ -62,10 +62,10 @@ class LoginPanel(wx.Panel):
         wx.StaticBitmap(self, -1, png, (650, -2), (png.GetWidth(), png.GetHeight()))
 
         #font for static text
-        font = wx.Font(22, wx.DECORATIVE, wx.NORMAL, wx.NORMAL)
+        font = wx.Font(22, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
         #font for input
-        inp_font = wx.Font(20, wx.DECORATIVE, wx.NORMAL, wx.NORMAL)
+        inp_font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
         #create sizer for the username
         nameBox = wx.BoxSizer(wx.HORIZONTAL)
@@ -77,8 +77,8 @@ class LoginPanel(wx.Panel):
         self.userNameField.SetForegroundColour(wx.WHITE)
         self.userNameField.Font = inp_font
         nameText.SetForegroundColour(wx.GREEN)
-        nameBox.Add(nameText, 0, wx.ALL, 0)
-        nameBox.Add(self.userNameField, 0, wx.ALL, 5)
+        nameBox.Add(nameText, 10, wx.ALL, 5)
+        nameBox.Add(self.userNameField, 0, wx.ALL, 0)
 
 
         #create sizer for the password
@@ -92,14 +92,14 @@ class LoginPanel(wx.Panel):
         self.passWordField.SetForegroundColour(wx.WHITE)
         self.passWordField.SetFont(inp_font)
         passText.SetForegroundColour(wx.GREEN)
-
-        passBox.Add(passText, 0, wx.ALL, 0)
+        passBox.Add(passText, 0, wx.ALL, 5)
         passBox.Add(self.passWordField, 0, wx.ALL, 5)
 
         # # login & registration buttons
         # btnBox = wx.BoxSizer(wx.HORIZONTAL)
 
-        loginBtn = wx.Button(self, wx.ID_ANY, label="login", size=(300, 40))
+        loginBtn = wx.Button(self, wx.ID_ANY, label="login", size=(400, 40))
+        loginBtn.Font = font
         loginBtn.BackgroundColour = wx.BLACK
         loginBtn.DisableFocusFromKeyboard()
         loginBtn.ForegroundColour = wx.GREEN
@@ -107,7 +107,8 @@ class LoginPanel(wx.Panel):
         loginBtn.Bind(wx.EVT_BUTTON, self.handle_login)
         #btnBox.Add(loginBtn, 0, wx.ALL, 5)
 
-        regBtn = wx.Button(self, wx.ID_ANY, label="Register",size = (300, 40))
+        regBtn = wx.Button(self, wx.ID_ANY, label="not a member? sign up!",size = (400, 40))
+        regBtn.Font = font
         regBtn.BackgroundColour = wx.BLACK
         regBtn.ForegroundColour = wx.GREEN
         regBtn.Bind(wx.EVT_BUTTON, self.handle_reg)
@@ -179,10 +180,10 @@ class RegisterPanel(wx.Panel):
         wx.StaticBitmap(self, -1, png, (650, -2), (png.GetWidth(), png.GetHeight()))
 
         # font for static text
-        font = wx.Font(22, wx.DECORATIVE, wx.NORMAL, wx.NORMAL)
+        font = wx.Font(22, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
         # font for input
-        inp_font = wx.Font(20, wx.DECORATIVE, wx.NORMAL, wx.NORMAL)
+        inp_font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
         # create sizer for the username
         nameBox = wx.BoxSizer(wx.HORIZONTAL)
@@ -225,14 +226,20 @@ class RegisterPanel(wx.Panel):
         passBox.Add(passText, 0, wx.ALL, 0)
         passBox.Add(self.passWordField, 0, wx.ALL, 5)
 
-        #registration buttons
+        #registration and login buttons
 
-        regBtn = wx.Button(self, wx.ID_ANY, label="Register", size=(300, 45))
+        regBtn = wx.Button(self, wx.ID_ANY, label="register", size=(400, 45))
+        regBtn.Font = font
         regBtn.BackgroundColour = wx.BLACK
         regBtn.ForegroundColour = wx.GREEN
         regBtn.Bind(wx.EVT_BUTTON, self.handle_reg)
-        # btnBox.Add(regBtn, 1, wx.ALL, 5)
 
+        loginBtn = wx.Button(self, wx.ID_ANY, label="already have an account? log in!", size=(400, 45))
+        loginBtn.Font = font
+        loginBtn.BackgroundColour = wx.BLACK
+        loginBtn.ForegroundColour = wx.GREEN
+        loginBtn.Bind(wx.EVT_BUTTON, self.handle_login)
+        # btnBox.Add(regBtn, 1, wx.ALL, 5)
         # add all elements to sizer
 
         self.sizer.AddSpacer(275)
@@ -242,7 +249,7 @@ class RegisterPanel(wx.Panel):
         self.sizer.AddSpacer(20)
         # self.sizer.Add(btnBox, wx.CENTER | wx.ALL, 5)
         self.sizer.Add(regBtn, 0, wx.CENTER | wx.ALL, 5)
-
+        self.sizer.Add(loginBtn, 0, wx.CENTER | wx.ALL, 5)
         # arrange the screen
         self.SetSizer(self.sizer)
         self.Layout()
@@ -254,8 +261,17 @@ class RegisterPanel(wx.Panel):
         :param event: event that happend on the screen
         :return:take care the event when pressing registration button and calling the registration screen
         '''
+        #mean someone create account
+
+
+    def handle_login(self, event):
+        '''
+
+        :param event: event that happend on the screen
+        :return:take care the event when pressing registration button and calling the registration screen
+        '''
         self.Hide()
-        self.parent.registration.Show()
+        self.parent.login.Show()
 
 
 if __name__ == '__main__':
