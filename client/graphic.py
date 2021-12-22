@@ -72,12 +72,12 @@ class LoginPanel(wx.Panel):
 
         nameText = wx.StaticText(self, 1, label="UserName: ")
         nameText.SetFont(font)
-        self.userNameField = wx.TextCtrl(self, 10, name="username", style = wx.TEXT_ATTR_BULLET_STYLE_ROMAN_UPPER, size = (300 ,45))
+        self.userNameField = wx.TextCtrl(self, 10, name="username", style = wx.TEXT_ATTR_BULLET_STYLE_ROMAN_UPPER, size = (300 ,38))
         self.userNameField.SetBackgroundColour(wx.BLACK)
         self.userNameField.SetForegroundColour(wx.WHITE)
         self.userNameField.Font = inp_font
         nameText.SetForegroundColour(wx.GREEN)
-        nameBox.Add(nameText, 10, wx.ALL, 5)
+        nameBox.Add(nameText, 10, wx.ALL, 6)
         nameBox.Add(self.userNameField, 0, wx.ALL, 0)
 
 
@@ -87,12 +87,12 @@ class LoginPanel(wx.Panel):
         passText = wx.StaticText(self, 1, label="Password: ")
         passText.SetFont(font)
 
-        self.passWordField = wx.TextCtrl(self, -1, name="password",style = wx.TE_PASSWORD, size = (300, 45))
+        self.passWordField = wx.TextCtrl(self, -1, name="password",style = wx.TE_PASSWORD, size = (300, 38))
         self.passWordField.SetBackgroundColour(wx.BLACK)
         self.passWordField.SetForegroundColour(wx.WHITE)
         self.passWordField.SetFont(inp_font)
         passText.SetForegroundColour(wx.GREEN)
-        passBox.Add(passText, 0, wx.ALL, 5)
+        passBox.Add(passText, 0, wx.ALL, 10)
         passBox.Add(self.passWordField, 0, wx.ALL, 5)
 
         # # login & registration buttons
@@ -228,13 +228,13 @@ class RegisterPanel(wx.Panel):
 
         #registration and login buttons
 
-        regBtn = wx.Button(self, wx.ID_ANY, label="register", size=(400, 45))
+        regBtn = wx.Button(self, wx.ID_ANY, label="register", size=(400, 40))
         regBtn.Font = font
         regBtn.BackgroundColour = wx.BLACK
         regBtn.ForegroundColour = wx.GREEN
         regBtn.Bind(wx.EVT_BUTTON, self.handle_reg)
 
-        loginBtn = wx.Button(self, wx.ID_ANY, label="already have an account? log in!", size=(400, 45))
+        loginBtn = wx.Button(self, wx.ID_ANY, label="have an account? log in!", size=(400, 40))
         loginBtn.Font = font
         loginBtn.BackgroundColour = wx.BLACK
         loginBtn.ForegroundColour = wx.GREEN
