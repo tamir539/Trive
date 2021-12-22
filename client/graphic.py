@@ -83,6 +83,7 @@ class LoginPanel(wx.Panel):
 
         #create sizer for the password
         passBox = wx.BoxSizer(wx.HORIZONTAL)
+        #
 
         passText = wx.StaticText(self, 1, label="Password: ")
         passText.SetFont(font)
