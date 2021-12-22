@@ -14,6 +14,7 @@ class MyFrame(wx.Frame):
         self.Layout()
         self.Show()
 
+
 class MainPanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
@@ -58,8 +59,17 @@ class LoginPanel(wx.Panel):
 
 
         #add the Trive logo
-        png = wx.Image('logo.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        wx.StaticBitmap(self, -1, png, (650, -2), (png.GetWidth(), png.GetHeight()))
+        png = wx.Image('draws\\logo.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        wx.StaticBitmap(self, -1, png, (620, -2), (png.GetWidth(), png.GetHeight()))
+
+        # add the user logo
+        user = wx.Image('draws\\user.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        wx.StaticBitmap(self, -1, user, (565, 275), (user.GetWidth(), user.GetHeight()))
+
+        #add the fingerprint logo
+        finger = wx.Image('draws\\finger.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        wx.StaticBitmap(self, -1, finger, (565, 329), (finger.GetWidth(), finger.GetHeight()))
+
 
         #font for static text
         font = wx.Font(22, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
@@ -70,30 +80,28 @@ class LoginPanel(wx.Panel):
         #create sizer for the username
         nameBox = wx.BoxSizer(wx.HORIZONTAL)
 
-        nameText = wx.StaticText(self, 1, label="UserName: ")
-        nameText.SetFont(font)
-        self.userNameField = wx.TextCtrl(self, 10, name="username", style = wx.TEXT_ATTR_BULLET_STYLE_ROMAN_UPPER, size = (300 ,38))
+        # nameText = wx.StaticText(self, 1, label="UserName:")
+        # nameText.SetFont(font)
+        self.userNameField = wx.TextCtrl(self, -1, name="username", size = (300 ,38))
         self.userNameField.SetBackgroundColour(wx.BLACK)
         self.userNameField.SetForegroundColour(wx.WHITE)
         self.userNameField.Font = inp_font
-        nameText.SetForegroundColour(wx.GREEN)
-        nameBox.Add(nameText, 10, wx.ALL, 6)
+        # nameText.SetForegroundColour(wx.GREEN)
+        # nameBox.Add(nameText, 10, wx.ALL, 6)
         nameBox.Add(self.userNameField, 0, wx.ALL, 0)
-
 
         #create sizer for the password
         passBox = wx.BoxSizer(wx.HORIZONTAL)
-        #
 
-        passText = wx.StaticText(self, 1, label="Password: ")
-        passText.SetFont(font)
+        # passText = wx.StaticText(self, 1, label="Password:")
+        # passText.SetFont(font)
 
         self.passWordField = wx.TextCtrl(self, -1, name="password",style = wx.TE_PASSWORD, size = (300, 38))
         self.passWordField.SetBackgroundColour(wx.BLACK)
         self.passWordField.SetForegroundColour(wx.WHITE)
         self.passWordField.SetFont(inp_font)
-        passText.SetForegroundColour(wx.GREEN)
-        passBox.Add(passText, 0, wx.ALL, 10)
+        # passText.SetForegroundColour(wx.GREEN)
+        # passBox.Add(passText, 0, wx.ALL, 10)
         passBox.Add(self.passWordField, 0, wx.ALL, 5)
 
         # # login & registration buttons
@@ -108,12 +116,22 @@ class LoginPanel(wx.Panel):
         loginBtn.Bind(wx.EVT_BUTTON, self.handle_login)
         #btnBox.Add(loginBtn, 0, wx.ALL, 5)
 
+
+
         regBtn = wx.Button(self, wx.ID_ANY, label="not a member? sign up!",size = (400, 40))
         regBtn.Font = font
         regBtn.BackgroundColour = wx.BLACK
         regBtn.ForegroundColour = wx.GREEN
         regBtn.Bind(wx.EVT_BUTTON, self.handle_reg)
         #btnBox.Add(regBtn, 1, wx.ALL, 5)
+
+        font = wx.Font(10, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
+
+        forgotBtn = wx.Button(self, wx.ID_ANY, label="forgot your password?", size=(250, 30))
+        forgotBtn.Font = font
+        forgotBtn.BackgroundColour = wx.BLACK
+        forgotBtn.ForegroundColour = wx.GREEN
+        forgotBtn.Bind(wx.EVT_BUTTON, self.handle_forgot_password)
 
         # add all elements to sizer
 
@@ -124,6 +142,7 @@ class LoginPanel(wx.Panel):
         #self.sizer.Add(btnBox, wx.CENTER | wx.ALL, 5)
         self.sizer.Add(loginBtn, 0, wx.CENTER | wx.ALL, 5)
         self.sizer.Add(regBtn,0, wx.CENTER | wx.ALL, 5)
+        self.sizer.Add(forgotBtn, 0, wx.CENTER | wx.ALL, 5)
 
         # arrange the screen
         self.SetSizer(self.sizer)
@@ -155,6 +174,16 @@ class LoginPanel(wx.Panel):
         self.Hide()
         self.parent.registration.Show()
 
+    def handle_forgot_password(self,event):
+        '''
+
+        :param event: event that happend on the screen
+        :return:take care the event when pressing forgot password
+        '''
+        #self.Hide()
+        pass
+
+
 class RegisterPanel(wx.Panel):
     '''
         class that create the register layout
@@ -177,7 +206,7 @@ class RegisterPanel(wx.Panel):
         self.SetBackgroundColour(wx.BLACK)
 
         # add the Trive logo
-        png = wx.Image('logo.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        png = wx.Image('draws\\logo.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         wx.StaticBitmap(self, -1, png, (650, -2), (png.GetWidth(), png.GetHeight()))
 
         # font for static text
