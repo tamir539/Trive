@@ -16,6 +16,9 @@ class MyFrame(wx.Frame):
 
 
 class MainPanel(wx.Panel):
+    '''
+    class that create the main layout
+    '''
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
 
@@ -43,9 +46,8 @@ class LoginPanel(wx.Panel):
     '''
     def __init__(self, parent, frame):
 
-        #create a new panel
-        wx.Panel.__init__(self, parent, pos = wx.DefaultPosition, size = wx.DisplaySize(), style = wx.SIMPLE_BORDER)
-
+        # create a new panel
+        wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=wx.DisplaySize(), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
         self.__create_screen__()
@@ -67,24 +69,38 @@ class LoginPanel(wx.Panel):
         #create sizer for the username
         nameBox = wx.BoxSizer(wx.HORIZONTAL)
         self.userNameField = wx.TextCtrl(self, -1, name="username", size = (500 ,38))
+
+        #design the username text field
+        self.userNameField.SetHint('username:')
         self.userNameField.SetBackgroundColour(wx.BLACK)
         self.userNameField.SetForegroundColour(wx.WHITE)
         self.userNameField.Font = font
+
         # add the user logo
         user = wx.Image('draws\\user.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         user_logo = wx.StaticBitmap(self, -1, user, (565, 275), (user.GetWidth(), user.GetHeight()))
+
+        #update the username sizer
         nameBox.Add(user_logo, 0, wx.ALL, 0)
-        nameBox.Add(self.userNameField, 0, wx.ALL, 0)
+        nameBox.Add(self.userNameField, 0, wx.ALL, 5)
 
         #create sizer for the password
         passBox = wx.BoxSizer(wx.HORIZONTAL)
+
+        #create the password text field
         self.passWordField = wx.TextCtrl(self, -1, name="password",style = wx.TE_PASSWORD, size = (500, 38))
+
+        #design the password text field
+        self.passWordField.SetHint('password:')
         self.passWordField.SetBackgroundColour(wx.BLACK)
         self.passWordField.SetForegroundColour(wx.WHITE)
         self.passWordField.SetFont(font)
+
         # add the fingerprint logo
         finger = wx.Image('draws\\finger.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         finger_logo = wx.StaticBitmap(self, -1, finger, (565, 383), (finger.GetWidth(), finger.GetHeight()))
+
+        #update the password sizer
         passBox.Add(finger_logo, 0, wx.ALL, 0)
         passBox.Add(self.passWordField, 0, wx.ALL, 5)
 
@@ -185,17 +201,16 @@ class RegisterPanel(wx.Panel):
         png = wx.Image('draws\\logo.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         logo = wx.StaticBitmap(self, -1, png, (650, -2), (png.GetWidth(), png.GetHeight()))
 
-
-        # font for static text
-        font = wx.Font(22, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
-
-        # font for input
+        # font for the text
         font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
         # create sizer for the username
         nameBox = wx.BoxSizer(wx.HORIZONTAL)
 
         self.userNameField = wx.TextCtrl(self, 10, name="username", style=wx.TEXT_ATTR_BULLET_STYLE_ROMAN_UPPER,size=(500, 38))
+
+        #design the username text field
+        self.userNameField.SetHint('username:')
         self.userNameField.SetBackgroundColour(wx.BLACK)
         self.userNameField.SetForegroundColour(wx.WHITE)
         self.userNameField.Font = font
@@ -204,27 +219,39 @@ class RegisterPanel(wx.Panel):
         user = wx.Image('draws\\user.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         user_logo = wx.StaticBitmap(self, -1, user, (565, 275), (user.GetWidth(), user.GetHeight()))
 
+        #update the username sizer
         nameBox.Add(user_logo, 0, wx.ALL, 0)
         nameBox.Add(self.userNameField, 0, wx.ALL, 5)
+
 
         # create sizer for the email
         emailBox = wx.BoxSizer(wx.HORIZONTAL)
 
+        #create the email text field
         self.emailField = wx.TextCtrl(self, -1, name="email", size=(500, 38))
+
+        #design the email text field
         self.emailField.SetFont(font)
+        self.emailField.SetHint('email:')
         self.emailField.SetBackgroundColour(wx.BLACK)
         self.emailField.SetForegroundColour(wx.WHITE)
+
         # add the email logo
         email = wx.Image('draws\\email.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         email_logo = wx.StaticBitmap(self, -1, email, (565, 275), (email.GetWidth(), email.GetHeight()))
 
+        #update the email sizer
         emailBox.Add(email_logo, 0, wx.ALL, 0)
         emailBox.Add(self.emailField, 0, wx.ALL, 0)
 
         # create sizer for the password
         passBox = wx.BoxSizer(wx.HORIZONTAL)
 
+        #create the password text field
         self.passWordField = wx.TextCtrl(self, -1, name="password", style=wx.TE_PASSWORD, size=(500, 38))
+
+        #design the password text field
+        self.passWordField.SetHint('password:')
         self.passWordField.SetBackgroundColour(wx.BLACK)
         self.passWordField.SetForegroundColour(wx.WHITE)
         self.passWordField.SetFont(font)
@@ -233,6 +260,7 @@ class RegisterPanel(wx.Panel):
         finger = wx.Image('draws\\finger.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         finger_logo = wx.StaticBitmap(self, -1, finger, (565, 383), (finger.GetWidth(), finger.GetHeight()))
 
+        #update the password sizer
         passBox.Add(finger_logo, 0, wx.ALL, 0)
         passBox.Add(self.passWordField, 0, wx.ALL, 5)
 
