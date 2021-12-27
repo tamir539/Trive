@@ -3,7 +3,7 @@ import wx
 
 class MyFrame(wx.Frame):
     def __init__(self, parent=None):
-        super(MyFrame, self).__init__(parent, title="Trive", size=(1920,1080))
+        super(MyFrame, self).__init__(parent, title="Trive", size=wx.DisplaySize())
         # create main panel - to put on the others panels
         main_panel = MainPanel(self)
         box = wx.BoxSizer(wx.VERTICAL)
@@ -44,7 +44,7 @@ class LoginPanel(wx.Panel):
     def __init__(self, parent, frame):
 
         #create a new panel
-        wx.Panel.__init__(self, parent, pos = wx.DefaultPosition, size = (1920,1080), style = wx.SIMPLE_BORDER)
+        wx.Panel.__init__(self, parent, pos = wx.DefaultPosition, size = wx.DisplaySize(), style = wx.SIMPLE_BORDER)
 
         self.frame = frame
         self.parent = parent
@@ -169,8 +169,7 @@ class RegisterPanel(wx.Panel):
     def __init__(self, parent, frame):
 
         # create a new panel
-        wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=(1920, 1080), style=wx.SIMPLE_BORDER)
-
+        wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=wx.DisplaySize(), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
         self.__create_screen__()
@@ -245,9 +244,7 @@ class RegisterPanel(wx.Panel):
         regBtn.ForegroundColour = wx.GREEN
         regBtn.Bind(wx.EVT_BUTTON, self.handle_reg)
 
-        font = wx.Font(10, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
-
-        loginBtn = wx.Button(self, wx.ID_ANY, label="login", size=(250, 30))
+        loginBtn = wx.Button(self, wx.ID_ANY, label="login", size=(400, 40))
         loginBtn.Font = font
         loginBtn.BackgroundColour = wx.BLACK
         loginBtn.ForegroundColour = wx.GREEN
