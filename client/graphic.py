@@ -1,5 +1,6 @@
 import wx
-
+import sys
+import traceback
 
 class MyFrame(wx.Frame):
     def __init__(self, parent=None):
@@ -115,6 +116,7 @@ class LoginPanel(wx.Panel):
         forgotBtn.ForegroundColour = wx.GREEN
         forgotBtn.Bind(wx.EVT_BUTTON, self.handle_forgot_password)
 
+
         # add all elements to sizer
         self.sizer.Add(trive,0, wx.CENTER | wx.ALL, 5)
         self.sizer.AddSpacer(100)
@@ -129,6 +131,16 @@ class LoginPanel(wx.Panel):
         self.SetSizer(self.sizer)
         self.Layout()
         self.Hide()
+
+
+    def errorMsg(self, msg):
+        '''
+
+        :param msg:massage to shoe in the error
+        :return: create and shoe the error massage
+        '''
+        wx.MessageBox(msg, 'Error', wx.OK | wx.ICON_HAND )
+
 
     def create_userName_field(self):
         '''
@@ -169,8 +181,7 @@ class LoginPanel(wx.Panel):
         password = self.passWordField.GetValue()
 
         if not username or not password :
-            pass
-            #self.frame.SetStatusText("Must enter name and password")
+            self.errorMsg('You must enter username and password!')
         else:
             pass
             #self.frame.SetStatusText("waiting for Server approve")
@@ -220,9 +231,6 @@ class RegisterPanel(wx.Panel):
 
         # font for the text
         self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
-
-
-
 
         # create sizer for the email
         emailBox = wx.BoxSizer(wx.HORIZONTAL)
@@ -293,7 +301,13 @@ class RegisterPanel(wx.Panel):
         self.Layout()
         self.Hide()
 
+    def errorMsg(self, msg):
+        '''
 
+        :param msg:massage to shoe in the error
+        :return: create and shoe the error massage
+        '''
+        wx.MessageBox(msg, 'Error', wx.OK | wx.ICON_HAND )
 
     def create_userName_field(self):
         '''
@@ -344,6 +358,15 @@ class RegisterPanel(wx.Panel):
         :return:take care the event when pressing registration button and calling the registration screen
         '''
         # mean someone create account
+        username = self.userNameField.GetValue()
+        password = self.passWordField.GetValue()
+        email = self.emailField.GetValue()
+
+        if not username or not password or not email:
+            self.errorMsg('You must enter username, password and email')
+        else:
+            pass
+            # self.frame.SetStatusText("waiting for Server approve")
 
     def handle_login(self, event):
         '''
