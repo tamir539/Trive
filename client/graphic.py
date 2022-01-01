@@ -439,7 +439,7 @@ class LobbyPanel(wx.Panel):
         self.sizer.Add(logo, 0, wx.CENTER | wx.ALL, 5)
         self.sizer.Add(self.scrollSizer)
         self.sizer.AddSpacer(20)
-        self.sizer.Add(self.optionsSizer)
+        self.sizer.Add(self.optionsSizer, 0, wx.CENTER | wx.ALL)
         # arrange the screen
         self.SetSizer(self.sizer)
         self.Layout()
