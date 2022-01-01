@@ -14,7 +14,6 @@ class MyFrame(wx.Frame):
         self.Show()
         self.Maximize()
 
-
 class MainPanel(wx.Panel):
     '''
     class that create the main layout
@@ -55,10 +54,9 @@ class LoginPanel(wx.Panel):
     def __create_screen__(self):
         # create the main sizer of the panel
         self.sizer = wx.BoxSizer(wx.VERTICAL)
-
         # change background colour to black
         self.SetBackgroundColour(wx.BLACK)
-        
+
         #add the Trive logo
         png = wx.Image('draws\\logo.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         trive = wx.StaticBitmap(self, -1, png, (650, -2), (png.GetWidth(), png.GetHeight()))
@@ -92,29 +90,6 @@ class LoginPanel(wx.Panel):
         passBox.Add(finger_logo, 0, wx.ALL, 0)
         passBox.Add(self.passWordField, 0, wx.ALL, 5)
 
-        #login & registration buttons
-        loginBtn = wx.Button(self, wx.ID_ANY, label="login", size=(400, 40))
-        loginBtn.Font = self.font.Bold()
-        loginBtn.BackgroundColour = wx.BLACK
-        loginBtn.ForegroundColour = wx.GREEN
-        loginBtn.Refresh()
-        loginBtn.Bind(wx.EVT_BUTTON, self.handle_login)
-
-        regBtn = wx.Button(self, wx.ID_ANY, label="not a member? sign up!",size = (400, 40))
-        regBtn.Font = self.font
-        regBtn.BackgroundColour = wx.BLACK
-        regBtn.ForegroundColour = wx.GREEN
-        regBtn.Bind(wx.EVT_BUTTON, self.handle_reg)
-
-        #size down the font for the forgot your password button
-        font = wx.Font(10, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
-
-        forgotBtn = wx.Button(self, wx.ID_ANY, label="forgot your password?", size=(250, 30))
-        forgotBtn.Font = font.MakeUnderlined()
-        forgotBtn.BackgroundColour = wx.BLACK
-        forgotBtn.ForegroundColour = wx.GREEN
-        forgotBtn.Bind(wx.EVT_BUTTON, self.handle_forgot_password)
-
         lobyBtn = wx.Button(self, wx.ID_ANY, label="loby", size=(400, 40))   #backdoor
         lobyBtn.Font = self.font.Bold()
         lobyBtn.BackgroundColour = wx.BLACK
@@ -127,15 +102,12 @@ class LoginPanel(wx.Panel):
         self.sizer.Add(nameBox,0, wx.CENTER | wx.ALL, 5)
         self.sizer.Add(passBox,0, wx.CENTER | wx.ALL, 5)
         self.sizer.AddSpacer(20)
-        self.sizer.Add(loginBtn, 0, wx.CENTER | wx.ALL, 5)
-        self.sizer.Add(regBtn,0, wx.CENTER | wx.ALL, 5)
-        self.sizer.Add(forgotBtn, 0, wx.CENTER | wx.ALL, 5)
+        self.add_buttons()
 
         # arrange the screen
         self.SetSizer(self.sizer)
         self.Layout()
         self.Hide()
-
 
     def errorMsg(self, msg):
         '''
@@ -145,6 +117,41 @@ class LoginPanel(wx.Panel):
         '''
         wx.MessageBox(msg, 'Trive Error', wx.OK | wx.ICON_HAND )
 
+    def add_buttons(self):
+        '''
+
+        :return: add all the buttons
+        '''
+
+        self.createBtn('Login', self.handle_login, (400, 40))
+
+        self.createBtn('Not a member? sign up!', self.handle_reg, (400, 40))
+
+        # size down the font for the forgot your password button
+        self.font = wx.Font(10, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
+
+        self.createBtn('forgot your password?', self.handle_forgot_password, (250, 30))
+
+    def createBtn(self, msg, func, size):
+        '''
+
+        :param msg: the msg to put in the button
+        :param func: function to bind to the button
+        :return:
+        '''
+        # create the button
+        Btn = wx.Button(self, wx.ID_ANY, label=msg, size=size)
+        # design the button
+        if msg == 'Login':
+            Btn.Font = self.font.Bold()
+        elif msg == 'forgot your password?':
+            Btn.Font = self.font.MakeUnderlined()
+        else:
+            Btn.Font = self.font
+        Btn.BackgroundColour = wx.BLACK
+        Btn.ForegroundColour = wx.GREEN
+        Btn.Bind(wx.EVT_BUTTON, func)
+        self.sizer.Add(Btn, 0, wx.CENTER | wx.ALL, 5)
 
     def create_userName_field(self):
         '''
@@ -173,7 +180,6 @@ class LoginPanel(wx.Panel):
         self.passWordField.SetBackgroundColour(wx.BLACK)
         self.passWordField.SetForegroundColour(wx.WHITE)
         self.passWordField.SetFont(self.font)
-
 
     def handle_login(self, event):
         '''
@@ -216,7 +222,6 @@ class LoginPanel(wx.Panel):
         '''
         self.Hide()
         self.parent.loby.Show()
-
 
 class RegisterPanel(wx.Panel):
     '''
@@ -284,31 +289,13 @@ class RegisterPanel(wx.Panel):
         passBox.Add(finger_logo, 0, wx.ALL, 0)
         passBox.Add(self.passWordField, 0, wx.ALL, 5)
 
-        #registration and login buttons
-
-        regBtn = wx.Button(self, wx.ID_ANY, label="register", size=(400, 40))
-        regBtn.Font = self.font.Bold()
-        regBtn.BackgroundColour = wx.BLACK
-        regBtn.ForegroundColour = wx.GREEN
-        regBtn.Bind(wx.EVT_BUTTON, self.handle_reg)
-
-        loginBtn = wx.Button(self, wx.ID_ANY, label="login", size=(400, 40))
-        loginBtn.Font = self.font
-        loginBtn.BackgroundColour = wx.BLACK
-        loginBtn.ForegroundColour = wx.GREEN
-        loginBtn.Bind(wx.EVT_BUTTON, self.handle_login)
-        # btnBox.Add(regBtn, 1, wx.ALL, 5)
-        # add all elements to sizer
-
         self.sizer.Add(logo, 0, wx.CENTER | wx.ALL, 5)
         self.sizer.AddSpacer(100)
         self.sizer.Add(emailBox, 0, wx.CENTER | wx.ALL, 5)
         self.sizer.Add(nameBox, 0, wx.CENTER | wx.ALL, 5)
         self.sizer.Add(passBox, 0, wx.CENTER | wx.ALL, 5)
         self.sizer.AddSpacer(20)
-        # self.sizer.Add(btnBox, wx.CENTER | wx.ALL, 5)
-        self.sizer.Add(regBtn, 0, wx.CENTER | wx.ALL, 5)
-        self.sizer.Add(loginBtn, 0, wx.CENTER | wx.ALL, 5)
+        self.add_buttons()
 
         # arrange the screen
         self.SetSizer(self.sizer)
@@ -322,6 +309,35 @@ class RegisterPanel(wx.Panel):
         :return: create and shoe the error massage
         '''
         wx.MessageBox(msg, 'Trive Error', wx.OK | wx.ICON_HAND )
+
+    def add_buttons(self):
+        '''
+
+        :return: add all the buttons
+        '''
+
+        self.createBtn('Register', self.handle_reg, (400, 40))
+
+        self.createBtn('Login', self.handle_login, (400, 40))
+
+    def createBtn(self, msg, func, size):
+        '''
+
+        :param msg: the msg to put in the button
+        :param func: function to bind to the button
+        :return:
+        '''
+        # create the button
+        Btn = wx.Button(self, wx.ID_ANY, label=msg, size=size)
+        # design the button
+        if msg == 'Register':
+            Btn.Font = self.font.Bold()
+        else:
+            Btn.Font = self.font
+        Btn.BackgroundColour = wx.BLACK
+        Btn.ForegroundColour = wx.GREEN
+        Btn.Bind(wx.EVT_BUTTON, func)
+        self.sizer.Add(Btn, 0, wx.CENTER | wx.ALL, 5)
 
     def create_userName_field(self):
         '''
@@ -391,8 +407,6 @@ class RegisterPanel(wx.Panel):
         self.Hide()
         self.parent.login.Show()
 
-
-
 class LobbyPanel(wx.Panel):
     '''
         class that create the lobby layout
@@ -419,23 +433,90 @@ class LobbyPanel(wx.Panel):
         # font for the text
         self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
-        #sizer for the file place
-        scrollSizer = wx.BoxSizer(wx.HORIZONTAL)
-
-        filesPlace = wx.ScrolledWindow(self, -1, size=(wx.DisplaySize()[0] - 20, 550), pos=(0, 200),style=wx.SIMPLE_BORDER)
-        fileScroller = wx.ScrollBar(self,-1, size=(20,550), pos=(wx.DisplaySize()[0] - 20,200), style=wx.SIMPLE_BORDER)
-
-
-        scrollSizer.Add(filesPlace)
-        scrollSizer.Add(fileScroller)
-
+        self.add_file_sizer()
+        self.addOptins()
 
         self.sizer.Add(logo, 0, wx.CENTER | wx.ALL, 5)
-        self.sizer.Add(scrollSizer)
+        self.sizer.Add(self.scrollSizer)
+        self.sizer.AddSpacer(20)
+        self.sizer.Add(self.optionsSizer)
         # arrange the screen
         self.SetSizer(self.sizer)
         self.Layout()
         self.Hide()
+
+    def add_file_sizer(self):
+        '''
+
+        :return: create the scroller for the files
+        '''
+        # sizer for the file place
+        self.scrollSizer = wx.BoxSizer(wx.HORIZONTAL)
+        filesPlace = wx.ScrolledWindow(self, -1, size=(wx.DisplaySize()[0] - 150, 550), pos=(0, 200),style=wx.SIMPLE_BORDER)
+        fileScroller = wx.ScrollBar(self, -1, size=(20, 550), pos=(wx.DisplaySize()[0] - 20, 200),style=wx.SIMPLE_BORDER)
+        self.scrollSizer.AddSpacer(80)
+        self.scrollSizer.Add(filesPlace)
+        self.scrollSizer.Add(fileScroller)
+
+    def addOptins(self):
+        '''
+
+        :return: add all the optins in the buttom to sizer
+        '''
+        self.optionsSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.optionsSizer.AddSpacer(80)
+
+        # create the add folder button
+        self.createBtn(self.optionsSizer, "Account", self.handle_account)
+
+        #create the upload button
+        self.createBtn(self.optionsSizer, "Upload file", self.handle_upload)
+
+        # create the add folder button
+        self.createBtn(self.optionsSizer, "Create folder", self.handle_createFolder)
+
+    def createBtn(self, sizer, msg, func):
+        '''
+
+        :param sizer: sizer to put the Btn in
+        :param msg: the msg to put in the button
+        :param func: function to bind to the button
+        :return:
+        '''
+        #create the button
+        Btn = wx.Button(self, wx.ID_ANY, label=msg, size=(250, 40))
+        #design the button
+        Btn.Font = self.font
+        Btn.BackgroundColour = wx.BLACK
+        Btn.ForegroundColour = wx.GREEN
+        Btn.Bind(wx.EVT_BUTTON, func)
+        sizer.Add(Btn)
+        sizer.AddSpacer(50)
+
+    def handle_upload(self, event):
+        '''
+
+        :param event:  means  the upload btn pressed
+        :return:
+        '''
+        pass
+
+    def handle_createFolder(self, event):
+        '''
+
+        :param event:  means  the upload file btn pressed
+        :return:
+        '''
+        pass
+
+    def handle_account(self, event):
+        '''
+
+        :param event:  means the upload btn pressed
+        :return:
+        '''
+        pass
+
 
 if __name__ == '__main__':
     app = wx.App()
