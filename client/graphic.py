@@ -1,6 +1,4 @@
 import wx
-import sys
-import traceback
 
 class MyFrame(wx.Frame):
     def __init__(self, parent=None):
@@ -14,6 +12,7 @@ class MyFrame(wx.Frame):
         self.SetSizer(box)
         self.Layout()
         self.Show()
+        self.Maximize()
 
 
 class MainPanel(wx.Panel):
@@ -30,7 +29,7 @@ class MainPanel(wx.Panel):
         # create object for each panel
         self.login = LoginPanel(self, self.frame)
         self.registration = RegisterPanel(self, self.frame)
-        #self.files = FilesPanel(self,self.frame)
+        self.loby = LobbyPanel(self,self.frame)
 
         self.v_box.Add(self.login)
         #self.v_box.Add(self.registration)
@@ -116,6 +115,11 @@ class LoginPanel(wx.Panel):
         forgotBtn.ForegroundColour = wx.GREEN
         forgotBtn.Bind(wx.EVT_BUTTON, self.handle_forgot_password)
 
+        lobyBtn = wx.Button(self, wx.ID_ANY, label="loby", size=(400, 40))   #backdoor
+        lobyBtn.Font = self.font.Bold()
+        lobyBtn.BackgroundColour = wx.BLACK
+        lobyBtn.ForegroundColour = wx.GREEN
+        lobyBtn.Bind(wx.EVT_BUTTON, self.handle_loby)
 
         # add all elements to sizer
         self.sizer.Add(trive,0, wx.CENTER | wx.ALL, 5)
@@ -139,7 +143,7 @@ class LoginPanel(wx.Panel):
         :param msg:massage to shoe in the error
         :return: create and shoe the error massage
         '''
-        wx.MessageBox(msg, 'Error', wx.OK | wx.ICON_HAND )
+        wx.MessageBox(msg, 'Trive Error', wx.OK | wx.ICON_HAND )
 
 
     def create_userName_field(self):
@@ -203,6 +207,15 @@ class LoginPanel(wx.Panel):
         '''
         #self.Hide()
         pass
+
+    def handle_loby(self, event):
+        '''
+
+        :param event: event that happend on the screen
+        :return:take care the event when pressing registration button and calling the registration screen
+        '''
+        self.Hide()
+        self.parent.loby.Show()
 
 
 class RegisterPanel(wx.Panel):
@@ -296,6 +309,7 @@ class RegisterPanel(wx.Panel):
         # self.sizer.Add(btnBox, wx.CENTER | wx.ALL, 5)
         self.sizer.Add(regBtn, 0, wx.CENTER | wx.ALL, 5)
         self.sizer.Add(loginBtn, 0, wx.CENTER | wx.ALL, 5)
+
         # arrange the screen
         self.SetSizer(self.sizer)
         self.Layout()
@@ -307,7 +321,7 @@ class RegisterPanel(wx.Panel):
         :param msg:massage to shoe in the error
         :return: create and shoe the error massage
         '''
-        wx.MessageBox(msg, 'Error', wx.OK | wx.ICON_HAND )
+        wx.MessageBox(msg, 'Trive Error', wx.OK | wx.ICON_HAND )
 
     def create_userName_field(self):
         '''
@@ -377,6 +391,51 @@ class RegisterPanel(wx.Panel):
         self.Hide()
         self.parent.login.Show()
 
+
+
+class LobbyPanel(wx.Panel):
+    '''
+        class that create the lobby layout
+    '''
+
+    def __init__(self, parent, frame):
+        # create a new panel
+        wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=wx.DisplaySize(), style=wx.SIMPLE_BORDER)
+        self.frame = frame
+        self.parent = parent
+        self.__create_screen__()
+
+    def __create_screen__(self):
+        # create the main sizer of the panel
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+        # change background colour to black
+        self.SetBackgroundColour(wx.BLACK)
+
+        # add the Trive logo
+        png = wx.Image('draws\\logo.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        logo = wx.StaticBitmap(self, -1, png, (650, -2), (png.GetWidth(), png.GetHeight()))
+
+        # font for the text
+        self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
+
+        #sizer for the file place
+        scrollSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        filesPlace = wx.ScrolledWindow(self, -1, size=(wx.DisplaySize()[0] - 20, 550), pos=(0, 200),style=wx.SIMPLE_BORDER)
+        fileScroller = wx.ScrollBar(self,-1, size=(20,550), pos=(wx.DisplaySize()[0] - 20,200), style=wx.SIMPLE_BORDER)
+
+
+        scrollSizer.Add(filesPlace)
+        scrollSizer.Add(fileScroller)
+
+
+        self.sizer.Add(logo, 0, wx.CENTER | wx.ALL, 5)
+        self.sizer.Add(scrollSizer)
+        # arrange the screen
+        self.SetSizer(self.sizer)
+        self.Layout()
+        self.Hide()
 
 if __name__ == '__main__':
     app = wx.App()
