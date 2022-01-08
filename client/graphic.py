@@ -667,6 +667,7 @@ class FilesPanel(wx.Panel):
         pass
 
 
+
 if __name__ == '__main__':
     app = wx.App()
     frame = MyFrame()
