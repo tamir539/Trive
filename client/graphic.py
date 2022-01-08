@@ -525,7 +525,7 @@ class FilesPanel(wx.Panel):
         wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=wx.DisplaySize(), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
-        self.files = ['a.txt1', 'fdjgdsf', 'tamirr', 'tamirr', 'tamirr']
+        self.files = ['a.txt1', 'fdjgdsf', 'tamirr', 'tamirr','tamirr','tamirr', 'tamirr', 'tamirr','tamirr','tamirr', 'tamirr', 'tamirr','tamirr','tamirr', 'tamirr', 'tamirr','tamirr','tamirr']#,'tamirr','tamirr','tamirr']
         self.__create_screen__()
 
     def __create_screen__(self):
@@ -542,20 +542,15 @@ class FilesPanel(wx.Panel):
         # font for the text
         self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
-        # self.scrollP = scrolled.ScrolledPanel(self, -1, style=wx.TAB_TRAVERSAL | wx.SUNKEN_BORDER,size=(wx.DisplaySize()[0] - 200, wx.DisplaySize()[1] - 350))
-        # self.scrollP.SetAutoLayout(1)
-        # self.scrollP.SetupScrolling()
-
         self.createFilesSizer()
         self.addOptins()
 
         self.sizer.Add(logo, 0, wx.CENTER | wx.ALL, 5)
-        #self.sizer.Add(self.scrollSizer)
         self.sizer.AddSpacer(20)
         self.sizer.Add(self.scrollP, 0, wx.CENTER | wx.ALL)
         self.sizer.AddSpacer(20)
         self.sizer.Add(self.optionsSizer, 0, wx.CENTER | wx.ALL)
-        #self.sizer.Add(self.optionsSizer, 0, wx.CENTER | wx.ALL)
+
         # arrange the screen
         self.SetSizer(self.sizer)
         self.Layout()
@@ -569,21 +564,28 @@ class FilesPanel(wx.Panel):
 
         self.scrollP = scrolled.ScrolledPanel(self, -1, style=wx.TAB_TRAVERSAL | wx.SUNKEN_BORDER,size=(wx.DisplaySize()[0] - 200, wx.DisplaySize()[1] - 350))
         self.scrollP.SetAutoLayout(1)
-        self.scrollP.SetupScrolling()
+        self.scrollP.SetupScrolling(scroll_y=False)
 
-        placeFilesSizer = wx.BoxSizer(wx.VERTICAL)
-        self.filesSizer = wx.BoxSizer(wx.HORIZONTAL)
+        placeFilesSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.filesSizer = wx.BoxSizer(wx.VERTICAL)
 
-        self.filesSizer.AddSpacer(100)
+        self.filesSizer.AddSpacer(200)
+        itemsInsizerCount = 0
+        placeFilesSizer.AddSpacer(220)
 
         for file in self.files:
-            self.filesSizer.AddSpacer(100)
+            if itemsInsizerCount > 2:
+                placeFilesSizer.AddSpacer(10)
+                placeFilesSizer.Add(self.filesSizer)
+                self.filesSizer = wx.BoxSizer(wx.VERTICAL)
+                self.filesSizer.AddSpacer(200)
+                itemsInsizerCount = 0
+                placeFilesSizer.AddSpacer(100)
+
+            self.filesSizer.AddSpacer(45)
             self.filesSizer.Add(self.createFileSizer(file), 0, flag=wx.ALIGN_CENTER | wx.ALL)
-            self.filesSizer.PrependSpacer(10)
-            #self.filesSizer.Add(file_name, 0, wx.CENTER | wx.ALL)
+            itemsInsizerCount += 1
 
-
-        placeFilesSizer.AddSpacer(220)
         placeFilesSizer.Add(self.filesSizer)
         self.scrollP.SetSizer(placeFilesSizer)
 
