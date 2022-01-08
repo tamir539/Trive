@@ -1,4 +1,5 @@
 import wx
+import wx.lib.scrolledpanel as scrolled
 
 class MyFrame(wx.Frame):
     def __init__(self, parent=None):
@@ -28,7 +29,7 @@ class MainPanel(wx.Panel):
         # create object for each panel
         self.login = LoginPanel(self, self.frame)
         self.registration = RegisterPanel(self, self.frame)
-        self.loby = LobbyPanel(self,self.frame)
+        self.loby = FilesPanel(self,self.frame)
 
         self.v_box.Add(self.login)
         #self.v_box.Add(self.registration)
@@ -457,6 +458,154 @@ class LobbyPanel(wx.Panel):
         self.scrollSizer.AddSpacer(80)
         self.scrollSizer.Add(filesPlace)
         self.scrollSizer.Add(fileScroller)
+
+    def addOptins(self):
+        '''
+
+        :return: add all the optins in the buttom to sizer
+        '''
+        self.optionsSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.optionsSizer.AddSpacer(80)
+
+        # create the add folder button
+        self.createBtn(self.optionsSizer, "Account", self.handle_account)
+
+        #create the upload button
+        self.createBtn(self.optionsSizer, "Upload file", self.handle_upload)
+
+        # create the add folder button
+        self.createBtn(self.optionsSizer, "Create folder", self.handle_createFolder)
+
+    def createBtn(self, sizer, msg, func):
+        '''
+
+        :param sizer: sizer to put the Btn in
+        :param msg: the msg to put in the button
+        :param func: function to bind to the button
+        :return:
+        '''
+        #create the button
+        Btn = wx.Button(self, wx.ID_ANY, label=msg, size=(250, 40))
+        #design the button
+        Btn.Font = self.font
+        Btn.BackgroundColour = wx.BLACK
+        Btn.ForegroundColour = wx.GREEN
+        Btn.Bind(wx.EVT_BUTTON, func)
+        sizer.Add(Btn)
+        sizer.AddSpacer(50)
+
+    def handle_upload(self, event):
+        '''
+
+        :param event:  means  the upload btn pressed
+        :return:
+        '''
+        pass
+
+    def handle_createFolder(self, event):
+        '''
+
+        :param event:  means  the upload file btn pressed
+        :return:
+        '''
+        pass
+
+    def handle_account(self, event):
+        '''
+
+        :param event:  means the upload btn pressed
+        :return:
+        '''
+        pass
+
+class FilesPanel(wx.Panel):
+
+    def __init__(self, parent, frame):
+        # create a new panel
+        wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=wx.DisplaySize(), style=wx.SIMPLE_BORDER)
+        self.frame = frame
+        self.parent = parent
+        self.files = ['a.txt1', 'fdjgdsf', 'tamirr', 'tamirr', 'tamirr']
+        self.__create_screen__()
+
+    def __create_screen__(self):
+        # create the main sizer of the panel
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+        # change background colour to black
+        self.SetBackgroundColour(wx.BLACK)
+
+        # add the Trive logo
+        png = wx.Image('draws\\logo.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        logo = wx.StaticBitmap(self, -1, png, (650, -2), (png.GetWidth(), png.GetHeight()))
+
+        # font for the text
+        self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
+
+        # self.scrollP = scrolled.ScrolledPanel(self, -1, style=wx.TAB_TRAVERSAL | wx.SUNKEN_BORDER,size=(wx.DisplaySize()[0] - 200, wx.DisplaySize()[1] - 350))
+        # self.scrollP.SetAutoLayout(1)
+        # self.scrollP.SetupScrolling()
+
+        self.createFilesSizer()
+        self.addOptins()
+
+        self.sizer.Add(logo, 0, wx.CENTER | wx.ALL, 5)
+        #self.sizer.Add(self.scrollSizer)
+        self.sizer.AddSpacer(20)
+        self.sizer.Add(self.scrollP, 0, wx.CENTER | wx.ALL)
+        self.sizer.AddSpacer(20)
+        self.sizer.Add(self.optionsSizer, 0, wx.CENTER | wx.ALL)
+        #self.sizer.Add(self.optionsSizer, 0, wx.CENTER | wx.ALL)
+        # arrange the screen
+        self.SetSizer(self.sizer)
+        self.Layout()
+        self.Hide()
+
+    def createFilesSizer(self):
+        '''
+
+        :return: show in the screen the files that are on top of the directories
+        '''
+
+        self.scrollP = scrolled.ScrolledPanel(self, -1, style=wx.TAB_TRAVERSAL | wx.SUNKEN_BORDER,size=(wx.DisplaySize()[0] - 200, wx.DisplaySize()[1] - 350))
+        self.scrollP.SetAutoLayout(1)
+        self.scrollP.SetupScrolling()
+
+        placeFilesSizer = wx.BoxSizer(wx.VERTICAL)
+        self.filesSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.filesSizer.AddSpacer(100)
+
+        for file in self.files:
+            self.filesSizer.AddSpacer(100)
+            self.filesSizer.Add(self.createFileSizer(file), 0, flag=wx.ALIGN_CENTER | wx.ALL)
+            self.filesSizer.PrependSpacer(10)
+            #self.filesSizer.Add(file_name, 0, wx.CENTER | wx.ALL)
+
+
+        placeFilesSizer.AddSpacer(220)
+        placeFilesSizer.Add(self.filesSizer)
+        self.scrollP.SetSizer(placeFilesSizer)
+
+    def createFileSizer(self, file):
+        '''
+
+        :return: create sizer for file(file image, file name)
+        '''
+
+        fileSizer = wx.BoxSizer(wx.VERTICAL)
+
+        # add the file logo
+        img = wx.Image('draws\\file.png', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        fileImg = wx.StaticBitmap(self, -1, img, (650, -2), (img.GetWidth(), img.GetHeight()))
+        fileSizer.Add(fileImg, 0, wx.CENTER | wx.ALL)
+
+        file_name = wx.StaticText(self, -1, label=file)
+        file_name.SetForegroundColour(wx.GREEN)
+        file_name.SetFont(self.font)
+
+        fileSizer.Add(file_name, 0, wx.CENTER | wx.ALL)
+        return fileSizer
 
     def addOptins(self):
         '''
