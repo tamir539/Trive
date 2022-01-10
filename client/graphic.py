@@ -1,5 +1,6 @@
 import wx
 import wx.lib.scrolledpanel as scrolled
+import wx.grid as gridlib
 
 class MyFrame(wx.Frame):
     def __init__(self, parent=None):
@@ -525,7 +526,7 @@ class FilesPanel(wx.Panel):
         wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=wx.DisplaySize(), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
-        self.files = ['a.txt1', 'fdjgdsf', 'tamirr', 'tamirr','tamirr','tamirr', 'tamirr', 'tamirr','tamirr','tamirr', 'tamirr', 'tamirr','tamirr','tamirr', 'tamirr', 'tamirr','tamirr','tamirr']#,'tamirr','tamirr','tamirr']
+        self.files = ['a.txt1','fdjgdsf', 'tamirr', 'tamirr','tamirr','tamirr','fdjgdsf', 'tamirr', 'tamirr','tamirr','tamirr','fdjgdsf', 'tamirr', 'tamirr','tamirr','tamirr', 'fdjgdsf', 'tamirr', 'tamirr','tamirr','tamirr', 'tamirr', 'tamirr','tamirr','tamirr', 'tamirr', 'tamirr','tamirr','tamirr', 'tamirr', 'tamirr','tamirr','tamirr']#,'tamirr','tamirr','tamirr']
         self.__create_screen__()
 
     def __create_screen__(self):
@@ -563,24 +564,23 @@ class FilesPanel(wx.Panel):
         '''
 
         self.scrollP = scrolled.ScrolledPanel(self, -1, style=wx.TAB_TRAVERSAL | wx.SUNKEN_BORDER,size=(wx.DisplaySize()[0] - 200, wx.DisplaySize()[1] - 350))
-        self.scrollP.SetAutoLayout(1)
-        self.scrollP.SetupScrolling(scroll_y=False)
 
-        placeFilesSizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.filesSizer = wx.BoxSizer(wx.VERTICAL)
+
+        placeFilesSizer = wx.BoxSizer(wx.VERTICAL)
+        self.filesSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         self.filesSizer.AddSpacer(200)
         itemsInsizerCount = 0
         placeFilesSizer.AddSpacer(220)
 
         for file in self.files:
-            if itemsInsizerCount > 2:
+            if itemsInsizerCount > 8:
                 placeFilesSizer.AddSpacer(10)
                 placeFilesSizer.Add(self.filesSizer)
-                self.filesSizer = wx.BoxSizer(wx.VERTICAL)
+                self.filesSizer = wx.BoxSizer(wx.HORIZONTAL)
                 self.filesSizer.AddSpacer(200)
                 itemsInsizerCount = 0
-                placeFilesSizer.AddSpacer(100)
+                placeFilesSizer.AddSpacer(50)
 
             self.filesSizer.AddSpacer(45)
             self.filesSizer.Add(self.createFileSizer(file), 0, flag=wx.ALIGN_CENTER | wx.ALL)
@@ -588,6 +588,7 @@ class FilesPanel(wx.Panel):
 
         placeFilesSizer.Add(self.filesSizer)
         self.scrollP.SetSizer(placeFilesSizer)
+        self.scrollP.SetupScrolling()
 
     def createFileSizer(self, file):
         '''
@@ -600,6 +601,7 @@ class FilesPanel(wx.Panel):
         # add the file logo
         img = wx.Image('draws\\file.png', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         fileImg = wx.StaticBitmap(self, -1, img, (650, -2), (img.GetWidth(), img.GetHeight()))
+        fileImg.Bind(wx.EVT_LEFT_DOWN,self.file_select )
         fileSizer.Add(fileImg, 0, wx.CENTER | wx.ALL)
 
         file_name = wx.StaticText(self, -1, label=file)
@@ -607,7 +609,12 @@ class FilesPanel(wx.Panel):
         file_name.SetFont(self.font)
 
         fileSizer.Add(file_name, 0, wx.CENTER | wx.ALL)
+
         return fileSizer
+
+    def file_select(self,evt):
+        print("in file select")
+
 
     def addOptins(self):
         '''
@@ -620,7 +627,7 @@ class FilesPanel(wx.Panel):
         # create the add folder button
         self.createBtn(self.optionsSizer, "Account", self.handle_account)
 
-        #create the upload button
+        # create the upload button
         self.createBtn(self.optionsSizer, "Upload file", self.handle_upload)
 
         # create the add folder button
@@ -634,9 +641,9 @@ class FilesPanel(wx.Panel):
         :param func: function to bind to the button
         :return:
         '''
-        #create the button
+        # create the button
         Btn = wx.Button(self, wx.ID_ANY, label=msg, size=(250, 40))
-        #design the button
+        # design the button
         Btn.Font = self.font
         Btn.BackgroundColour = wx.BLACK
         Btn.ForegroundColour = wx.GREEN
@@ -650,7 +657,30 @@ class FilesPanel(wx.Panel):
         :param event:  means  the upload btn pressed
         :return:
         '''
-        pass
+        openFileDialog = wx.FileDialog(self, "Open", "", "", "",wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+        openFileDialog.ShowModal()
+        path = openFileDialog.GetPath()
+        openFileDialog.Destroy()
+        print(path)
+
+    def getType(self, fileName):
+        '''
+
+        :param fileName: name of file
+        :return:  "img" if the file is some image, "file" if the file is some text file, "folder" if the fileName if folder, "no"
+        '''
+        if not '.' in fileName:     #mean that the filename if folder
+            return 'folder'
+        else:
+            typ = fileName.split('.')[1]
+            if typ == 'jpg' or typ == 'bmp' or typ == 'png' or 'svg':
+                return 'img'
+            elif typ == 'txt' or typ == 'py' or typ == 'java' or typ == 'word' or typ == 'bin' or typ == 'doc' or typ == 'docx' or typ == 'asm':
+                return 'file'
+            else:
+                return 'no'
+
+
 
     def handle_createFolder(self, event):
         '''
