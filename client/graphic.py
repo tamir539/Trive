@@ -1,6 +1,5 @@
 import wx
 import wx.lib.scrolledpanel as scrolled
-import wx.grid as gridlib
 
 class MyFrame(wx.Frame):
     def __init__(self, parent=None):
@@ -31,6 +30,7 @@ class MainPanel(wx.Panel):
         self.login = LoginPanel(self, self.frame)
         self.registration = RegisterPanel(self, self.frame)
         self.loby = FilesPanel(self,self.frame)
+#        self.account = AccountPanel(self, self.frame)
 
         self.v_box.Add(self.login)
         #self.v_box.Add(self.registration)
@@ -239,6 +239,7 @@ class RegisterPanel(wx.Panel):
         self.__create_screen__()
 
     def __create_screen__(self):
+        self.Hide()
         # create the main sizer of the panel
         self.sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -409,116 +410,6 @@ class RegisterPanel(wx.Panel):
         self.Hide()
         self.parent.login.Show()
 
-class LobbyPanel(wx.Panel):
-    '''
-        class that create the lobby layout
-    '''
-
-    def __init__(self, parent, frame):
-        # create a new panel
-        wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=wx.DisplaySize(), style=wx.SIMPLE_BORDER)
-        self.frame = frame
-        self.parent = parent
-        self.__create_screen__()
-
-    def __create_screen__(self):
-        # create the main sizer of the panel
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-
-        # change background colour to black
-        self.SetBackgroundColour(wx.BLACK)
-
-        # add the Trive logo
-        png = wx.Image('draws\\logo.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        logo = wx.StaticBitmap(self, -1, png, (650, -2), (png.GetWidth(), png.GetHeight()))
-
-        # font for the text
-        self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
-
-        self.add_file_sizer()
-        self.addOptins()
-
-        self.sizer.Add(logo, 0, wx.CENTER | wx.ALL, 5)
-        self.sizer.Add(self.scrollSizer)
-        self.sizer.AddSpacer(20)
-        self.sizer.Add(self.optionsSizer, 0, wx.CENTER | wx.ALL)
-        # arrange the screen
-        self.SetSizer(self.sizer)
-        self.Layout()
-        self.Hide()
-
-    def add_file_sizer(self):
-        '''
-
-        :return: create the scroller for the files
-        '''
-        # sizer for the file place
-        self.scrollSizer = wx.BoxSizer(wx.HORIZONTAL)
-        filesPlace = wx.ScrolledWindow(self, -1, size=(wx.DisplaySize()[0] - 150, 550), pos=(0, 200),style=wx.SIMPLE_BORDER)
-        fileScroller = wx.ScrollBar(self, -1, size=(20, 550), pos=(wx.DisplaySize()[0] - 20, 200),style=wx.SIMPLE_BORDER)
-        self.scrollSizer.AddSpacer(80)
-        self.scrollSizer.Add(filesPlace)
-        self.scrollSizer.Add(fileScroller)
-
-    def addOptins(self):
-        '''
-
-        :return: add all the optins in the buttom to sizer
-        '''
-        self.optionsSizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.optionsSizer.AddSpacer(80)
-
-        # create the add folder button
-        self.createBtn(self.optionsSizer, "Account", self.handle_account)
-
-        #create the upload button
-        self.createBtn(self.optionsSizer, "Upload file", self.handle_upload)
-
-        # create the add folder button
-        self.createBtn(self.optionsSizer, "Create folder", self.handle_createFolder)
-
-    def createBtn(self, sizer, msg, func):
-        '''
-
-        :param sizer: sizer to put the Btn in
-        :param msg: the msg to put in the button
-        :param func: function to bind to the button
-        :return:
-        '''
-        #create the button
-        Btn = wx.Button(self, wx.ID_ANY, label=msg, size=(250, 40))
-        #design the button
-        Btn.Font = self.font
-        Btn.BackgroundColour = wx.BLACK
-        Btn.ForegroundColour = wx.GREEN
-        Btn.Bind(wx.EVT_BUTTON, func)
-        sizer.Add(Btn)
-        sizer.AddSpacer(50)
-
-    def handle_upload(self, event):
-        '''
-
-        :param event:  means  the upload btn pressed
-        :return:
-        '''
-        pass
-
-    def handle_createFolder(self, event):
-        '''
-
-        :param event:  means  the upload file btn pressed
-        :return:
-        '''
-        pass
-
-    def handle_account(self, event):
-        '''
-
-        :param event:  means the upload btn pressed
-        :return:
-        '''
-        pass
-
 class FilesPanel(wx.Panel):
 
     def __init__(self, parent, frame):
@@ -530,6 +421,7 @@ class FilesPanel(wx.Panel):
         self.__create_screen__()
 
     def __create_screen__(self):
+        self.Hide()
         # create the main sizer of the panel
         self.sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -601,7 +493,6 @@ class FilesPanel(wx.Panel):
         # add the file logo
         img = wx.Image('draws\\file.png', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         fileImg = wx.StaticBitmap(self, -1, img, (650, -2), (img.GetWidth(), img.GetHeight()))
-        fileImg.Bind(wx.EVT_LEFT_DOWN,self.file_select )
         fileSizer.Add(fileImg, 0, wx.CENTER | wx.ALL)
 
         file_name = wx.StaticText(self, -1, label=file)
@@ -611,9 +502,6 @@ class FilesPanel(wx.Panel):
         fileSizer.Add(file_name, 0, wx.CENTER | wx.ALL)
 
         return fileSizer
-
-    def file_select(self,evt):
-        print("in file select")
 
 
     def addOptins(self):
@@ -662,6 +550,8 @@ class FilesPanel(wx.Panel):
         path = openFileDialog.GetPath()
         openFileDialog.Destroy()
         print(path)
+        if self.getType(path.split('\\')[-1]) == 'no':
+            self.errorMsg('Trive doesnt support this type of files')
 
     def getType(self, fileName):
         '''
@@ -673,14 +563,12 @@ class FilesPanel(wx.Panel):
             return 'folder'
         else:
             typ = fileName.split('.')[1]
-            if typ == 'jpg' or typ == 'bmp' or typ == 'png' or 'svg':
+            if typ == 'jpg' or typ == 'bmp' or typ == 'png' or typ == 'svg':
                 return 'img'
             elif typ == 'txt' or typ == 'py' or typ == 'java' or typ == 'word' or typ == 'bin' or typ == 'doc' or typ == 'docx' or typ == 'asm':
                 return 'file'
             else:
                 return 'no'
-
-
 
     def handle_createFolder(self, event):
         '''
@@ -696,7 +584,43 @@ class FilesPanel(wx.Panel):
         :param event:  means the upload btn pressed
         :return:
         '''
+        #self.parent.account.Show()
         pass
+
+    def errorMsg(self, msg):
+        '''
+
+        :param msg:massage to shoe in the error
+        :return: create and shoe the error massage
+        '''
+        wx.MessageBox(msg, 'Trive Error', wx.OK | wx.ICON_HAND )
+
+'''class AccountPanel(wx.Panel):
+
+    def __init__(self, parent, frame):
+        # create a new panel
+        wx.Panel.__init__(self, parent, size=(400, wx.DisplaySize()[1]), style=wx.SIMPLE_BORDER)
+        self.frame = frame
+        self.parent = parent
+        self.Hide()
+        self.__create_screen__()
+
+    def __create_screen__(self):
+
+        # create the main sizer of the panel
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+        # change background colour to black
+        self.SetBackgroundColour(wx.BLACK)
+
+        # add the Trive logo
+        png = wx.Image('draws\\logo.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        logo = wx.StaticBitmap(self, -1, png, (650, -2), (png.GetWidth(), png.GetHeight()))
+
+        # font for the text
+        self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
+'''
+
 
 
 
