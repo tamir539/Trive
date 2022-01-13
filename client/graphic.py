@@ -734,6 +734,9 @@ class AccountPanel(wx.Panel):
         # create the change email button
         self.createBtn(self.optionsSizer, "Change email", self.handle_changeEmail)
 
+        # create the logout email button
+        self.createBtn(self.optionsSizer, "Logout", self.handle_logOut)
+
     def createBtn(self, sizer, msg, func):
         '''
 
@@ -756,6 +759,9 @@ class AccountPanel(wx.Panel):
         pass
 
     def handle_changeEmail(self, event):
+        pass
+
+    def handle_logOut(self, event):
         pass
 
 
