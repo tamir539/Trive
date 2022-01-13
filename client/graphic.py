@@ -29,7 +29,8 @@ class MainPanel(wx.Panel):
         # create object for each panel
         self.login = LoginPanel(self, self.frame)
         self.registration = RegisterPanel(self, self.frame)
-        self.loby = FilesPanel(self,self.frame)
+        self.loby = LobyPanel(self,self.frame)
+
 #        self.account = AccountPanel(self, self.frame)
 
         self.v_box.Add(self.login)
@@ -410,7 +411,7 @@ class RegisterPanel(wx.Panel):
         self.Hide()
         self.parent.login.Show()
 
-class FilesPanel(wx.Panel):
+class LobyPanel(wx.Panel):
 
     def __init__(self, parent, frame):
         # create a new panel
@@ -422,6 +423,7 @@ class FilesPanel(wx.Panel):
 
     def __create_screen__(self):
         self.Hide()
+
         # create the main sizer of the panel
         self.sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -435,74 +437,20 @@ class FilesPanel(wx.Panel):
         # font for the text
         self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
-        self.createFilesSizer()
+        #add the files scroller
+        ScrollFilesPanel(self,self.parent.frame)
+
+        #add the options
         self.addOptins()
 
         self.sizer.Add(logo, 0, wx.CENTER | wx.ALL, 5)
-        self.sizer.AddSpacer(20)
-        self.sizer.Add(self.scrollP, 0, wx.CENTER | wx.ALL)
-        self.sizer.AddSpacer(20)
+        self.sizer.AddSpacer(750)
         self.sizer.Add(self.optionsSizer, 0, wx.CENTER | wx.ALL)
 
         # arrange the screen
         self.SetSizer(self.sizer)
         self.Layout()
         self.Hide()
-
-    def createFilesSizer(self):
-        '''
-
-        :return: show in the screen the files that are on top of the directories
-        '''
-
-        self.scrollP = scrolled.ScrolledPanel(self, -1, style=wx.TAB_TRAVERSAL | wx.SUNKEN_BORDER,size=(wx.DisplaySize()[0] - 200, wx.DisplaySize()[1] - 350))
-
-
-        placeFilesSizer = wx.BoxSizer(wx.VERTICAL)
-        self.filesSizer = wx.BoxSizer(wx.HORIZONTAL)
-
-        self.filesSizer.AddSpacer(200)
-        itemsInsizerCount = 0
-        placeFilesSizer.AddSpacer(220)
-
-        for file in self.files:
-            if itemsInsizerCount > 8:
-                placeFilesSizer.AddSpacer(10)
-                placeFilesSizer.Add(self.filesSizer)
-                self.filesSizer = wx.BoxSizer(wx.HORIZONTAL)
-                self.filesSizer.AddSpacer(200)
-                itemsInsizerCount = 0
-                placeFilesSizer.AddSpacer(50)
-
-            self.filesSizer.AddSpacer(45)
-            self.filesSizer.Add(self.createFileSizer(file), 0, flag=wx.ALIGN_CENTER | wx.ALL)
-            itemsInsizerCount += 1
-
-        placeFilesSizer.Add(self.filesSizer)
-        self.scrollP.SetSizer(placeFilesSizer)
-        self.scrollP.SetupScrolling()
-
-    def createFileSizer(self, file):
-        '''
-
-        :return: create sizer for file(file image, file name)
-        '''
-
-        fileSizer = wx.BoxSizer(wx.VERTICAL)
-
-        # add the file logo
-        img = wx.Image('draws\\file.png', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        fileImg = wx.StaticBitmap(self, -1, img, (650, -2), (img.GetWidth(), img.GetHeight()))
-        fileSizer.Add(fileImg, 0, wx.CENTER | wx.ALL)
-
-        file_name = wx.StaticText(self, -1, label=file)
-        file_name.SetForegroundColour(wx.GREEN)
-        file_name.SetFont(self.font)
-
-        fileSizer.Add(file_name, 0, wx.CENTER | wx.ALL)
-
-        return fileSizer
-
 
     def addOptins(self):
         '''
@@ -595,11 +543,125 @@ class FilesPanel(wx.Panel):
         '''
         wx.MessageBox(msg, 'Trive Error', wx.OK | wx.ICON_HAND )
 
-'''class AccountPanel(wx.Panel):
+class ScrollFilesPanel(scrolled.ScrolledPanel):
+    '''
+        class that show all the top level files on the screen
+    '''
+    def __init__(self, parent, frame):
+
+        panelDepth = wx.DisplaySize()[0] - 200
+        panelLength = wx.DisplaySize()[1] - 350
+
+        screenLength = wx.DisplaySize()[1]
+        screenDepth = wx.DisplaySize()[0]
+
+        # create a new panel
+        scrolled.ScrolledPanel.__init__(self, parent,pos =((screenDepth - panelDepth)/2, 200), size=(panelDepth, panelLength ), style=wx.SIMPLE_BORDER)
+        self.frame = frame
+        self.parent = parent
+        self.files = ['a.txt','folder1', 'a.py', 'cat.jpg']
+        self.__create_screen__()
+
+    def __create_screen__(self):
+        self.Hide()
+
+        # change background colour to black
+        self.SetBackgroundColour(wx.BLACK)
+
+        # font for the text
+        self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
+
+        self.createFilesSizer()
+
+        self.Show()
+
+    def createFilesSizer(self):
+        '''
+
+        :return: show in the screen the files that are on top of the directories
+        '''
+
+        placeFilesSizer = wx.BoxSizer(wx.VERTICAL)
+        self.filesSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        itemsInsizerCount = 0
+
+        for file in self.files:
+            if itemsInsizerCount > 9:   #check that there are not more then 10 files in a row
+                placeFilesSizer.Add(self.filesSizer)
+                self.filesSizer = wx.BoxSizer(wx.HORIZONTAL)
+                placeFilesSizer.AddSpacer(50)
+                itemsInsizerCount = 0
+
+            self.filesSizer.AddSpacer(45)
+            self.filesSizer.Add(self.createFileSizer(file), 0, flag=wx.ALIGN_CENTER | wx.ALL)
+            itemsInsizerCount += 1
+
+        placeFilesSizer.Add(self.filesSizer)
+        self.SetSizer(placeFilesSizer)
+        self.SetupScrolling()
+
+    def createFileSizer(self, file):
+        '''
+        @:param file: name of the file
+        :return: create sizer for file(file image, file name)
+        '''
+
+        fileSizer = wx.BoxSizer(wx.VERTICAL)
+
+        # add the file\image\folder logo
+        img = wx.Image(f'draws\\{self.getType(file)}.png', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        fileImg = wx.StaticBitmap(self, -1, img, (650, -2), (img.GetWidth(), img.GetHeight()))
+        fileImg.SetName(file)
+        fileImg.Bind(wx.EVT_LEFT_DOWN, self.onFileClick)
+        fileSizer.Add(fileImg, 0, wx.CENTER | wx.ALL)
+
+        #add the name of the file\image\folder
+        file_name = wx.StaticText(self, -1, label=file)
+        file_name.SetForegroundColour(wx.WHITE)
+        file_name.SetFont(self.font)
+
+        fileSizer.Add(file_name, 0, wx.CENTER | wx.ALL)
+
+        return fileSizer
+
+    def getType(self, fileName):
+        '''
+
+        :param fileName: name of file
+        :return:  "image" if the file is some image, "file" if the file is some text file, "folder" if the fileName if folder, "no"
+        '''
+        if not '.' in fileName:     #mean that the filename if folder
+            return 'folder'
+        else:
+            typ = fileName.split('.')[1]
+            if typ == 'jpg' or typ == 'bmp' or typ == 'png' or typ == 'svg':
+                return 'image'
+            elif typ == 'txt' or typ == 'py' or typ == 'java' or typ == 'word' or typ == 'bin' or typ == 'doc' or typ == 'docx' or typ == 'asm':
+                return 'file'
+            else:
+                return 'no'
+
+    def onFileClick(self, event):
+        '''
+
+        :param event:event mean that file pressed
+        :return:change the current pressed file of the class
+        '''
+        widget = event.GetEventObject()
+        print(widget.GetName())
+
+class AccountPanel(wx.Panel):
 
     def __init__(self, parent, frame):
+        panelDepth = wx.DisplaySize()[0]/10
+        panelLength = wx.DisplaySize()[1]
+
+        screenLength = wx.DisplaySize()[1]
+        screenDepth = wx.DisplaySize()[0]
+
         # create a new panel
-        wx.Panel.__init__(self, parent, size=(400, wx.DisplaySize()[1]), style=wx.SIMPLE_BORDER)
+        wx.Panel.__init__(self, parent,pos = (screenDepth - panelDepth, -1) , size=(panelDepth, panelLength), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
         self.Hide()
@@ -619,7 +681,9 @@ class FilesPanel(wx.Panel):
 
         # font for the text
         self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
-'''
+
+        self.Show()
+
 
 
 
