@@ -20,8 +20,6 @@ class MainPanel(wx.Panel):
     class that create the main layout
     '''
     def __init__(self, parent):
-        self.email = ''
-        self.username = ''
 
         wx.Panel.__init__(self, parent)
 
@@ -34,7 +32,7 @@ class MainPanel(wx.Panel):
         self.registration = RegisterPanel(self, self.frame)
         self.loby = LobyPanel(self,self.frame)
 
-        self.account = AccountPanel(self, self.frame)
+        #self.account = AccountPanel(self, self.frame)
 
         self.v_box.Add(self.login)
 
@@ -418,6 +416,7 @@ class LobyPanel(wx.Panel):
         self.frame = frame
         self.parent = parent
         self.inAccount = False
+        self.account = None
         self.__create_screen__()
 
     def __create_screen__(self):
@@ -433,29 +432,25 @@ class LobyPanel(wx.Panel):
         png = wx.Image('draws\\logo.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         logo = wx.StaticBitmap(self, -1, png, (650, -2), (png.GetWidth(), png.GetHeight()))
 
-        #add the account logo
-        user = wx.Image('draws\\userForLoby.png', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        user_img = wx.StaticBitmap(self, -1,user,  pos = (wx.DisplaySize()[0] - wx.DisplaySize()[0]/7, 30), size = (user.GetWidth(), user.GetHeight()))
-
-        user_img.Bind(wx.EVT_LEFT_DOWN, self.handle_account)
-
         # font for the text
         self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
-        #add the files scroller
-        ScrollFilesPanel(self,self.parent.frame)
+        #create the files scroller
+        self.scrollFiles = ScrollFilesPanel(self, self.parent.frame)
+
+        # create the files scroller
+        self.account = AccountPanel(self, self.parent.frame)
 
         #add the options
         self.addOptins()
 
         self.sizer.Add(logo, 0, wx.CENTER | wx.ALL, 5)
-        self.sizer.AddSpacer(750)
+        self.sizer.AddSpacer(wx.DisplaySize()[1] - png.GetHeight() - 140)
         self.sizer.Add(self.optionsSizer, 0, wx.CENTER | wx.ALL)
 
         # arrange the screen
         self.SetSizer(self.sizer)
         self.Layout()
-        self.Hide()
 
     def addOptins(self):
         '''
@@ -464,6 +459,9 @@ class LobyPanel(wx.Panel):
         '''
         self.optionsSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.optionsSizer.AddSpacer(80)
+
+        # create the upload button
+        self.accountOrFiles = self.createBtn(self.optionsSizer, "Account", self.handle_account)
 
         # create the upload button
         self.createBtn(self.optionsSizer, "Upload file", self.handle_upload)
@@ -488,6 +486,7 @@ class LobyPanel(wx.Panel):
         Btn.Bind(wx.EVT_BUTTON, func)
         sizer.Add(Btn)
         sizer.AddSpacer(50)
+        return Btn
 
     def handle_upload(self, event):
         '''
@@ -535,9 +534,13 @@ class LobyPanel(wx.Panel):
         :return:
         '''
         if self.inAccount:
-            pass
+            self.account.Hide()
+            self.scrollFiles.Show()
+            self.accountOrFiles.SetLabel('Account')
         else:
-            self.parent.account.Show()
+            self.account.Show()
+            self.scrollFiles.Hide()
+            self.accountOrFiles.SetLabel('Files')
 
         self.inAccount = not self.inAccount
 
@@ -568,7 +571,8 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
 
         self.frame = frame
         self.parent = parent
-        self.files = ['a.txt','folder1', 'a.py', 'cat.jpg']*20
+        self.files = ['a.txt','folder1', 'a.py', 'cat.jpg']
+
         self.__create_screen__()
 
     def __create_screen__(self):
@@ -663,14 +667,14 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
 class AccountPanel(wx.Panel):
 
     def __init__(self, parent, frame):
-        panelDepth = wx.DisplaySize()[0]/7
-        panelLength = wx.DisplaySize()[1]
+        panelDepth = wx.DisplaySize()[0] - 300
+        panelLength = wx.DisplaySize()[1] - 350
 
         screenLength = wx.DisplaySize()[1]
         screenDepth = wx.DisplaySize()[0]
 
         # create a new panel
-        wx.Panel.__init__(self, parent,pos = (screenDepth - panelDepth, -1) , size=(panelDepth, panelLength), style=wx.SIMPLE_BORDER)
+        wx.Panel.__init__(self, parent,pos =((screenDepth - panelDepth)//2, 200), size=(panelDepth, panelLength ), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
 
@@ -678,7 +682,6 @@ class AccountPanel(wx.Panel):
 
     def __create_screen__(self):
         self.Hide()
-
         # create the main sizer of the panel
         self.sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -688,12 +691,17 @@ class AccountPanel(wx.Panel):
         # font for the text
         self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
-        try_email = 'Email:tamir.burstein@gmail.com'
+        #add the account logo
+        user = wx.Image('draws\\userForLoby.png', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        user_img = wx.StaticBitmap(self, -1 ,user,  pos = (wx.DisplaySize()[0] - wx.DisplaySize()[0]//7, 30), size = (user.GetWidth(), user.GetHeight()))
+
+        try_email = 'Email: tamir.burstein@gmail.com'
         try_username = 'Username: tamir539'
 
+        self.addOptins()
 
         #create the email text
-        email = wx.StaticText(self, -1, label=try_email)#{try_email}')
+        email = wx.StaticText(self, -1, label=try_email)
         email.SetForegroundColour(wx.WHITE)
         email.SetFont(self.font)
 
@@ -702,13 +710,55 @@ class AccountPanel(wx.Panel):
         username.SetForegroundColour(wx.WHITE)
         username.SetFont(self.font)
 
-        self.sizer.AddSpacer(200)
+        self.sizer.Add(user_img,0, wx.ALIGN_CENTER | wx.ALL, 5)
         self.sizer.Add(email,0,wx.ALL, 5)
         self.sizer.Add(username, 0, wx.ALL, 5)
+        self.sizer.AddSpacer(100)
+        self.sizer.Add(self.optionsSizer, 0, wx.ALIGN_CENTER | wx.ALL, 5)
 
         # arrange the screen
         self.SetSizer(self.sizer)
         self.Layout()
+
+    def addOptins(self):
+        '''
+
+        :return: add all the optins in the buttom to sizer
+        '''
+        self.optionsSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.optionsSizer.AddSpacer(80)
+
+        # create the change password button
+        self.createBtn(self.optionsSizer, "Change password", self.handle_changePassword)
+
+        # create the change email button
+        self.createBtn(self.optionsSizer, "Change email", self.handle_changeEmail)
+
+    def createBtn(self, sizer, msg, func):
+        '''
+
+        :param sizer: sizer to put the Btn in
+        :param msg: the msg to put in the button
+        :param func: function to bind to the button
+        :return:
+        '''
+        # create the button
+        Btn = wx.Button(self, wx.ID_ANY, label=msg, size=(250, 40))
+        # design the button
+        Btn.Font = self.font
+        Btn.BackgroundColour = wx.BLACK
+        Btn.ForegroundColour = wx.GREEN
+        Btn.Bind(wx.EVT_BUTTON, func)
+        sizer.Add(Btn)
+        sizer.AddSpacer(50)
+
+    def handle_changePassword(self, event):
+        pass
+
+    def handle_changeEmail(self, event):
+        pass
+
+
 
 
 
