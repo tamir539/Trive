@@ -20,6 +20,9 @@ class MainPanel(wx.Panel):
     class that create the main layout
     '''
     def __init__(self, parent):
+        self.email = ''
+        self.username = ''
+
         wx.Panel.__init__(self, parent)
 
         self.frame = parent
@@ -31,11 +34,9 @@ class MainPanel(wx.Panel):
         self.registration = RegisterPanel(self, self.frame)
         self.loby = LobyPanel(self,self.frame)
 
-#        self.account = AccountPanel(self, self.frame)
+        self.account = AccountPanel(self, self.frame)
 
         self.v_box.Add(self.login)
-        #self.v_box.Add(self.registration)
-        #self.v_box.Add(self.files)
 
         # The first panel to show
         self.login.Show()
@@ -196,8 +197,7 @@ class LoginPanel(wx.Panel):
         if not username or not password :
             self.errorMsg('You must enter username and password!')
         else:
-            pass
-            #self.frame.SetStatusText("waiting for Server approve")
+            self.username = username
 
     def handle_reg(self,event):
         '''
@@ -232,7 +232,6 @@ class RegisterPanel(wx.Panel):
     '''
 
     def __init__(self, parent, frame):
-
         # create a new panel
         wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=wx.DisplaySize(), style=wx.SIMPLE_BORDER)
         self.frame = frame
@@ -399,8 +398,8 @@ class RegisterPanel(wx.Panel):
         if not username or not password or not email:
             self.errorMsg('You must enter username, password and email')
         else:
-            pass
-            # self.frame.SetStatusText("waiting for Server approve")
+            self.email = email
+            self.username = username
 
     def handle_login(self, event):
         '''
@@ -418,7 +417,7 @@ class LobyPanel(wx.Panel):
         wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=wx.DisplaySize(), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
-        self.files = ['a.txt1','fdjgdsf', 'tamirr', 'tamirr','tamirr','tamirr','fdjgdsf', 'tamirr', 'tamirr','tamirr','tamirr','fdjgdsf', 'tamirr', 'tamirr','tamirr','tamirr', 'fdjgdsf', 'tamirr', 'tamirr','tamirr','tamirr', 'tamirr', 'tamirr','tamirr','tamirr', 'tamirr', 'tamirr','tamirr','tamirr', 'tamirr', 'tamirr','tamirr','tamirr']#,'tamirr','tamirr','tamirr']
+        self.inAccount = False
         self.__create_screen__()
 
     def __create_screen__(self):
@@ -433,6 +432,12 @@ class LobyPanel(wx.Panel):
         # add the Trive logo
         png = wx.Image('draws\\logo.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         logo = wx.StaticBitmap(self, -1, png, (650, -2), (png.GetWidth(), png.GetHeight()))
+
+        #add the account logo
+        user = wx.Image('draws\\userForLoby.png', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        user_img = wx.StaticBitmap(self, -1,user,  pos = (wx.DisplaySize()[0] - wx.DisplaySize()[0]/7, 30), size = (user.GetWidth(), user.GetHeight()))
+
+        user_img.Bind(wx.EVT_LEFT_DOWN, self.handle_account)
 
         # font for the text
         self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
@@ -459,9 +464,6 @@ class LobyPanel(wx.Panel):
         '''
         self.optionsSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.optionsSizer.AddSpacer(80)
-
-        # create the add folder button
-        self.createBtn(self.optionsSizer, "Account", self.handle_account)
 
         # create the upload button
         self.createBtn(self.optionsSizer, "Upload file", self.handle_upload)
@@ -532,7 +534,13 @@ class LobyPanel(wx.Panel):
         :param event:  means the upload btn pressed
         :return:
         '''
-        #self.parent.account.Show()
+        if self.inAccount:
+            pass
+        else:
+            self.parent.account.Show()
+
+        self.inAccount = not self.inAccount
+
         pass
 
     def errorMsg(self, msg):
@@ -549,7 +557,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
     '''
     def __init__(self, parent, frame):
 
-        panelDepth = wx.DisplaySize()[0] - 200
+        panelDepth = wx.DisplaySize()[0] - 300
         panelLength = wx.DisplaySize()[1] - 350
 
         screenLength = wx.DisplaySize()[1]
@@ -557,9 +565,10 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
 
         # create a new panel
         scrolled.ScrolledPanel.__init__(self, parent,pos =((screenDepth - panelDepth)/2, 200), size=(panelDepth, panelLength ), style=wx.SIMPLE_BORDER)
+
         self.frame = frame
         self.parent = parent
-        self.files = ['a.txt','folder1', 'a.py', 'cat.jpg']
+        self.files = ['a.txt','folder1', 'a.py', 'cat.jpg']*20
         self.__create_screen__()
 
     def __create_screen__(self):
@@ -654,7 +663,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
 class AccountPanel(wx.Panel):
 
     def __init__(self, parent, frame):
-        panelDepth = wx.DisplaySize()[0]/10
+        panelDepth = wx.DisplaySize()[0]/7
         panelLength = wx.DisplaySize()[1]
 
         screenLength = wx.DisplaySize()[1]
@@ -664,10 +673,11 @@ class AccountPanel(wx.Panel):
         wx.Panel.__init__(self, parent,pos = (screenDepth - panelDepth, -1) , size=(panelDepth, panelLength), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
-        self.Hide()
+
         self.__create_screen__()
 
     def __create_screen__(self):
+        self.Hide()
 
         # create the main sizer of the panel
         self.sizer = wx.BoxSizer(wx.VERTICAL)
@@ -675,14 +685,33 @@ class AccountPanel(wx.Panel):
         # change background colour to black
         self.SetBackgroundColour(wx.BLACK)
 
-        # add the Trive logo
-        png = wx.Image('draws\\logo.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        logo = wx.StaticBitmap(self, -1, png, (650, -2), (png.GetWidth(), png.GetHeight()))
-
         # font for the text
         self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
-        self.Show()
+        try_email = 'Email:tamir.burstein@gmail.com'
+        try_username = 'Username: tamir539'
+
+
+        #create the email text
+        email = wx.StaticText(self, -1, label=try_email)#{try_email}')
+        email.SetForegroundColour(wx.WHITE)
+        email.SetFont(self.font)
+
+        # create the username text
+        username = wx.StaticText(self, -1, label=try_username)
+        username.SetForegroundColour(wx.WHITE)
+        username.SetFont(self.font)
+
+        self.sizer.AddSpacer(200)
+        self.sizer.Add(email,0,wx.ALL, 5)
+        self.sizer.Add(username, 0, wx.ALL, 5)
+
+        # arrange the screen
+        self.SetSizer(self.sizer)
+        self.Layout()
+
+
+
 
 
 
