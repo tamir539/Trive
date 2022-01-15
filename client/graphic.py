@@ -568,7 +568,6 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
 
         # create a new panel
         scrolled.ScrolledPanel.__init__(self, parent,pos =((screenDepth - panelDepth)/2, 200), size=(panelDepth, panelLength ), style=wx.SIMPLE_BORDER)
-        self.options = None
         self.frame = frame
         self.parent = parent
         self.files = ['a.txt','folder1', 'a.py', 'cat.jpg']
@@ -663,10 +662,21 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         '''
         widget = event.GetEventObject()
         fileName = widget.GetName()
-        if self.options is not None:
-            self.options.Hide()
-        self.options = FileOptionsPanel(self, self.parent.frame, fileName)
+        self.PopupMenu(OptionsMenu(self), self.getPos())
         print(fileName)
+
+    def getPos(self):
+        '''
+
+        :return: get current mouse position on the screen
+        '''
+        parentDepth = wx.DisplaySize()[0] - 300
+        screenDepth = wx.DisplaySize()[0]
+
+        xPos = -(screenDepth - parentDepth)//2 + wx.GetMousePosition()[0]
+        yPos = -200 + wx.GetMousePosition()[1]
+
+        return (xPos, yPos)
 
 class AccountPanel(wx.Panel):
 
@@ -768,88 +778,48 @@ class AccountPanel(wx.Panel):
     def handle_logOut(self, event):
         pass
 
-class FileOptionsPanel(wx.Panel):
+class OptionsMenu(wx.Menu):
 
-    def __init__(self, parent, frame, fileName):
+    def __init__(self, parent):
+        super(OptionsMenu, self).__init__()
 
-        # create a new panel
-        wx.Panel.__init__(self, parent,pos =self.getPos(), size=(250,300), style=wx.SIMPLE_BORDER)
-        self.fileName = fileName
-        self.frame = frame
         self.parent = parent
-        self.__create_screen__()
 
-    def __create_screen__(self):
-        self.Show()
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-
-        # change background colour to black
-        self.SetBackgroundColour(wx.BLACK)
-        self.SetForegroundColour(wx.BLACK)
-
-        # font for the text
         self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
-        #add the file name
-        fileName = wx.StaticText(self, -1, label = self.fileName)
-        fileName.SetForegroundColour(wx.WHITE)
-        fileName.SetFont(self.font)
+        self.Bind(wx.EVT_MENU, self.getChosen)
 
-        self.sizer.Add(fileName, 0, wx.ALIGN_CENTER | wx.ALL, 5)
+        self.commandById = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Add to folder', 5: 'Delete'}
+        self.createOptions()
 
-        #add all the buttons
-        self.createBtn(self.sizer, 'Download file', self.handleDownload)
-        self.createBtn(self.sizer, 'Share file', self.handleShare)
-        self.createBtn(self.sizer, 'Edit file', self.handleEdit)
-        self.createBtn(self.sizer, 'Add to folder', self.handleToFolder)
-        self.createBtn(self.sizer, 'Delete file', self.handleDelete)
-
-        self.SetSizer(self.sizer)
-        self.Layout()
-
-
-    def createBtn(self, sizer, msg, func):
+    def createOptions(self):
         '''
 
-        :param sizer: sizer to put the Btn in
-        :param msg: the msg to put in the button
-        :param func: function to bind to the button
-        :return:
+        :return: create all the options
         '''
-        # create the button
-        Btn = wx.Button(self, wx.ID_ANY, label=msg, size=(250, 40))
-        # design the button
-        Btn.Font = self.font
-        Btn.BackgroundColour = wx.BLACK
-        Btn.ForegroundColour = wx.GREEN
-        Btn.Bind(wx.EVT_BUTTON, func)
-        sizer.Add(Btn, 0, wx.ALIGN_CENTER | wx.ALL, 5)
+        for id in self.commandById.keys():
+            self.createOption(id)
 
+    def createOption(self, id):
+        '''
 
-    def handleDownload(self, event):
-        self.Hide()
+        :param id: id for the option
+        :return: creates the option and add to the menu
+        '''
+        popmenu = wx.MenuItem(self, id, self.commandById[id])
+        popmenu.SetBackgroundColour(wx.BLACK)
+        popmenu.SetTextColour(wx.WHITE)
+        popmenu.SetFont(self.font)
+        self.Append(popmenu)
 
-    def handleShare(self, event):
-        self.Hide()
+    def getChosen(self, event):
+        '''
 
-    def handleDelete(self, event):
-        self.Hide()
-
-    def handleToFolder(self, event):
-        self.Hide()
-
-    def handleEdit(self, event):
-        self.Hide()
-
-    def getPos(self):
-        parentDepth = wx.DisplaySize()[0] - 300
-
-        screenDepth = wx.DisplaySize()[0]
-
-        xPos = -(screenDepth - parentDepth)//2 + wx.GetMousePosition()[0]
-        yPos = -200 + wx.GetMousePosition()[1]
-
-        return (xPos, yPos)
+        :param event:
+        :return: return the id of the selected command
+        '''
+        id = event.GetId()
+        return id
 
 
 if __name__ == '__main__':
