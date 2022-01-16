@@ -663,20 +663,6 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         widget = event.GetEventObject()
         fileName = widget.GetName()
         self.PopupMenu(OptionsMenu(self, self.getType(fileName)))
-        print(fileName)
-
-    def getPos(self):
-        '''
-
-        :return: get current mouse position on the screen
-        '''
-        parentDepth = wx.DisplaySize()[0] - 300
-        screenDepth = wx.DisplaySize()[0]
-
-        xPos = -(screenDepth - parentDepth)//2 + wx.GetMousePosition()[0]
-        yPos = -200 + wx.GetMousePosition()[1]
-
-        return (xPos, yPos)
 
 class AccountPanel(wx.Panel):
 
@@ -787,9 +773,6 @@ class OptionsMenu(wx.Menu):
         self.fileTyp = fileTyp
         self.createOptions()
 
-        print(self.fileTyp)
-
-
     def createOptions(self):
         '''
 
@@ -800,8 +783,10 @@ class OptionsMenu(wx.Menu):
         self.Bind(wx.EVT_MENU, self.getChosen)
         if self.fileTyp == 'file':
             self.commandById = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Add to folder', 5: 'Edit' ,6: 'Delete'}
+            self.funcById = {1: self.download, 2: self.rename, 3: self.share, 4:self.addToFolder, 5:self.edit, 6: self.delete}  #button id -> function that handle if the button selected
         else:
             self.commandById = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Add to folder', 6: 'Delete'}
+            self.funcById = {1: self.download, 2: self.rename, 3: self.share, 4: self.addToFolder, 6: self.delete}
 
         for id in self.commandById.keys():
             self.createOption(id)
@@ -825,7 +810,25 @@ class OptionsMenu(wx.Menu):
         :return: return the id of the selected command
         '''
         id = event.GetId()
-        return id
+        self.funcById[id]()
+
+    def download(self):
+        print('Download')
+
+    def rename(self):
+        print('Rename')
+
+    def share(self):
+        print('Share')
+
+    def addToFolder(self):
+        print('add to folder')
+
+    def delete(self):
+        print('delete')
+
+    def edit(self):
+        print('edit')
 
 
 if __name__ == '__main__':
