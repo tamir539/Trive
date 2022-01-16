@@ -662,7 +662,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         '''
         widget = event.GetEventObject()
         fileName = widget.GetName()
-        self.PopupMenu(OptionsMenu(self), self.getPos())
+        self.PopupMenu(OptionsMenu(self, self.getType(fileName)))
         print(fileName)
 
     def getPos(self):
@@ -780,23 +780,29 @@ class AccountPanel(wx.Panel):
 
 class OptionsMenu(wx.Menu):
 
-    def __init__(self, parent):
+    def __init__(self, parent, fileTyp):
         super(OptionsMenu, self).__init__()
 
         self.parent = parent
-
-        self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
-
-        self.Bind(wx.EVT_MENU, self.getChosen)
-
-        self.commandById = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Add to folder', 5: 'Delete'}
+        self.fileTyp = fileTyp
         self.createOptions()
+
+        print(self.fileTyp)
+
 
     def createOptions(self):
         '''
 
         :return: create all the options
         '''
+        self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
+
+        self.Bind(wx.EVT_MENU, self.getChosen)
+        if self.fileTyp == 'file':
+            self.commandById = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Add to folder', 5: 'Edit' ,6: 'Delete'}
+        else:
+            self.commandById = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Add to folder', 6: 'Delete'}
+
         for id in self.commandById.keys():
             self.createOption(id)
 
