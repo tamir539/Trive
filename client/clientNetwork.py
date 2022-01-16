@@ -2,9 +2,10 @@ import socket
 import queue
 import threading
 import os
+import time
 
 
-class clientCom:
+class ClientCom:
 
     def __init__(self, serverIp, serverPort, q):
         '''
@@ -46,6 +47,7 @@ class clientCom:
         :return: sends the msg to the server
         '''
         try:
+            self.soc.send(str(len(msg)).encode())
             self.soc.send(msg.encode())
         except Exception as e:
             print(f'in send msg - {str(e)}')
@@ -56,7 +58,7 @@ class clientCom:
         :param filePath: path for file
         :return: sends the data to the server
         '''
-        file = open(filePath, 'r')
+        file = open(filePath, 'rb')
         data = file.read()
         try:
             self.soc.send(data)
@@ -66,12 +68,13 @@ class clientCom:
     def recvFile(self, fileLen, fileName):
         '''
 
-        :return:recv file from the server, return the data and add msg to q when finish recive
+        :return:recv file from the server, download the file to downloads and add msg to q when finish recive
         '''
 
         file_data = bytearray()
         #recv all the data
         while len(file_data) < fileLen:
+            print(1)
             size = fileLen - len(file_data)
             try:
                 if size >= 1024:
@@ -80,13 +83,21 @@ class clientCom:
                     file_data.extend(self.soc.recv(size))
                     break
             except Exception as e:
-                print(f'in send file - {str(e)}')
+                print(f'in recv file - {str(e)}')
                 file_data = None
                 break
 
-        return file_data
-        # if file_data is not None:
-        #     path = os.path.expanduser('~/Downloads')
-        #     with open(f'{path}\\{fileName}', 'wb') as f:
-        #         f.write(file_data)
-        #
+        if file_data is not None:
+            path = os.path.expanduser('~/Downloads')
+            with open(f'{path}\\{fileName}', 'wb') as f:
+                f.write(file_data)
+
+
+
+if __name__ == '__main__':
+    q = queue.Queue()
+    soc = ClientCom('127.0.0.1', 1111, q)
+    time.sleep(1)
+    soc.send_msg('C:\\ctf\\nice_netcat.txt')
+    time.sleep(1)
+    soc.recvFile(226, 'try.txt')
