@@ -1,0 +1,92 @@
+import socket
+import queue
+import threading
+import os
+
+
+class clientCom:
+
+    def __init__(self, serverIp, serverPort, q):
+        '''
+
+        :param serverIp:ip of the server
+        :param serverPort: port to talk with the server
+        :param q: queue that for trnsger data between the network to the main client
+        '''
+
+        self.serverIp = serverIp
+        self.serverPort = serverPort
+        self.q = q
+        self.soc = socket.socket()
+        threading.Thread(target = self.__recv_msg__).start()
+
+    def __recv_msg__(self):
+        '''
+
+        :return:recive msg from the server and put the msg in q
+        '''
+        try:
+            self.soc.connect((self.serverIp, self.serverPort))
+        except Exception as e:
+            print(f'in recv msg - {str(e)}')
+        else:
+            while True:
+                try:
+                    msg_len = int(self.soc.recv(2).decode())
+                    msg = self.soc.recv(msg_len).decode()
+                except Exception as e:
+                    print(f'in recv msg 2 - {str(e)}')
+                else:
+                    self.q.put(msg)
+
+    def send_msg(self, msg):
+        '''
+
+        :param msg: string
+        :return: sends the msg to the server
+        '''
+        try:
+            self.soc.send(msg.encode())
+        except Exception as e:
+            print(f'in send msg - {str(e)}')
+
+    def sendFile(self, filePath):
+        '''
+
+        :param filePath: path for file
+        :return: sends the data to the server
+        '''
+        file = open(filePath, 'r')
+        data = file.read()
+        try:
+            self.soc.send(data)
+        except Exception as e:
+            print(f'in send file - {str(e)}')
+
+    def recvFile(self, fileLen, fileName):
+        '''
+
+        :return:recv file from the server, return the data and add msg to q when finish recive
+        '''
+
+        file_data = bytearray()
+        #recv all the data
+        while len(file_data) < fileLen:
+            size = fileLen - len(file_data)
+            try:
+                if size >= 1024:
+                    file_data.extend(self.soc.recv(1024))
+                else:
+                    file_data.extend(self.soc.recv(size))
+                    break
+            except Exception as e:
+                print(f'in send file - {str(e)}')
+                file_data = None
+                break
+
+        return file_data
+        # if file_data is not None:
+        #     path = os.path.expanduser('~/Downloads')
+        #     with open(f'{path}\\{fileName}', 'wb') as f:
+        #         f.write(file_data)
+        #

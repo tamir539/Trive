@@ -1,6 +1,7 @@
 import wx
 import wx.lib.scrolledpanel as scrolled
 
+
 class MyFrame(wx.Frame):
     def __init__(self, parent=None):
         super(MyFrame, self).__init__(parent, title="Trive", size=wx.DisplaySize())
@@ -14,6 +15,7 @@ class MyFrame(wx.Frame):
         self.Layout()
         self.Show()
         self.Maximize()
+
 
 class MainPanel(wx.Panel):
     '''
@@ -40,6 +42,7 @@ class MainPanel(wx.Panel):
         self.login.Show()
         self.SetSizer(self.v_box)
         self.Layout()
+
 
 class LoginPanel(wx.Panel):
     '''
@@ -223,6 +226,7 @@ class LoginPanel(wx.Panel):
         '''
         self.Hide()
         self.parent.loby.Show()
+
 
 class RegisterPanel(wx.Panel):
     '''
@@ -408,6 +412,7 @@ class RegisterPanel(wx.Panel):
         self.Hide()
         self.parent.login.Show()
 
+
 class LobyPanel(wx.Panel):
 
     def __init__(self, parent, frame):
@@ -554,6 +559,7 @@ class LobyPanel(wx.Panel):
         '''
         wx.MessageBox(msg, 'Trive Error', wx.OK | wx.ICON_HAND )
 
+
 class ScrollFilesPanel(scrolled.ScrolledPanel):
     '''
         class that show all the top level files on the screen
@@ -664,6 +670,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         fileName = widget.GetName()
         self.PopupMenu(OptionsMenu(self, self.getType(fileName)))
 
+
 class AccountPanel(wx.Panel):
 
     def __init__(self, parent, frame):
@@ -763,6 +770,7 @@ class AccountPanel(wx.Panel):
 
     def handle_logOut(self, event):
         pass
+
 
 class OptionsMenu(wx.Menu):
 
