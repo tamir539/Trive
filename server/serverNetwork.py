@@ -16,7 +16,7 @@ class ServerCom:
         self.servSoc = None
         self.port = port
         self.q = q
-        self.socs = []
+        self.socs = {}  #socket -> his ip adress
         threading.Thread(target=self.recv_msg).start()
 
     def send_msg(self, soc, msg):
@@ -53,26 +53,24 @@ class ServerCom:
         self.servSoc.listen(3)
 
         while True:
-            rlist, wlist, xlist = select.select(self.socs + [self.servSoc], self.socs, [],0.3)
+            rlist, wlist, xlist = select.select(list(self.socs.keys())+[self.servSoc],list(self.socs.keys()),[],0.3)
             for current_socket in rlist:
                 if current_socket is self.servSoc:
                     # new client
                     client, address = self.servSoc.accept()
-                    print(f'{address[1]} - connected')
-                    self.socs.append(client)
+                    print(f'{address[0]} - connected')
+                    self.socs[current_socket] = address[1]
                 else:
                     # receive data from exist client
                     try:
                         msg_len = current_socket.recv(2).decode()
-                        print('len - ', msg_len)
                         msg = current_socket.recv(int(msg_len)).decode()
-                        print('msg - ',msg)
                         self.send_file(msg, current_socket)
                     except Exception as e:
                         print('in recv - ', str(e))
-                        self.socs.remove(current_socket)
+                        del self.socs[current_socket]
                     else:
-                        self.q.put((msg, current_socket))
+                        self.q.put((msg, self.socs[current_socket]))
 
     def recv_file(self, file_len, file_name):
         '''
@@ -113,5 +111,3 @@ class ServerCom:
 if __name__ == '__main__':
     q = queue.Queue()
     soc = ServerCom(1111, q)
-    time.sleep(2)
-    soc.recv_file(226, 'try.txt')

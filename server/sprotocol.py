@@ -1,3 +1,8 @@
+'''
+all the protocol functions of the server
+'''
+
+
 def create_all_files_msg(msg):
     '''
 
@@ -5,6 +10,7 @@ def create_all_files_msg(msg):
     :return: builds and return the msg by the protocol
     '''
     return create_response('04', msg)
+
 
 def unpack_msg(msg):
     '''
@@ -22,6 +28,7 @@ def unpack_msg(msg):
     args = msg.split('&')
     return command_by_code[code], args
 
+
 def create_download_response_msg(file_len, port):
     '''
 
@@ -32,6 +39,7 @@ def create_download_response_msg(file_len, port):
     msg = port + '&' + file_len
     return create_response('06', msg)
 
+
 def create_login_response_msg(msg):
     '''
 
@@ -39,6 +47,7 @@ def create_login_response_msg(msg):
     :return:build and return the msg by the protocol
     '''
     return create_response('02', msg)
+
 
 def create_register_response_msg(msg):
     '''
@@ -48,6 +57,7 @@ def create_register_response_msg(msg):
     '''
     return create_response('03', msg)
 
+
 def create_upload_file_response_msg(msg):
     '''
 
@@ -55,6 +65,7 @@ def create_upload_file_response_msg(msg):
     :return:build and return the msg by the protocol
     '''
     return create_response('05', msg)
+
 
 def create_delete_file_response_msg(msg):
     '''
@@ -64,6 +75,7 @@ def create_delete_file_response_msg(msg):
     '''
     return create_response('07', msg)
 
+
 def create_insert_file_to_folder_response_msg(msg):
     '''
 
@@ -71,6 +83,7 @@ def create_insert_file_to_folder_response_msg(msg):
     :return:build and return the msg by the protocol
     '''
     return create_response('08', msg)
+
 
 def create_create_folder_response_msg(msg):
     '''
@@ -80,6 +93,7 @@ def create_create_folder_response_msg(msg):
     '''
     return create_response('09', msg)
 
+
 def create_change_detail_response_msg(msg):
     '''
 
@@ -87,6 +101,7 @@ def create_change_detail_response_msg(msg):
     :return:build and return the msg by the protocol
     '''
     return create_response('10', msg)
+
 
 def create_share_file_response_msg(msg):
     '''
@@ -96,6 +111,7 @@ def create_share_file_response_msg(msg):
     '''
     return create_response('11', msg)
 
+
 def create_change_file_name_response_msg(msg):
     '''
 
@@ -104,6 +120,7 @@ def create_change_file_name_response_msg(msg):
     '''
     return create_response('13', msg)
 
+
 def create_response(code, msg):
     '''
 
@@ -111,11 +128,3 @@ def create_response(code, msg):
     :param msg:msg to the client
     :return:create and return response msg by the protocol
     '''
-
-    msg = code + msg
-    return msg
-
-
-if __name__ == '__main__':
-    msg = input('enter massage to unpack: ')
-    print(unpack_msg(msg))

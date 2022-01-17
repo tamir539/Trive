@@ -1,14 +1,17 @@
 import wx
 import wx.lib.scrolledpanel as scrolled
+from pubsub import pub
+import queue
 
 
 class MyFrame(wx.Frame):
-    def __init__(self, parent=None):
+    def __init__(self, q, parent=None):
         super(MyFrame, self).__init__(parent, title="Trive", size=wx.DisplaySize())
         # create main panel - to put on the others panels
         main_panel = MainPanel(self)
         box = wx.BoxSizer(wx.VERTICAL)
         box.Add(main_panel, 1, wx.EXPAND)
+        self.q = q
 
         # arrange the frame
         self.SetSizer(box)
@@ -65,6 +68,10 @@ class LoginPanel(wx.Panel):
         #add the Trive logo
         png = wx.Image('draws\\logo.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         trive = wx.StaticBitmap(self, -1, png, (650, -2), (png.GetWidth(), png.GetHeight()))
+
+        self.flag = 'login'
+
+        pub.subscribe(self.handle_answer, self.flag)  # talk with the logic client
 
         #font for static text
         self.font = wx.Font(22, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
@@ -199,6 +206,7 @@ class LoginPanel(wx.Panel):
             self.errorMsg('You must enter username and password!')
         else:
             self.username = username
+            self.frame.q.put((self.flag, [username, password]))
 
     def handle_reg(self,event):
         '''
@@ -227,6 +235,8 @@ class LoginPanel(wx.Panel):
         self.Hide()
         self.parent.loby.Show()
 
+    def handle_answer(self, massage):
+        print('in login - ', massage)
 
 class RegisterPanel(wx.Panel):
     '''
@@ -251,6 +261,10 @@ class RegisterPanel(wx.Panel):
         # add the Trive logo
         png = wx.Image('draws\\logo.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         logo = wx.StaticBitmap(self, -1, png, (650, -2), (png.GetWidth(), png.GetHeight()))
+
+        self.flag = 'register'
+
+        pub.subscribe(self.handle_answer, self.flag)    #talk with the logic client
 
         # font for the text
         self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
@@ -402,6 +416,7 @@ class RegisterPanel(wx.Panel):
         else:
             self.email = email
             self.username = username
+            self.frame.q.put((self.flag ,[email, username, password]))
 
     def handle_login(self, event):
         '''
@@ -411,6 +426,10 @@ class RegisterPanel(wx.Panel):
         '''
         self.Hide()
         self.parent.login.Show()
+
+    def handle_answer(self, massage):
+        print(massage)
+
 
 
 class LobyPanel(wx.Panel):
