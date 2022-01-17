@@ -55,7 +55,7 @@ class ClientCom:
             print(f'in send msg - {str(e)}')
             self.soc.close()
 
-    def sendFile(self, filePath):
+    def send_file(self, filePath):
         '''
 
         :param filePath: path for file
@@ -70,7 +70,7 @@ class ClientCom:
             print(f'in send file - {str(e)}')
             self.soc.close()
 
-    def recvFile(self, fileLen, fileName):
+    def recv_file(self, fileLen, fileName):
         '''
 
         :return:recv file from the server, download the file to downloads and add msg to q when finish recive
@@ -97,7 +97,6 @@ class ClientCom:
             path = os.path.expanduser('~/Downloads')
             with open(f'{path}\\{fileName}', 'wb') as f:
                 f.write(file_data)
-
 
 
 if __name__ == '__main__':
