@@ -19,7 +19,7 @@ class ClientCom:
         self.serverPort = serverPort
         self.q = q
         self.soc = socket.socket()
-        threading.Thread(target = self.__recv_msg__).start()
+        threading.Thread(target = self.__recv_msg__, daemon=True).start()
 
     def __recv_msg__(self):
         '''
@@ -37,6 +37,8 @@ class ClientCom:
                     msg = self.soc.recv(msg_len).decode()
                 except Exception as e:
                     print(f'in recv msg 2 - {str(e)}')
+                    self.soc.close()
+                    exit()
                 else:
                     self.q.put(msg)
 
@@ -51,6 +53,7 @@ class ClientCom:
             self.soc.send(msg.encode())
         except Exception as e:
             print(f'in send msg - {str(e)}')
+            self.soc.close()
 
     def sendFile(self, filePath):
         '''
@@ -60,10 +63,12 @@ class ClientCom:
         '''
         file = open(filePath, 'rb')
         data = file.read()
+        print(len(data))
         try:
             self.soc.send(data)
         except Exception as e:
             print(f'in send file - {str(e)}')
+            self.soc.close()
 
     def recvFile(self, fileLen, fileName):
         '''
@@ -84,6 +89,7 @@ class ClientCom:
                     break
             except Exception as e:
                 print(f'in recv file - {str(e)}')
+                self.soc.close()
                 file_data = None
                 break
 
@@ -98,6 +104,5 @@ if __name__ == '__main__':
     q = queue.Queue()
     soc = ClientCom('127.0.0.1', 1111, q)
     time.sleep(1)
-    soc.send_msg('C:\\ctf\\nice_netcat.txt')
-    time.sleep(1)
-    soc.recvFile(226, 'try.txt')
+    soc.sendFile('C:\\ctf\\nice_netcat.txt')
+

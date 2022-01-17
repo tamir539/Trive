@@ -2,6 +2,8 @@ import socket
 import select
 import queue
 import threading
+import time
+import os
 
 class ServerCom:
 
@@ -70,12 +72,46 @@ class ServerCom:
                         print('in recv - ', str(e))
                         self.socs.remove(current_socket)
                     else:
-                        self.q.put(msg)
+                        self.q.put((msg, current_socket))
 
-    def recv_file(self):
-        pass
+    def recv_file(self, file_len, file_name):
+        '''
+
+        :param file_len:length of the file to recive
+        :param file_name: name of the file
+        :return: recive all the file data, save it in the uploads folder, notify with msg in q when finish
+        '''
+        file_data = bytearray()
+        # recv all the data
+        while len(file_data) < file_len:
+            print(1)
+            size = file_len - len(file_data)
+            try:
+                if size >= 1024:
+                    file_data.extend(self.socs[0].recv(1024))
+                else:
+                    file_data.extend(self.socs[0].recv(size))
+                    break
+            except Exception as e:
+                print(f'in recv file - {str(e)}')
+                file_data = None
+                break
+
+        if file_data is not None:
+            path = 'C:\\Trive\\uploads'
+            try:
+                os.makedirs(path)
+            except Exception as e:
+                print(f'in recv file 2 - {str(e)}')
+            else:
+                with open(path+'\\'+file_name, 'wb') as f:
+                    f.write(file_data)
+                self.q.put((f'got-{file_name}', soc))
+                print(self.q.get())
 
 
 if __name__ == '__main__':
     q = queue.Queue()
     soc = ServerCom(1111, q)
+    time.sleep(2)
+    soc.recv_file(226, 'try.txt')
