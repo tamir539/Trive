@@ -35,6 +35,7 @@ class ClientCom:
                 try:
                     msg_len = int(self.soc.recv(2).decode())
                     msg = self.soc.recv(msg_len).decode()
+                    print(msg)
                 except Exception as e:
                     print(f'in recv msg 2 - {str(e)}')
                     self.soc.close()

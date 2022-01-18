@@ -239,8 +239,18 @@ class LoginPanel(wx.Panel):
         self.Hide()
         self.parent.loby.Show()
 
-    def handle_answer(self, massage):
-        print('in login - ', massage)
+    def handle_answer(self, answer):
+        '''
+
+        :param answer: answer from the server
+        :return: if answer is "ok" go to the lobby, otherwise error msg
+        '''
+        if answer == 'no':
+            self.errorMsg('Wrong username or password')
+        else:
+            #move to loby
+            self.Hide()
+            self.parent.loby.Show()
 
 
 class RegisterPanel(wx.Panel):
@@ -432,8 +442,13 @@ class RegisterPanel(wx.Panel):
         self.Hide()
         self.parent.login.Show()
 
-    def handle_answer(self, massage):
-        print(massage)
+    def handle_answer(self, answer):
+        if answer == 'un':
+            self.errorMsg('This username is already taken')
+        else:
+            wx.MessageBox(f'Welcome {self.username}!', 'Trive', wx.OK | wx.ICON_NONE)
+            self.Hide()
+            self.parent.login.Show()
 
 
 class LobyPanel(wx.Panel):

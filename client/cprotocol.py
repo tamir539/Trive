@@ -9,9 +9,9 @@ def unpack(msg):
     :param msg:msg from the server
     :return: unpack the massage by the protocol and returns tuple with the command and the parameters to the client
     '''
-    command_by_code = {'02': 'login_answer', '03': 'register_answer', '04': 'send_all_files', '05': 'upload_answer',
-                       '06': 'download_answer', '07': 'delete_answer', '08': 'add_to_folder_answer', '09': 'create_folder_answer',
-                       '10': 'change_details_answer', '11': 'share_answer', '13': 'change_name_answer', '14': 'forgot_password_answer'}
+    command_by_code = {'02': 'login', '03': 'register', '04': 'send_all_files', '05': 'upload',
+                       '06': 'download', '07': 'delete', '08': 'add_to_folder', '09': 'create_folder',
+                       '10': 'change_details', '11': 'share', '13': 'change_name', '14': 'forgot_password'}
     code = msg[:2]
     msg = msg[2:]
     args = msg.split('&')
@@ -43,8 +43,7 @@ def create_register_msg(username, password, email):
     return msg
 
 
-
-def create_all_file_recive_answer_msg(ans):
+def create_all_file_recive_msg(ans):
     '''
 
     :param ans:answer

@@ -26,7 +26,7 @@ class ServerCom:
         :param msg: string
         :return: sends the string to the socket
         '''
-        if soc in self.socs:
+        if soc in self.socs.keys():
             try:
                 soc.send(str(len(msg)).encode())
                 soc.send(msg.encode())
@@ -70,7 +70,7 @@ class ServerCom:
                         print('in recv - ', str(e))
                         del self.socs[current_socket]
                     else:
-                        self.q.put((msg, self.socs[current_socket]))
+                        self.q.put((msg, current_socket))
 
     def recv_file(self, file_len, file_name):
         '''

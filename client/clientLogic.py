@@ -14,7 +14,6 @@ def check_network_q(network_q):
     :return: check if there is a new massage
     '''
     while True:
-        print(1)
         #get the msg from the network
         msg = network_q.get()
         #do decryption
@@ -23,14 +22,16 @@ def check_network_q(network_q):
         msg_after_unpack = prot.unpack(msg)
         #the command from the server
         command = msg_after_unpack[0]
+        print('comm - ', command)
         #the arguments from the server
         args = msg_after_unpack[1]
+        print(args)
         if command == 'send_all_files':
             get_all_files(args)
         elif command == 'download_answer':
             download_answer(args)
         else:
-            wx.CallAfter(pub.sendMessage, command, massage = msg)
+            wx.CallAfter(pub.sendMessage, command, answer = args[0])
 
 
 def check_graphic_q(graphic_q):

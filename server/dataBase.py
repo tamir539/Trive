@@ -100,10 +100,13 @@ class DB:
         :param username:
         :return: password hash of username
         '''
-        sql = f"SELECT Password from {self.usersTable} WHERE Username == '{username}'"
-        self.cursor.execute(sql)
-        password = self.cursor.fetchall()
-        return password[0][0]
+        if self.check_username_exist(username):
+            sql = f"SELECT Password from {self.usersTable} WHERE Username == '{username}'"
+            self.cursor.execute(sql)
+            password = self.cursor.fetchall()
+            return password[0][0]
+        else:
+            return
 
     def check_ip_exist_for_username(self, username, ip):
         '''

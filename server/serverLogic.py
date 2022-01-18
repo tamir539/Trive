@@ -2,6 +2,8 @@ import queue
 import threading
 import sprotocol as prot
 from serverNetwork import ServerCom
+from dataBase import  DB
+import hashlib
 
 
 def check_network_q(network_q):
@@ -10,7 +12,7 @@ def check_network_q(network_q):
     :param q:network queue
     :return: check if there is a new massage
     '''
-    func_by_command = {'login': handle_login, 'register': handle_register, 'send_all_files': handle_send_all_files, 'upload': handle_upload,
+    func_by_command = {'login': handle_login, 'register': handle_register, 'upload': handle_upload,
                        'download' : handle_download, 'delete': handle_delete, 'add_to_folder': handle_add_to_folder,
                        'create_folder':handle_create_folder, 'change_details': handle_change_details, 'share': handle_share,
                        'change_name': handle_change_file_name, 'forgot_password': handle_forgot_password}
@@ -18,8 +20,12 @@ def check_network_q(network_q):
         msg = network_q.get()
         #do decryption
         msg_after_unpack = prot.unpack_msg(msg[0])
+        #the command that the client requested
         command = msg_after_unpack[0]
+        #the parameters the client gave
         args = msg_after_unpack[1]
+        #the socket
+        args.append(msg[1])
         func_by_command[command](args)
 
 
@@ -29,8 +35,24 @@ def handle_login(args):
     :param args: args to the login
     :return: check the login and returns answer to the client
     '''
+    myDB = DB('Trive')
     print('in handle login')
-
+    username = args[0]
+    password = args[1]
+    soc = args[2]
+    #send username and password to decryption
+    hashed_password = myDB.getPasswordOfUser(username)
+    answer = 'no'
+    if myDB.check_username_exist(username) and password == hashed_password:#hashlib.md5(password.encode()) == hashed_password:
+        answer = 'ok'
+        username_connected[soc] = username
+        handle_send_all_files(username)
+    #send the answer to encryption
+    #encryption
+    #build the msg by the protocol
+    ans_to_send = prot.create_login_response_msg(answer)
+    #send the answer
+    network.send_msg(soc, ans_to_send)
 
 
 def handle_register(args):
@@ -41,11 +63,28 @@ def handle_register(args):
     '''
     print('in handle register')
 
+    myDB = DB('Trive')
 
-def handle_send_all_files(args):
+    username = args[0]
+    password = args[1]
+    email = args[2]
+    soc = args[3]
+    # send username and password to decryption
+    answer = 'un'
+    if myDB.add_user(username, email, password):
+        answer = 'ok'
+    # send the answer to encryption
+    # encryption
+    # build the msg by the protocol
+    ans_to_send = prot.create_register_response_msg(answer)
+    # send the answer
+    network.send_msg(soc, ans_to_send)
+
+
+def handle_send_all_files(username):
     '''
 
-    :param args:username
+    :param username:username
     :return: send all his files to the client
     '''
 
@@ -127,5 +166,6 @@ def handle_forgot_password(args):
 network_q = queue.Queue()
 
 network = ServerCom(1111,network_q)
+username_connected = {}     #socket -> the username that are now connected
 
 threading.Thread(target= check_network_q, args= (network_q, )).start()
