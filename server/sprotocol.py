@@ -128,3 +128,4 @@ def create_response(code, msg):
     :param msg:msg to the client
     :return:create and return response msg by the protocol
     '''
+    return code+msg
