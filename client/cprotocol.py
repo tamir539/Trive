@@ -155,10 +155,12 @@ def create_change_file_name_request_msg(file_path, new_name):
     return msg
 
 
-def create_forgot_password_request_msg():
+def create_forgot_password_request_msg(email):
     '''
 
+    :param: email
     :return:create the massage by the protocol
     '''
     code = '14'
-    return code
+    msg = code+email
+    return msg

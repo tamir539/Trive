@@ -14,6 +14,7 @@ def check_network_q(network_q):
     :return: check if there is a new massage
     '''
     while True:
+        print(1)
         #get the msg from the network
         msg = network_q.get()
         #do decryption
@@ -38,9 +39,9 @@ def check_graphic_q(graphic_q):
     :param graphic_q:graphic q
     :return: check if there is a new massage
     '''
-    print('in')
-    func_by_command = {'register': send_register, 'login': send_login}
+    func_by_command = {'register': send_register, 'login': send_login, 'forgot_password': send_forgot_password}
     while True:
+        print(3)
         msg = graphic_q.get()
         flag = msg[0]
         args = msg[1]
@@ -75,6 +76,7 @@ def start_graphic(graphic_q):
     app = wx.App()
     frame = graphic.MyFrame(graphic_q)
     app.MainLoop()
+    print(9)
 
 
 def send_register(args):
@@ -105,6 +107,21 @@ def send_login(args):
     password = args[1]
     # create the msg by the protocol
     msg_by_protocol = prot.create_login_msg(username, password)
+    # take to encryption
+    # encryption
+    # send the msg
+    network.send_msg(msg_by_protocol)
+
+
+def send_forgot_password(args):
+    '''
+
+    :param args: email for the 1 time password
+    :return: send forgot_password massage to the server
+    '''
+    email = args[0]
+    # create the msg by the protocol
+    msg_by_protocol = prot.create_forgot_password_request_msg(email)
     # take to encryption
     # encryption
     # send the msg
