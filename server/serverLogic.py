@@ -4,6 +4,8 @@ import sprotocol as prot
 from serverNetwork import ServerCom
 from dataBase import  DB
 import hashlib
+import smtplib
+import random
 
 
 def check_network_q(network_q):
@@ -161,6 +163,36 @@ def handle_forgot_password(args):
     :param args:email of the user
     :return: send 1 time password to the email
     '''
+    myDB = DB('Trive')
+
+    sender = 'trive933@gmail.com'
+    username = args[0]
+    if myDB.check_username_exist(username):
+        to = myDB.get_email_of_user(username)
+
+        #generate 1 time password
+        password = 'password1'
+
+        SUBJECT = "Trive reset password"
+
+        TEXT = f"Your 1 time password is: {password}"
+
+        message = """\
+        From: %s
+        To: %s
+        Subject: %s
+    
+        %s
+        """ % (sender, to, SUBJECT, TEXT)
+
+        send = smtplib.SMTP('smtp.gmail.com', 587)
+        send.ehlo()
+        send.starttls()
+        send.login(sender, 'Triveamir539')
+        send.sendmail(sender, to, password)#{password}')
+        print('email Sent')
+
+
 
 #queue to get massages from the network
 network_q = queue.Queue()
@@ -169,3 +201,4 @@ network = ServerCom(1111,network_q)
 username_connected = {}     #socket -> the username that are now connected
 
 threading.Thread(target= check_network_q, args= (network_q, )).start()
+

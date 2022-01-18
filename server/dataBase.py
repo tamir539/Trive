@@ -108,6 +108,21 @@ class DB:
         else:
             return
 
+    def get_email_of_user(self, username):
+        '''
+
+        :param username:
+        :return: email of username
+        '''
+        if self.check_username_exist(username):
+            sql = f"SELECT Email from {self.usersTable} WHERE Username == '{username}'"
+            self.cursor.execute(sql)
+            email = self.cursor.fetchall()
+            return email[0][0]
+        else:
+            return
+
+
     def check_ip_exist_for_username(self, username, ip):
         '''
 
