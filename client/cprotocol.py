@@ -112,22 +112,14 @@ def create_create_folder_request_msg(folder_path):
     return msg
 
 
-def create_change_details_request_msg(email = '', password = ''):
+def create_change_details_request_msg(new_value):
     '''
 
-    :param password: the new password(optional)
-    :param email: the new email(optional)
+    :param new_value: the new value
     :return: creates the massage by the protocol
     '''
     code = '10'
-    msg = code
-    if email != '':
-        msg += 'em:' + email
-    if password != '':
-        if email != '':
-            msg += '&' + 'pw:' + password
-        else:
-            msg += 'pw:' + password
+    msg = code + new_value
     return msg
 
 

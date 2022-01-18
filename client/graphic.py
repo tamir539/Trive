@@ -777,7 +777,7 @@ class AccountPanel(wx.Panel):
         self.createBtn(self.optionsSizer, "Change password", self.handle_changePassword)
 
         # create the change email button
-        self.createBtn(self.optionsSizer, "Change email", self.handle_changeEmail)
+        self.createBtn(self.optionsSizer, "Change email", self.handle_change_email)
 
         # create the logout email button
         self.createBtn(self.optionsSizer, "Logout", self.handle_logOut)
@@ -801,13 +801,32 @@ class AccountPanel(wx.Panel):
         sizer.AddSpacer(50)
 
     def handle_changePassword(self, event):
-        pass
+        '''
 
-    def handle_changeEmail(self, event):
-        pass
+        :param event:change password pressed
+        :return: get the new password and notify the logic
+        '''
+        dlg = wx.TextEntryDialog(None, 'Enter new Password: ', 'Change Password', '',style=wx.TextEntryDialogStyle)
+
+        if dlg.ShowModal() == wx.ID_OK:
+            new_password = dlg.GetValue()
+            self.frame.q.put(('change_detail', [f'password:{new_password}']))
+
+    def handle_change_email(self, event):
+        '''
+
+        :param event:change email pressed
+        :return: get the new email and notify the logic
+        '''
+        dlg = wx.TextEntryDialog(None, 'Enter new Email: ', 'Change Email', '', style=wx.TextEntryDialogStyle)
+
+        if dlg.ShowModal() == wx.ID_OK:
+            new_email = dlg.GetValue()
+            self.frame.q.put(('change_detail', [f'email:{new_email}']))
 
     def handle_logOut(self, event):
         pass
+
 
 
 class OptionsMenu(wx.Menu):

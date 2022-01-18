@@ -83,6 +83,66 @@ def handle_register(args):
     network.send_msg(soc, ans_to_send)
 
 
+def handle_change_details(args):
+    '''
+
+    :param args:new detailes to update
+    :return:try to update the details and return answer to the client
+    '''
+    #connect to the dataBase
+    myDB = DB('Trive')
+
+    #the field to change
+    change = args[0].split(':')[0]
+    #the new value for the feild
+    new_value = args[0].split(':')[1]
+    soc = args[1]
+    username = username_connected[soc]
+    if change == 'email':
+        myDB.change_email(username, new_value)
+    else:
+        myDB.change_password(username, new_value)
+
+
+def handle_forgot_password(args):
+    '''
+
+    :param args:username of the user
+    :return: send 1 time password to the email
+    '''
+    myDB = DB('Trive')
+
+    sender = 'trive933@gmail.com'
+    username = args[0]
+    if myDB.check_username_exist(username):
+        to = myDB.get_email_of_user(username)
+
+        # generate 1 time password
+        password = random.randint(1000000, 9999999)
+
+        # update the password in the data base
+        myDB.change_password(username, password)
+
+        SUBJECT = "Trive reset password"
+
+        TEXT = f"Your 1 time password is: {password}"
+
+        message = """\
+        From: %s
+        To: %s
+        Subject: %s
+
+        %s
+        """ % (sender, to, SUBJECT, TEXT)
+
+        send = smtplib.SMTP('smtp.gmail.com', 587)
+        send.ehlo()
+        send.starttls()
+        send.login(sender, 'Triveamir539')
+        send.sendmail(sender, to, password)  # {password}')
+        print('email Sent')
+
+
 def handle_send_all_files(username):
     '''
 
@@ -133,14 +193,6 @@ def handle_create_folder(args):
     '''
 
 
-def handle_change_details(args):
-    '''
-
-    :param args:new detailes to update
-    :return:try to update the details and return answer to the client
-    '''
-
-
 def handle_share(args):
     '''
 
@@ -157,47 +209,11 @@ def handle_change_file_name(args):
     '''
 
 
-def handle_forgot_password(args):
-    '''
-
-    :param args:email of the user
-    :return: send 1 time password to the email
-    '''
-    myDB = DB('Trive')
-
-    sender = 'trive933@gmail.com'
-    username = args[0]
-    if myDB.check_username_exist(username):
-        to = myDB.get_email_of_user(username)
-
-        #generate 1 time password
-        password = 'password1'
-
-        SUBJECT = "Trive reset password"
-
-        TEXT = f"Your 1 time password is: {password}"
-
-        message = """\
-        From: %s
-        To: %s
-        Subject: %s
-    
-        %s
-        """ % (sender, to, SUBJECT, TEXT)
-
-        send = smtplib.SMTP('smtp.gmail.com', 587)
-        send.ehlo()
-        send.starttls()
-        send.login(sender, 'Triveamir539')
-        send.sendmail(sender, to, password)#{password}')
-        print('email Sent')
-
-
 
 #queue to get massages from the network
 network_q = queue.Queue()
 
-network = ServerCom(1111,network_q)
+network = ServerCom(1111, network_q)
 username_connected = {}     #socket -> the username that are now connected
 
 threading.Thread(target= check_network_q, args= (network_q, )).start()

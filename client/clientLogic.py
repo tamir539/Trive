@@ -40,31 +40,13 @@ def check_graphic_q(graphic_q):
     :param graphic_q:graphic q
     :return: check if there is a new massage
     '''
-    func_by_command = {'register': send_register, 'login': send_login, 'forgot_password': send_forgot_password}
+    func_by_command = {'register': send_register, 'login': send_login, 'forgot_password': send_forgot_password, 'change_detail': send_change_detail}
     while True:
         msg = graphic_q.get()
         flag = msg[0]
         args = msg[1]
         func_by_command[flag](args)
         #wx.CallAfter(pub.sendMessage, command, massage = args[0])
-
-
-def get_all_files(args):
-    '''
-
-    :param args: the files structure from the server
-    :return: builds the structure back and deliver to the graphic
-    '''
-    pass
-
-
-def download_answer(args):
-    '''
-
-    :param args:details for download file
-    :return: create new network to recive the file and notify the graphic when finish
-    '''
-    pass
 
 
 def start_graphic(graphic_q):
@@ -126,6 +108,40 @@ def send_forgot_password(args):
     # encryption
     # send the msg
     network.send_msg(msg_by_protocol)
+
+
+def send_change_detail(args):
+    '''
+
+    :param args:the new email or password
+    :return: send the server msg to chande detail
+    '''
+    new_value = args[0]
+    #create the msg by the protocol
+    msg_by_protocol = prot.create_change_details_request_msg(new_value)
+    #take to encryption
+    #decryption
+    network.send_msg(msg_by_protocol)
+
+
+def get_all_files(args):
+    '''
+
+    :param args: the files structure from the server
+    :return: builds the structure back and deliver to the graphic
+    '''
+    pass
+
+
+def download_answer(args):
+    '''
+
+    :param args:details for download file
+    :return: create new network to recive the file and notify the graphic when finish
+    '''
+    pass
+
+
 
 #queue to get massages from the network
 network_q = queue.Queue()
