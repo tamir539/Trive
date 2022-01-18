@@ -41,7 +41,6 @@ def check_graphic_q(graphic_q):
     '''
     func_by_command = {'register': send_register, 'login': send_login, 'forgot_password': send_forgot_password}
     while True:
-        print(3)
         msg = graphic_q.get()
         flag = msg[0]
         args = msg[1]

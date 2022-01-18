@@ -97,3 +97,4 @@ class ClientCom:
             path = os.path.expanduser('~/Downloads')
             with open(f'{path}\\{fileName}', 'wb') as f:
                 f.write(file_data)
+

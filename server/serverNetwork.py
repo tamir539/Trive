@@ -48,6 +48,7 @@ class ServerCom:
             print(f'in send file - {str(e)}')
 
     def recv_msg(self):
+
         self.servSoc = socket.socket()
         self.servSoc.bind(('0.0.0.0',self.port))
         self.servSoc.listen(3)

@@ -48,6 +48,7 @@ class MainPanel(wx.Panel):
 
 
 class LoginPanel(wx.Panel):
+
     '''
         class that create the login layout
     '''
