@@ -238,6 +238,7 @@ class LoginPanel(wx.Panel):
     def handle_answer(self, massage):
         print('in login - ', massage)
 
+
 class RegisterPanel(wx.Panel):
     '''
         class that create the register layout
@@ -429,7 +430,6 @@ class RegisterPanel(wx.Panel):
 
     def handle_answer(self, massage):
         print(massage)
-
 
 
 class LobyPanel(wx.Panel):

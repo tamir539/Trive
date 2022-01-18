@@ -97,11 +97,3 @@ class ClientCom:
             path = os.path.expanduser('~/Downloads')
             with open(f'{path}\\{fileName}', 'wb') as f:
                 f.write(file_data)
-
-
-if __name__ == '__main__':
-    q = queue.Queue()
-    soc = ClientCom('127.0.0.1', 1111, q)
-    time.sleep(1)
-    soc.sendFile('C:\\ctf\\nice_netcat.txt')
-

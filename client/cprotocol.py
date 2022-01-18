@@ -9,7 +9,9 @@ def unpack(msg):
     :param msg:msg from the server
     :return: unpack the massage by the protocol and returns tuple with the command and the parameters to the client
     '''
-    command_by_code = {}
+    command_by_code = {'02': 'login_answer', '03': 'register_answer', '04': 'send_all_files', '05': 'upload_answer',
+                       '06': 'download_answer', '07': 'delete_answer', '08': 'add_to_folder_answer', '09': 'create_folder_answer',
+                       '10': 'change_details_answer', '11': 'share_answer', '13': 'change_name_answer', '14': 'forgot_password_answer'}
     code = msg[:2]
     msg = msg[2:]
     args = msg.split('&')

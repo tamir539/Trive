@@ -59,13 +59,12 @@ class ServerCom:
                     # new client
                     client, address = self.servSoc.accept()
                     print(f'{address[0]} - connected')
-                    self.socs[current_socket] = address[1]
+                    self.socs[client] = address[1]
                 else:
                     # receive data from exist client
                     try:
                         msg_len = current_socket.recv(2).decode()
                         msg = current_socket.recv(int(msg_len)).decode()
-                        self.send_file(msg, current_socket)
                     except Exception as e:
                         print('in recv - ', str(e))
                         del self.socs[current_socket]
@@ -79,6 +78,7 @@ class ServerCom:
         :param file_name: name of the file
         :return: recive all the file data, save it in the uploads folder, notify with msg in q when finish
         '''
+        print('22222')
         file_data = bytearray()
         # recv all the data
         while len(file_data) < file_len:
@@ -106,8 +106,3 @@ class ServerCom:
                     f.write(file_data)
                 self.q.put((f'got-{file_name}', soc))
                 print(self.q.get())
-
-
-if __name__ == '__main__':
-    q = queue.Queue()
-    soc = ServerCom(1111, q)
