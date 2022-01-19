@@ -7,6 +7,7 @@ import hashlib
 import smtplib
 import random
 import Sfile
+import os
 
 
 def check_network_q(network_q):
@@ -87,6 +88,7 @@ def handle_register(args):
     answer = 'un'
     if myDB.add_user(username, email, password):
         answer = 'ok'
+        os.makedirs(f'C:\\Trive\\{username}')
     # send the answer to encryption
     # encryption
     # build the msg by the protocol
