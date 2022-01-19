@@ -256,6 +256,7 @@ class LoginPanel(wx.Panel):
             self.errorMsg('This ip has been blocked!')
             self.frame.Destroy()
 
+
 class RegisterPanel(wx.Panel):
     '''
         class that create the register layout
@@ -547,6 +548,8 @@ class LobyPanel(wx.Panel):
         print(path)
         if self.getType(path.split('\\')[-1]) == 'no':
             self.errorMsg('Trive doesnt support this type of files')
+        else:
+            self.frame.q.put(('upload', [path]))
 
     def getType(self, fileName):
         '''
@@ -571,7 +574,12 @@ class LobyPanel(wx.Panel):
         :param event:  means  the upload file btn pressed
         :return:
         '''
-        pass
+        dlg = wx.TextEntryDialog(None, 'Enter name for the folder: ', 'Create folder', '',style=wx.TextEntryDialogStyle)
+
+        if dlg.ShowModal() == wx.ID_OK:
+            name = dlg.GetValue()
+            path = '\\' + name   #calculate the virtual path
+            self.frame.q.put(('create_folder', [path]))
 
     def handle_account(self, event):
         '''
@@ -617,7 +625,11 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         scrolled.ScrolledPanel.__init__(self, parent,pos =((screenDepth - panelDepth)/2, 200), size=(panelDepth, panelLength ), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
-        self.files = ['a.txt','folder1', 'a.py', 'cat.jpg']
+        self.files = ['blocked_ips.txt','folder1', 'a.py', 'cat.jpg']
+
+        pub.subscribe(self.download_ans, 'finish_download')
+
+        self.path = ''      #the virtual path we are in
 
         self.__create_screen__()
 
@@ -675,6 +687,9 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         fileImg.Bind(wx.EVT_LEFT_DOWN, self.onFileClick)
         fileSizer.Add(fileImg, 0, wx.CENTER | wx.ALL)
 
+        if self.getType(file) == 'folder':
+            fileImg.Bind(wx.EVT_LISTBOX_DCLICK, self.get_into_folder)
+
         #add the name of the file\image\folder
         file_name = wx.StaticText(self, -1, label=file)
         file_name.SetForegroundColour(wx.WHITE)
@@ -709,7 +724,18 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         '''
         widget = event.GetEventObject()
         fileName = widget.GetName()
-        self.PopupMenu(OptionsMenu(self, self.getType(fileName)))
+        self.PopupMenu(OptionsMenu(self, self.getType(fileName),fileName, self.path))
+
+    def get_into_folder(self, event):
+        widget = event.GetEventObject()
+        folder_name = widget.GetName()
+        self.path += '\\' + folder_name
+
+    def download_ans(self, ans):
+        if ans == 'ok':
+            wx.MessageBox('downloaded successfully', 'Trive', wx.OK | wx.ICON_INFORMATION)
+        else:
+            wx.MessageBox('Downloaded error', 'Trive error', wx.OK | wx.ICON_ERROR)
 
 
 class AccountPanel(wx.Panel):
@@ -831,14 +857,15 @@ class AccountPanel(wx.Panel):
         pass
 
 
-
 class OptionsMenu(wx.Menu):
 
-    def __init__(self, parent, fileTyp):
+    def __init__(self, parent, file_typ, file_name, path):
         super(OptionsMenu, self).__init__()
 
         self.parent = parent
-        self.fileTyp = fileTyp
+        self.file_name = file_name
+        self.file_typ = file_typ
+        self.path = path
         self.createOptions()
 
     def createOptions(self):
@@ -849,7 +876,7 @@ class OptionsMenu(wx.Menu):
         self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
         self.Bind(wx.EVT_MENU, self.getChosen)
-        if self.fileTyp == 'file':
+        if self.file_typ == 'file':
             self.commandById = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Add to folder', 5: 'Edit' ,6: 'Delete'}
             self.funcById = {1: self.download, 2: self.rename, 3: self.share, 4:self.addToFolder, 5:self.edit, 6: self.delete}  #button id -> function that handle if the button selected
         else:
@@ -881,19 +908,32 @@ class OptionsMenu(wx.Menu):
         self.funcById[id]()
 
     def download(self):
-        print('Download')
+        self.parent.frame.q.put(('download', [self.path + '\\' + self.file_name]))
 
     def rename(self):
-        print('Rename')
+
+        dlg = wx.TextEntryDialog(None, f'Enter new name for the {self.file_typ}: ', f'Rename {self.file_typ}', '',style=wx.TextEntryDialogStyle)
+
+        if dlg.ShowModal() == wx.ID_OK:
+            name = dlg.GetValue()
+            self.parent.frame.q.put(('rename', [self.path + '\\' + self.file_name, name]))
 
     def share(self):
-        print('Share')
+
+        dlg = wx.TextEntryDialog(None, f'Enter username to share with: ', f'Share {self.file_typ}', '',style=wx.TextEntryDialogStyle)
+
+        if dlg.ShowModal() == wx.ID_OK:
+            username = dlg.GetValue()
+            self.parent.frame.q.put(('share', [self.path + '\\' + self.file_name, username]))
+            wx.MessageBox(f'If the username exists, he will get the {self.file_typ}', 'Trive', wx.OK)
 
     def addToFolder(self):
         print('add to folder')
 
     def delete(self):
-        print('delete')
+        question = wx.MessageBox('Are you sure you want to delete this file? ', 'Trive Error', wx.YES | wx.NO | wx.ICON_WARNING)
+        if question == wx.YES:
+            self.parent.frame.q.put(('delete', [self.path + '\\' + self.file_name]))
 
     def edit(self):
         print('edit')

@@ -6,6 +6,7 @@ from dataBase import  DB
 import hashlib
 import smtplib
 import random
+import Sfile
 
 
 def check_network_q(network_q):
@@ -177,6 +178,30 @@ def handle_download(args):
     :param args:relevante for the download
     :return: send the file to the client
     '''
+    soc = args[1]
+    path = 'C:\\Trive\\' + username_connected[soc]
+    path += args[0]
+
+    length = Sfile.get_file_length(path)
+
+    port = random.randint(1000, 65000)
+    while port in taken_ports:
+        port = random.randint(1000, 65000)
+
+    file_name = args[0][1:]
+
+    msg_by_protocol = prot.create_download_response_msg(str(length), str(port), file_name)
+    #encryption
+    network.send_msg(soc, msg_by_protocol)
+    q = queue.Queue()
+
+
+
+    send_netwotk = ServerCom(port, q)
+    send_netwotk.send_file(path)
+    print('sent file ', path)
+
+
 
 
 def handle_delete(args):
@@ -224,6 +249,8 @@ def handle_change_file_name(args):
 #queue to get massages from the network
 network_q = queue.Queue()
 trys_by_ip = {} #ip -> times that tryd to login from this ip
+taken_ports = []    #all the taken ports
+
 
 network = ServerCom(1111, network_q)
 username_connected = {}     #socket -> the username that are now connected

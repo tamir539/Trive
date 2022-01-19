@@ -29,14 +29,15 @@ def unpack_msg(msg):
     return command_by_code[code], args
 
 
-def create_download_response_msg(file_len, port):
+def create_download_response_msg(file_len, port, file_name):
     '''
 
     :param file_len:length of file
     :param port: port for the download server
+    :param file_name: file_name
     :return: builds and return the msg by the protocol
     '''
-    msg = port + '&' + file_len
+    msg = port + '&' + file_len + '&' + file_name
     return create_response('06', msg)
 
 

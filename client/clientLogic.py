@@ -24,14 +24,14 @@ def check_network_q(network_q):
         msg_after_unpack = prot.unpack(msg)
         #the command from the server
         command = msg_after_unpack[0]
-        print('comm - ', command)
+        print('comm -', command)
         #the arguments from the server
         args = msg_after_unpack[1]
         print(args)
         if command == 'send_all_files':
             get_all_files(args)
-        elif command == 'download_answer':
-            download_answer(args)
+        elif command == 'download':
+            threading.Thread(target= download_answer, args = (args, )).start()
         else:
             wx.CallAfter(pub.sendMessage, command, answer = args[0])
 
@@ -42,7 +42,9 @@ def check_graphic_q(graphic_q):
     :param graphic_q:graphic q
     :return: check if there is a new massage
     '''
-    func_by_command = {'register': send_register, 'login': send_login, 'forgot_password': send_forgot_password, 'change_detail': send_change_detail}
+    func_by_command = {'register': send_register, 'login': send_login, 'forgot_password': send_forgot_password, 'change_detail': send_change_detail,
+                       'download': send_download, 'upload': send_upload, 'share': send_share, 'add_to_folder': send_add_to_folder, 'rename': send_rename,
+                       'delete': send_delete, 'create_folder': send_create_folder}
     while True:
         msg = graphic_q.get()
         flag = msg[0]
@@ -127,6 +129,72 @@ def send_change_detail(args):
     network.send_msg(msg_by_protocol)
 
 
+def send_download(args):
+    '''
+
+    :param args:virtual file path to file
+    :return: send request to download that file
+    '''
+    path = args[0]
+
+    msg_by_protocol = prot.create_download_file_request_msg(path)
+    #encryption
+    network.send_msg(msg_by_protocol)
+
+
+def send_rename(args):
+    '''
+
+    :param args:virtual file path to file, new name to this file
+    :return: send request to rename that file
+    '''
+    print('in rename')
+
+
+def send_upload(args):
+    '''
+
+    :param args:file path to file
+    :return: send request to upload that file
+    '''
+    print('in send upload')
+
+
+def send_add_to_folder(args):
+    '''
+
+    :param args:virtual file path to file, virtual file path to folder
+    :return: send request to add that file to folder
+    '''
+
+
+def send_share(args):
+    '''
+
+    :param args:virtual file path to file, username to share with
+    :return: send request to share that file
+    '''
+    print('in share')
+
+
+def send_delete(args):
+    '''
+
+    :param args:virtual file path to file
+    :return: send request to delete that file
+    '''
+    print('in delete')
+
+
+def send_create_folder(args):
+    '''
+
+    :param args:virtual path to create the folder
+    :return: send request to create the folder
+    '''
+    print('in send create folder')
+
+
 def get_all_files(args):
     '''
 
@@ -142,7 +210,17 @@ def download_answer(args):
     :param args:details for download file
     :return: create new network to recive the file and notify the graphic when finish
     '''
-    pass
+    port = int(args[0])
+    length = int(args[1])
+    file_name = args[2]
+    ready_q = queue.Queue()     #get massage in this q when the download finished
+    print('in download answer')
+    download_network = ClientCom(server_ip, port, ready_q, True)
+    download_network.recv_file(length, file_name)
+
+    while True:
+        finish = ready_q.get()
+        wx.CallAfter(pub.sendMessage, 'finish_download', ans=finish)
 
 
 def finish():
@@ -161,8 +239,11 @@ def finish():
 network_q = queue.Queue()
 #queue to get massages from the graphic
 graphic_q = queue.Queue()
+server_ip = '127.0.0.1'
 
-network = ClientCom('127.0.0.1', 1111, network_q)
+file_name_by_port = {}      #download port -> file name
+
+network = ClientCom(server_ip, 1111, network_q)
 
 
 threading.Thread(target= start_graphic, args= (graphic_q, )).start()

@@ -7,19 +7,29 @@ import time
 
 class ClientCom:
 
-    def __init__(self, serverIp, serverPort, q):
+    def __init__(self, serverIp, serverPort, q, file = False):
         '''
 
+        :param file: "true" if this network is to recv file and "false" otherwise
         :param serverIp:ip of the server
         :param serverPort: port to talk with the server
         :param q: queue that for trnsger data between the network to the main client
         '''
-
+        self.file = file
         self.serverIp = serverIp
         self.serverPort = serverPort
         self.q = q
         self.soc = socket.socket()
-        threading.Thread(target = self.__recv_msg__, daemon=True).start()
+        if not file:
+            threading.Thread(target = self.__recv_msg__, daemon=True).start()
+        else:
+            self.connect()
+
+    def connect(self):
+        try:
+            self.soc.connect((self.serverIp, self.serverPort))
+        except Exception as e:
+            print(f'in connect - {str(e)}')
 
     def __recv_msg__(self):
         '''
@@ -28,17 +38,15 @@ class ClientCom:
         '''
         try:
             self.soc.connect((self.serverIp, self.serverPort))
-            print('in')
         except Exception as e:
             print(f'in recv msg - {str(e)}')
         else:
             while True:
                 try:
-                    print('try')
                     msg_len = int(self.soc.recv(2).decode())
                     msg = self.soc.recv(msg_len).decode()
-                    print(msg)
                 except Exception as e:
+                    print(self.serverPort)
                     print(f'in recv msg 2 - {str(e)}')
                     self.soc.close()
                     exit()
@@ -80,9 +88,9 @@ class ClientCom:
         '''
 
         file_data = bytearray()
+        fileLen = int(fileLen)
         #recv all the data
         while len(file_data) < fileLen:
-            print(1)
             size = fileLen - len(file_data)
             try:
                 if size >= 1024:
@@ -92,12 +100,16 @@ class ClientCom:
                     break
             except Exception as e:
                 print(f'in recv file - {str(e)}')
+                self.q.put('no')
                 self.soc.close()
                 file_data = None
                 break
-
+        print('download11111')
         if file_data is not None:
             path = os.path.expanduser('~/Downloads')
             with open(f'{path}\\{fileName}', 'wb') as f:
                 f.write(file_data)
+                self.q.put('ok')
+
+        self.soc.close()
 

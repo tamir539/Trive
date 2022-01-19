@@ -17,6 +17,7 @@ class ServerCom:
         self.port = port
         self.q = q
         self.socs = {}  #socket -> his ip adress
+        self.running = True
         threading.Thread(target=self.recv_msg).start()
 
     def send_msg(self, soc, msg):
@@ -33,17 +34,20 @@ class ServerCom:
             except Exception as e:
                 print(f'in sendMsg - {str(e)}')
 
-    def send_file(self, path, soc):
+    def send_file(self, path):
         '''
 
         :param path:path to the file
         :param soc: client socket
         :return: send the file to the client
         '''
+        time.sleep(0.2)
         file = open(path, 'rb')
         data = file.read()
         try:
-            soc.send(data)
+            list(self.socs.keys())[0].send(data)
+            self.running = False
+            self.servSoc.close()
         except Exception as e:
             print(f'in send file - {str(e)}')
 
@@ -53,7 +57,7 @@ class ServerCom:
         self.servSoc.bind(('0.0.0.0',self.port))
         self.servSoc.listen(3)
 
-        while True:
+        while self.running:
             rlist, wlist, xlist = select.select(list(self.socs.keys())+[self.servSoc],list(self.socs.keys()),[],0.3)
             for current_socket in rlist:
                 if current_socket is self.servSoc:
@@ -109,7 +113,7 @@ class ServerCom:
             else:
                 with open(path+'\\'+file_name, 'wb') as f:
                     f.write(file_data)
-                self.q.put((f'got-{file_name}', soc))
+                self.q.put((f'got-{file_name}', self.socs[0]))
                 print(self.q.get())
 
     def check_if_blocked(self, ip):
