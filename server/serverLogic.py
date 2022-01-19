@@ -28,6 +28,7 @@ def check_network_q(network_q):
         args = msg_after_unpack[1]
         #the socket
         args.append(msg[1])
+        args.append(msg[2])
         func_by_command[command](args)
 
 
@@ -42,13 +43,23 @@ def handle_login(args):
     username = args[0]
     password = args[1]
     soc = args[2]
+    ip = args[3]
     #send username and password to decryption
     hashed_password = myDB.getPasswordOfUser(username)
     answer = 'no'
-    if myDB.check_username_exist(username) and password == hashed_password:#hashlib.md5(password.encode()) == hashed_password:
+    if ip in trys_by_ip.keys() and trys_by_ip[ip] == 4:
+        network.block_ip(ip)
+        answer = 'blocked'
+        print(ip, ' blocked')
+    elif myDB.check_username_exist(username) and password == hashed_password:#hashlib.md5(password.encode()) == hashed_password:
         answer = 'ok'
         username_connected[soc] = username
         handle_send_all_files(username)
+    else:
+        if ip not in trys_by_ip.keys():
+            trys_by_ip[ip] = 1
+        else:
+            trys_by_ip[ip] += 1
     #send the answer to encryption
     #encryption
     #build the msg by the protocol
@@ -212,9 +223,9 @@ def handle_change_file_name(args):
 
 #queue to get massages from the network
 network_q = queue.Queue()
+trys_by_ip = {} #ip -> times that tryd to login from this ip
 
 network = ServerCom(1111, network_q)
 username_connected = {}     #socket -> the username that are now connected
 
 threading.Thread(target= check_network_q, args= (network_q, )).start()
-

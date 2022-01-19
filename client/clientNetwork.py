@@ -28,11 +28,13 @@ class ClientCom:
         '''
         try:
             self.soc.connect((self.serverIp, self.serverPort))
+            print('in')
         except Exception as e:
             print(f'in recv msg - {str(e)}')
         else:
             while True:
                 try:
+                    print('try')
                     msg_len = int(self.soc.recv(2).decode())
                     msg = self.soc.recv(msg_len).decode()
                     print(msg)

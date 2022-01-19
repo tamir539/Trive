@@ -156,3 +156,4 @@ def create_forgot_password_request_msg(email):
     code = '14'
     msg = code+email
     return msg
+

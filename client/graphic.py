@@ -58,6 +58,7 @@ class LoginPanel(wx.Panel):
         wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=wx.DisplaySize(), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
+        self.trys = 0
         self.__create_screen__()
 
     def __create_screen__(self):
@@ -247,11 +248,13 @@ class LoginPanel(wx.Panel):
         '''
         if answer == 'no':
             self.errorMsg('Wrong username or password')
-        else:
+        elif answer =='ok':
             #move to loby
             self.Hide()
             self.parent.loby.Show()
-
+        else:
+            self.errorMsg('This ip has been blocked!')
+            self.frame.Destroy()
 
 class RegisterPanel(wx.Panel):
     '''

@@ -59,8 +59,12 @@ class ServerCom:
                 if current_socket is self.servSoc:
                     # new client
                     client, address = self.servSoc.accept()
-                    print(f'{address[0]} - connected')
-                    self.socs[client] = address[1]
+                    if not self.check_if_blocked(address[0]):
+                        print(f'{address[0]} - connected')
+                        self.socs[client] = address[0]
+                    else:
+                        self.send_msg(client, 'blocked')
+                        print('sent block')
                 else:
                     # receive data from exist client
                     try:
@@ -70,7 +74,7 @@ class ServerCom:
                         print('in recv - ', str(e))
                         del self.socs[current_socket]
                     else:
-                        self.q.put((msg, current_socket))
+                        self.q.put((msg, current_socket, self.socs[current_socket]))
 
     def recv_file(self, file_len, file_name):
         '''
@@ -107,3 +111,23 @@ class ServerCom:
                     f.write(file_data)
                 self.q.put((f'got-{file_name}', soc))
                 print(self.q.get())
+
+    def check_if_blocked(self, ip):
+        '''
+
+        :param ip:ip
+        :return: "true" - if this ip is blocked and "false" otherwise
+        '''
+        ips = open('blocked_ips.txt', 'r').read().split('\n')
+        return ip in ips
+
+    def block_ip(self, ip):
+        '''
+
+        :param ip:ip
+        :return: add the ip to the file of block ips
+        '''
+        ip = str(ip)
+        block_ip_file = open('blocked_ips.txt', 'a')
+        block_ip_file.write(ip + '\n')
+        block_ip_file.close()

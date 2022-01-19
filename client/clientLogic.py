@@ -5,6 +5,8 @@ import threading
 import wx
 from pubsub import pub
 import cprotocol as prot
+import os
+import psutil
 
 
 def check_network_q(network_q):
@@ -58,7 +60,8 @@ def start_graphic(graphic_q):
     app = wx.App()
     frame = graphic.MyFrame(graphic_q)
     app.MainLoop()
-    print(9)
+    #kill all the threads
+    finish()
 
 
 def send_register(args):
@@ -141,6 +144,17 @@ def download_answer(args):
     '''
     pass
 
+
+def finish():
+    '''
+
+    :return: close all the threads and exit the program
+    '''
+    parent_pid = os.getpid()
+    parent = psutil.Process(parent_pid)
+    for child in parent.children(recursive=True):  # or parent.children() for recursive=False
+        child.kill()
+    parent.kill()
 
 
 #queue to get massages from the network
