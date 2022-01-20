@@ -229,6 +229,13 @@ def handle_create_folder(args):
     :param args:path to create the folder in
     :return: try to create the folder and return answer to the client
     '''
+    print('handle create folder')
+    path = args[0]
+    soc = args[1]
+    username = username_connected[soc]
+    ans = Sfile.create_folder(f'{username}\\{path}')
+    answer = prot.create_create_folder_response_msg(ans)
+    network.send_msg(soc, answer)
 
 
 def handle_share(args):

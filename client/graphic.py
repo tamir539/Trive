@@ -464,6 +464,9 @@ class LobyPanel(wx.Panel):
         self.parent = parent
         self.inAccount = False
         self.account = None
+        self.scrollFiles = None
+
+        self.new_folder_name = ''
         self.__create_screen__()
 
     def __create_screen__(self):
@@ -577,9 +580,10 @@ class LobyPanel(wx.Panel):
         dlg = wx.TextEntryDialog(None, 'Enter name for the folder: ', 'Create folder', '',style=wx.TextEntryDialogStyle)
 
         if dlg.ShowModal() == wx.ID_OK:
-            name = dlg.GetValue()
-            path = '\\' + name   #calculate the virtual path
+            self.new_folder_name = dlg.GetValue()
+            path = self.scrollFiles.path + '\\' + self.new_folder_name   #calculate the virtual path
             self.frame.q.put(('create_folder', [path]))
+            pub.subscribe(self.handle_create_folder_answer, 'create_folder')
 
     def handle_account(self, event):
         '''
@@ -599,6 +603,19 @@ class LobyPanel(wx.Panel):
         self.inAccount = not self.inAccount
 
         pass
+
+    def handle_create_folder_answer(self, answer):
+        '''
+
+        :param answer:answer from the server
+        :return:
+        '''
+        if answer == 'ok':
+            wx.MessageBox(f'Folder {self.new_folder_name} created successfuly!', 'Trive', wx.OK | wx.ICON_INFORMATION)
+            self.scrollFiles.add_file(self.new_folder_name)
+            self.new_folder_name = ''
+        else:
+            wx.MessageBox(f'There was an error in creating {self.new_folder_name} folder', 'Trive Error', wx.OK | wx.ICON_ERROR)
 
     def errorMsg(self, msg):
         '''
@@ -684,11 +701,11 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         img = wx.Image(f'draws\\{self.getType(file)}.png', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         fileImg = wx.StaticBitmap(self, -1, img, (650, -2), (img.GetWidth(), img.GetHeight()))
         fileImg.SetName(file)
-        fileImg.Bind(wx.EVT_LEFT_DOWN, self.onFileClick)
+        fileImg.Bind(wx.EVT_RIGHT_DOWN, self.onFileClick)
         fileSizer.Add(fileImg, 0, wx.CENTER | wx.ALL)
 
         if self.getType(file) == 'folder':
-            fileImg.Bind(wx.EVT_LISTBOX_DCLICK, self.get_into_folder)
+            fileImg.Bind(wx.EVT_LEFT_DCLICK, self.get_into_folder)
 
         #add the name of the file\image\folder
         file_name = wx.StaticText(self, -1, label=file)
@@ -730,6 +747,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         widget = event.GetEventObject()
         folder_name = widget.GetName()
         self.path += '\\' + folder_name
+        print('in path ', self.path)
 
     def download_ans(self, ans):
         if ans == 'ok':
@@ -737,6 +755,17 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         else:
             wx.MessageBox('Downloaded error', 'Trive error', wx.OK | wx.ICON_ERROR)
 
+    def add_file(self, file_name):
+        '''
+
+        :param file_name:
+        :return:
+        '''
+        self.files.append(file_name)
+        self.createFilesSizer()
+        # file_sizer = self.createFileSizer(file_name)
+        # self.filesSizer.AddSpacer(45)
+        # self.filesSizer.Add(file_sizer, 0, flag=wx.ALIGN_CENTER | wx.ALL)
 
 class AccountPanel(wx.Panel):
 
@@ -940,6 +969,7 @@ class OptionsMenu(wx.Menu):
 
 
 if __name__ == '__main__':
+    q = queue.Queue()
     app = wx.App()
-    frame = MyFrame()
+    frame = MyFrame(q)
     app.MainLoop()

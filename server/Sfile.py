@@ -1,3 +1,6 @@
+import os
+
+
 def get_file_length(path):
     '''
 
@@ -6,3 +9,16 @@ def get_file_length(path):
     '''
     data = open(path, 'r').read()
     return len(data)
+
+
+def create_folder(path):
+    '''
+
+    :param path:path to create folder in
+    :return: creates the folder
+    '''
+    try:
+        os.makedirs(f'C:\\Trive\\{path}')
+        return 'ok'
+    except:
+        return 'no'

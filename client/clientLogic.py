@@ -193,6 +193,10 @@ def send_create_folder(args):
     :return: send request to create the folder
     '''
     print('in send create folder')
+    path = args[0]
+    msg_by_protocol = prot.create_create_folder_request_msg(path)
+    #encryption
+    network.send_msg(msg_by_protocol)
 
 
 def get_all_files(args):
