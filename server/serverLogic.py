@@ -10,13 +10,13 @@ import Sfile
 import os
 
 
-def create_Trive_directory():
+def create_Trive_directory(path):
     '''
 
     :return:
     '''
     try:
-        os.makedirs('D:\\Trive')
+        os.makedirs(path)
     except:
         pass
 
@@ -100,7 +100,7 @@ def handle_register(args):
     answer = 'un'
     if myDB.add_user(username, email, password):
         answer = 'ok'
-        os.makedirs(f'C:\\Trive\\{username}')
+        os.makedirs(f'{trive_location}\\{username}')
     # send the answer to encryption
     # encryption
     # build the msg by the protocol
@@ -193,7 +193,7 @@ def handle_download(args):
     :return: send the file to the client
     '''
     soc = args[1]
-    path = 'D:\\Trive\\' + username_connected[soc]
+    path = trive_location + '\\' + username_connected[soc]
     path += args[0]
 
     length = Sfile.get_file_length(path)
@@ -266,13 +266,17 @@ def handle_change_file_name(args):
     '''
 
 
+#the loaction of all the files
+trive_location = 'D:\\Trive'
 
-create_Trive_directory()
+create_Trive_directory(trive_location)
 
 #queue to get massages from the network
 network_q = queue.Queue()
 trys_by_ip = {} #ip -> times that tryd to login from this ip
 taken_ports = []    #all the taken ports
+
+
 
 
 network = ServerCom(1111, network_q)

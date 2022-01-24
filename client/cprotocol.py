@@ -4,6 +4,39 @@ all the protocol functions of the cient
 import os
 
 
+# def unpack_file_names(str):
+#     '''
+#     in the client!
+#     :param str: string that represent all the files structure of user
+#     :return: build the files structure
+#     '''
+#
+#     #create list that represent the string
+#     lst = str.split(',')
+#     current_dir = 'C:\\temp'
+#
+#
+#     top_files = []
+#     in_top = True
+#
+#     for f in lst:
+#         #means that we enter new directory
+#         if '\\' in f:
+#             in_top = False
+#             current_dir = f
+#         #means that f is file in the current directory
+#         elif '.' in f:
+#             if in_top:
+#                 top_files.append(f)
+#             file = open(current_dir+'\\'+f,'w')
+#             file.close()
+#         # means that f is directory in the current directory
+#         else:
+#             os.makedirs(current_dir+'\\'+f)
+#             if in_top:
+#                 top_files.append(f)
+
+
 def unpack_file_names(str):
     '''
     in the client!
@@ -13,18 +46,16 @@ def unpack_file_names(str):
 
     #create list that represent the string
     lst = str.split(',')
-
-    top_files = []
-    in_top = True
+    #the dir where we are packing to right now
+    current_dir = 'C:\\Users\\user\\downloads\\tamir_packed'
 
     for f in lst:
         #means that we enter new directory
         if '\\' in f:
-            in_top = False
+            f = f.replace('tamir', 'tamir_packed')
             current_dir = f
         #means that f is file in the current directory
         elif '.' in f:
-
             file = open(current_dir+'\\'+f,'w')
             file.close()
         # means that f is directory in the current directory

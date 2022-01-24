@@ -13,6 +13,9 @@ class MyFrame(wx.Frame):
         box.Add(main_panel, 1, wx.EXPAND)
         self.q = q
 
+        # loc = wx.IconLocation('draws\\logo.jpg', wx.BITMAP_TYPE_ICO)
+        # self.SetIcon(loc)
+
         # arrange the frame
         self.SetSizer(box)
         self.Layout()
@@ -485,6 +488,8 @@ class LobyPanel(wx.Panel):
         # font for the text
         self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
+
+
         #create the files scroller
         self.scrollFiles = ScrollFilesPanel(self, self.parent.frame)
 
@@ -642,9 +647,12 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         scrolled.ScrolledPanel.__init__(self, parent,pos =((screenDepth - panelDepth)/2, 200), size=(panelDepth, panelLength ), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
-        self.files = ['blocked_ips.txt','folder1', 'a.py', 'cat.jpg']
+        self.files = {}     #folder path -> all the files in this path
+        self.got_files = False
+
 
         pub.subscribe(self.download_ans, 'finish_download')
+        pub.subscribe(self.get_files, 'files')
 
         self.path = ''      #the virtual path we are in
 
@@ -658,35 +666,38 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
 
         # font for the text
         self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
+        # while not self.got_files:
+        #     pass
 
-        self.createFilesSizer()
+        self.get_files(r'T:\public\aaaaTamir\client,draws,x,graphic.py,T:\public\aaaaTamir\client\draws,email.jpg,file.png,finger.jpg,logo.jpg,temp1.py,user.jpg,T:\public\aaaaTamir\client\x,tam.txt')
 
         self.Show()
 
-    def createFilesSizer(self):
+    def createFilesSizer(self, files):
         '''
 
+        :param index: index in self.files dictionary
         :return: show in the screen the files that are on top of the directories
         '''
 
-        placeFilesSizer = wx.BoxSizer(wx.VERTICAL)
+        self.placeFilesSizer = wx.BoxSizer(wx.VERTICAL)
         self.filesSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         itemsInsizerCount = 0
 
-        for file in self.files:
+        for file in files:
             if itemsInsizerCount > 9:   #check that there are not more then 10 files in a row
-                placeFilesSizer.Add(self.filesSizer)
+                self.placeFilesSizer.Add(self.filesSizer)
                 self.filesSizer = wx.BoxSizer(wx.HORIZONTAL)
-                placeFilesSizer.AddSpacer(50)
+                self.placeFilesSizer.AddSpacer(50)
                 itemsInsizerCount = 0
 
             self.filesSizer.AddSpacer(45)
             self.filesSizer.Add(self.createFileSizer(file), 0, flag=wx.ALIGN_CENTER | wx.ALL)
             itemsInsizerCount += 1
 
-        placeFilesSizer.Add(self.filesSizer)
-        self.SetSizer(placeFilesSizer)
+        self.placeFilesSizer.Add(self.filesSizer)
+        self.SetSizer(self.placeFilesSizer)
         self.SetupScrolling()
 
     def createFileSizer(self, file):
@@ -746,7 +757,10 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
     def get_into_folder(self, event):
         widget = event.GetEventObject()
         folder_name = widget.GetName()
+
+
         self.path += '\\' + folder_name
+        self.createFilesSizer(self.files[self.path])
         print('in path ', self.path)
 
     def download_ans(self, ans):
@@ -766,6 +780,34 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         # file_sizer = self.createFileSizer(file_name)
         # self.filesSizer.AddSpacer(45)
         # self.filesSizer.Add(file_sizer, 0, flag=wx.ALIGN_CENTER | wx.ALL)
+
+    def get_files(self, answer):
+        '''
+
+        :param answer:all the files in the structure
+        :return:builds on the screen the file structure
+        '''
+        current_dir = answer.split(',')[0]
+        self.files[current_dir] = []
+        lst = answer.split(',')
+        lst.remove(current_dir)
+        in_top = True
+        self.path = current_dir
+
+        for f in lst:
+            # means that we enter new directory
+            if '\\' in f:
+                current_dir =  f
+                self.files[current_dir] = []
+            # means that f is file or folder in the current directory
+            else:
+                self.files[current_dir].append(f)
+
+        self.createFilesSizer(self.files[self.path])
+
+        print(self.files)
+        self.got_files = True
+
 
 class AccountPanel(wx.Panel):
 

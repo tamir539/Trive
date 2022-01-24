@@ -158,31 +158,7 @@ def create_response(code, msg):
     return code+msg
 
 
-def unpack_file_names(str):
-    '''
-    in the client!
-    :param str: string that represent all the files structure of user
-    :return: build the files structure
-    '''
-
-    #create list that represent the string
-    lst = str.split(',')
-
-    print(lst)
-    for f in lst:
-        #means that we enter new directory
-        if '\\' in f:
-            #f = f.replace('tamir', 'tamir_packed')
-            current_dir = f
-            print(current_dir)
-        #means that f is file in the current directory
-        elif '.' in f:
-            file = open(current_dir+'\\'+f,'w')
-            file.close()
-        # means that f is directory in the current directory
-        else:
-            os.makedirs(current_dir+'\\'+f)
 
 if __name__ == '__main__':
-    s = pack_file_names('D:\\Trive\\try1')
-    unpack_file_names(s)
+    s = pack_file_names('T:\\public\\aaaaTamir\\client')
+    print(s)
