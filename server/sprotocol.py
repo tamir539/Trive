@@ -1,6 +1,32 @@
 '''
 all the protocol functions of the server
 '''
+import os
+
+
+def pack_file_names(path):
+    '''
+    in the server!
+    :param path:folder path
+    :return: pack the folder by the protocol
+    '''
+    list_of_files = []
+    #get all the files and dirs in the path
+    for (dirpath, dirnames, filenames) in os.walk(path):
+
+        #add the current directory path that we are in
+        list_of_files.append(dirpath)
+
+        #add all the directories in the current directory
+        for dir in dirnames:
+            list_of_files.append(dir)
+
+        # add all the files in the current directory
+        for filename in filenames:
+            list_of_files.append(filename)
+
+    #from the list build the string to send
+    return ",".join(x for x in list_of_files)
 
 
 def create_all_files_msg(msg):
@@ -130,3 +156,33 @@ def create_response(code, msg):
     :return:create and return response msg by the protocol
     '''
     return code+msg
+
+
+def unpack_file_names(str):
+    '''
+    in the client!
+    :param str: string that represent all the files structure of user
+    :return: build the files structure
+    '''
+
+    #create list that represent the string
+    lst = str.split(',')
+
+    print(lst)
+    for f in lst:
+        #means that we enter new directory
+        if '\\' in f:
+            #f = f.replace('tamir', 'tamir_packed')
+            current_dir = f
+            print(current_dir)
+        #means that f is file in the current directory
+        elif '.' in f:
+            file = open(current_dir+'\\'+f,'w')
+            file.close()
+        # means that f is directory in the current directory
+        else:
+            os.makedirs(current_dir+'\\'+f)
+
+if __name__ == '__main__':
+    s = pack_file_names('D:\\Trive\\try1')
+    unpack_file_names(s)

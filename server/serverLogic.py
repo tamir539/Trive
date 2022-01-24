@@ -10,6 +10,18 @@ import Sfile
 import os
 
 
+def create_Trive_directory():
+    '''
+
+    :return:
+    '''
+    try:
+        os.makedirs('D:\\Trive')
+    except:
+        pass
+
+
+
 def check_network_q(network_q):
     '''
 
@@ -181,7 +193,7 @@ def handle_download(args):
     :return: send the file to the client
     '''
     soc = args[1]
-    path = 'C:\\Trive\\' + username_connected[soc]
+    path = 'D:\\Trive\\' + username_connected[soc]
     path += args[0]
 
     length = Sfile.get_file_length(path)
@@ -254,6 +266,8 @@ def handle_change_file_name(args):
     '''
 
 
+
+create_Trive_directory()
 
 #queue to get massages from the network
 network_q = queue.Queue()

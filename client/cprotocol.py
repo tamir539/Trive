@@ -1,6 +1,35 @@
 '''
 all the protocol functions of the cient
 '''
+import os
+
+
+def unpack_file_names(str):
+    '''
+    in the client!
+    :param str: string that represent all the files structure of user
+    :return: build the files structure
+    '''
+
+    #create list that represent the string
+    lst = str.split(',')
+
+    top_files = []
+    in_top = True
+
+    for f in lst:
+        #means that we enter new directory
+        if '\\' in f:
+            in_top = False
+            current_dir = f
+        #means that f is file in the current directory
+        elif '.' in f:
+
+            file = open(current_dir+'\\'+f,'w')
+            file.close()
+        # means that f is directory in the current directory
+        else:
+            os.makedirs(current_dir+'\\'+f)
 
 
 def unpack(msg):
