@@ -11,9 +11,8 @@ def unpack(msg):
     '''
     command_by_code = {'02': 'login', '03': 'register', '04': 'get_all_files', '05': 'upload',
                        '06': 'download', '07': 'delete', '08': 'add_to_folder', '09': 'create_folder',
-                       '10': 'change_details', '11': 'share', '13': 'change_name', '14': 'forgot_password'}
+                       '10': 'change_details', '11': 'share', '13': 'rename', '14': 'forgot_password'}
     code = msg[:2]
-    print(msg)
     msg = msg[2:]
     args = msg.split('&')
     return command_by_code[code], args

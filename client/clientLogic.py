@@ -24,10 +24,8 @@ def check_network_q(network_q):
         msg_after_unpack = prot.unpack(msg)
         #the command from the server
         command = msg_after_unpack[0]
-        print('comm -', command)
         #the arguments from the server
         args = msg_after_unpack[1]
-        print(args)
         if command == 'download':
             threading.Thread(target= download_answer, args = (args, )).start()
         else:
@@ -70,7 +68,7 @@ def send_register(args):
     :param args: all the details for registration
     :return: send registration massage to the server
     '''
-    print('in send register')
+
     email = args[0]
     username = args[1]
     password = args[2]
@@ -146,7 +144,11 @@ def send_rename(args):
     :param args:virtual file path to file, new name to this file
     :return: send request to rename that file
     '''
-    print('in rename')
+    path = args[0]
+    new_name = args[1]
+    #encryption
+    msg_by_protocol = prot.create_change_file_name_request_msg(path, new_name)
+    network.send_msg(msg_by_protocol)
 
 
 def send_upload(args):
@@ -181,7 +183,11 @@ def send_delete(args):
     :param args:virtual file path to file
     :return: send request to delete that file
     '''
-    print('in delete')
+    path = args[0]
+    msg_by_protocol = prot.create_delete_file_request_msg(path)
+    #encryption
+    network.send_msg(msg_by_protocol)
+
 
 
 def send_create_folder(args):
@@ -190,7 +196,6 @@ def send_create_folder(args):
     :param args:virtual path to create the folder
     :return: send request to create the folder
     '''
-    print('in send create folder')
     path = args[0]
     msg_by_protocol = prot.create_create_folder_request_msg(path)
     #encryption
@@ -217,7 +222,6 @@ def download_answer(args):
     path = args[2]
     file_name = path[path.rindex('\\') + 1:]
     ready_q = queue.Queue()     #get massage in this q when the download finished
-    print('in download answer')
     download_network = ClientCom(server_ip, port, ready_q, True)
     download_network.recv_file(length, file_name)
 

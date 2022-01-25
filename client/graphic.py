@@ -6,6 +6,7 @@ import queue
 
 class MyFrame(wx.Frame):
     def __init__(self, q, parent=None):
+        self.username = ''
         super(MyFrame, self).__init__(parent, title="Trive", size=wx.DisplaySize())
         # create main panel - to put on the others panels
         main_panel = MainPanel(self)
@@ -62,6 +63,7 @@ class LoginPanel(wx.Panel):
         self.frame = frame
         self.parent = parent
         self.trys = 0
+        self.username = ''
         self.__create_screen__()
 
     def __create_screen__(self):
@@ -210,7 +212,7 @@ class LoginPanel(wx.Panel):
         if not username or not password :
             self.errorMsg('You must enter username and password!')
         else:
-            self.username = username
+            self.frame.username = username
             self.frame.q.put((self.flag, [username, password]))
 
     def handle_reg(self,event):
@@ -650,8 +652,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         self.got_files = False
 
 
-        pub.subscribe(self.download_ans, 'finish_download')
-        pub.subscribe(self.get_files, 'files')
+
 
         self.path = ''      #the virtual path we are in
 
@@ -668,8 +669,10 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         # while not self.got_files:
         #     pass
 
-
+        pub.subscribe(self.download_ans, 'finish_download')
         pub.subscribe(self.get_files, 'get_all_files')
+        pub.subscribe(self.rename_ans, 'rename')
+        pub.subscribe(self.delete_ans, 'delete')
         #self.get_files(r'T:\public\aaaaTamir\client,draws,x,graphic.py,T:\public\aaaaTamir\client\draws,email.jpg,file.png,finger.jpg,logo.jpg,temp1.py,user.jpg,T:\public\aaaaTamir\client\x,tam.txt')
 
         self.Show()
@@ -770,13 +773,12 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
 
         self.path += '\\' + folder_name
         self.createFilesSizer(self.files[self.path])
-        print('in path ', self.path)
 
     def download_ans(self, ans):
         if ans == 'ok':
-            wx.MessageBox('downloaded successfully', 'Trive', wx.OK | wx.ICON_INFORMATION)
+            wx.MessageBox('Downloaded successfully', 'Trive', wx.OK | wx.ICON_INFORMATION)
         else:
-            wx.MessageBox('Downloaded error', 'Trive error', wx.OK | wx.ICON_ERROR)
+            wx.MessageBox('Download error, try again later...', 'Trive error', wx.OK | wx.ICON_ERROR)
 
     def handle_back(self, event):
         '''
@@ -833,9 +835,54 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
 
         self.createFilesSizer(self.files[self.path])
 
-        print(self.files)
         self.got_files = True
 
+    def rename_ans(self, answer):
+
+        ans = answer.split(',')[0]
+        file_name = answer.split(',')[1]
+        new_name = answer.split(',')[2]
+
+        if ans == 'ok':
+            wx.MessageBox('Renamed successfully', 'Trive', wx.OK | wx.ICON_INFORMATION)
+            self.rename_file(file_name, new_name)
+        else:
+            wx.MessageBox('Rename error, try change name or try again later...', 'Trive error', wx.OK | wx.ICON_ERROR)
+
+    def rename_file(self, last_name, new_name):
+        '''
+
+        :param file_name:name of file to rename
+        :return: change the name on the screen
+        '''
+        files: list = self.files[self.path]
+        files[files.index(last_name)] = new_name
+        self.DestroyChildren()
+        self.createFilesSizer(self.files[self.path])
+
+    def delete_file(self, file_name):
+        '''
+
+        :param file_name:name of file to delete
+        :return: delete the file from the graphic
+        '''
+        files: list = self.files[self.path]
+        files.remove(file_name)
+        self.DestroyChildren()
+        self.createFilesSizer(self.files[self.path])
+
+    def delete_ans(self, answer):
+        '''
+
+        :param answer:answer from the server for the delete
+        :return:
+        '''
+        ans = answer.split(',')[0]
+        file_name = answer.split(',')[1]
+        if ans == 'ok':
+            self.delete_file(file_name)
+        else:
+            wx.MessageBox('Delete error, try other name or try again later...', 'Trive error', wx.OK | wx.ICON_ERROR)
 
 class AccountPanel(wx.Panel):
 
@@ -849,7 +896,7 @@ class AccountPanel(wx.Panel):
         wx.Panel.__init__(self, parent,pos =((screenDepth - panelDepth)//2, 200), size=(panelDepth, panelLength ), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
-
+        self.username = self.parent.parent.login.username
         self.__create_screen__()
 
     def __create_screen__(self):
@@ -868,7 +915,7 @@ class AccountPanel(wx.Panel):
         user_img = wx.StaticBitmap(self, -1 ,user,  pos = (wx.DisplaySize()[0] - wx.DisplaySize()[0]//7, 30), size = (user.GetWidth(), user.GetHeight()))
 
         try_email = 'Email: tamir.burstein@gmail.com'
-        try_username = 'Username: tamir539'
+        try_username = 'Username: ' + self.frame.username
 
         self.addOptins()
 
@@ -878,7 +925,7 @@ class AccountPanel(wx.Panel):
         email.SetFont(self.font)
 
         # create the username text
-        username = wx.StaticText(self, -1, label=try_username)
+        username = wx.StaticText(self, -1, try_username)
         username.SetForegroundColour(wx.WHITE)
         username.SetFont(self.font)
 
@@ -933,7 +980,7 @@ class AccountPanel(wx.Panel):
         :param event:change password pressed
         :return: get the new password and notify the logic
         '''
-        dlg = wx.TextEntryDialog(None, 'Enter new Password: ', 'Change Password', '',style=wx.TextEntryDialogStyle)
+        dlg = wx.TextEntryDialog(None, 'Enter new Password: ', 'Change Password', '',style=wx.TE_PASSWORD | wx.OK | wx.CANCEL)
 
         if dlg.ShowModal() == wx.ID_OK:
             new_password = dlg.GetValue()
@@ -1020,7 +1067,7 @@ class OptionsMenu(wx.Menu):
 
     def rename(self):
 
-        dlg = wx.TextEntryDialog(None, f'Enter new name for the {self.file_typ}: ', f'Rename {self.file_typ}', '',style=wx.TextEntryDialogStyle)
+        dlg = wx.TextEntryDialog(None, f'Enter new name for the {self.file_typ}(add extention): ', f'Rename {self.file_typ}', '',style=wx.TextEntryDialogStyle)
 
         if dlg.ShowModal() == wx.ID_OK:
             name = dlg.GetValue()

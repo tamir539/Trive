@@ -46,7 +46,6 @@ class ClientCom:
                     msg_len = int(self.soc.recv(3).decode())
                     msg = self.soc.recv(msg_len).decode()
                 except Exception as e:
-                    print(self.serverPort)
                     print(f'in recv msg 2 - {str(e)}')
                     self.soc.close()
                     exit()
@@ -104,7 +103,7 @@ class ClientCom:
                 self.soc.close()
                 file_data = None
                 break
-        print('download11111')
+
         if file_data is not None:
             path = os.path.expanduser('~/Downloads')
             with open(f'{path}\\{fileName}', 'wb') as f:

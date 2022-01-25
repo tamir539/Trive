@@ -99,7 +99,7 @@ def handle_register(args):
     if myDB.add_user(username, email, password):
         answer = 'ok'
         try:
-            os.makedirs(f'{trive_location}\\{username}')
+            os.makedirs(f'{trive_location}\\{username}\\shared')
         except:
             pass
     # send the answer to encryption
@@ -133,6 +133,7 @@ def handle_change_details(args):
     msg_by_protocol = prot.create_change_detail_response_msg(ans)
 
     network.send_msg(ip, msg_by_protocol)
+
 
 def handle_forgot_password(args):
     '''
@@ -221,15 +222,19 @@ def handle_download(args):
     print('sent file ', path)
 
 
-
-
 def handle_delete(args):
     '''
 
     :param args:file to delete
     :return: try to delete the file and retuirn answer to the client
     '''
-    pass
+    path = args[0]
+    now_name = path[path.rindex('\\') + 1:]
+    ip = args[1]
+
+    ans = Sfile.delete_file(path)
+    msg_by_protocol = prot.create_delete_file_response_msg(ans + ',' + now_name)
+    network.send_msg(ip, msg_by_protocol)
 
 
 def handle_add_to_folder(args):
@@ -269,7 +274,15 @@ def handle_change_file_name(args):
     :param args:file path, his new name
     :return: try to rename the file and return answer to the client
     '''
+    path = args[0]
+    now_name = path[path.rindex('\\') + 1:]
+    new_name = args[1]
+    ip = args[2]
 
+    ans = Sfile.rename_file(path, new_name)
+    msg_by_protocol = prot.create_change_file_name_response_msg(ans+','+now_name+','+new_name)
+    #encryption
+    network.send_msg(ip, msg_by_protocol)
 
 #the loaction of all the files
 trive_location = 'C:\\Trive'
