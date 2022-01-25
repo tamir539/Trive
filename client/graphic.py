@@ -640,7 +640,6 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         panelDepth = wx.DisplaySize()[0] - 300
         panelLength = wx.DisplaySize()[1] - 350
 
-        screenLength = wx.DisplaySize()[1]
         screenDepth = wx.DisplaySize()[0]
 
         # create a new panel
@@ -669,7 +668,9 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         # while not self.got_files:
         #     pass
 
-        self.get_files(r'T:\public\aaaaTamir\client,draws,x,graphic.py,T:\public\aaaaTamir\client\draws,email.jpg,file.png,finger.jpg,logo.jpg,temp1.py,user.jpg,T:\public\aaaaTamir\client\x,tam.txt')
+
+        pub.subscribe(self.get_files, 'get_all_files')
+        #self.get_files(r'T:\public\aaaaTamir\client,draws,x,graphic.py,T:\public\aaaaTamir\client\draws,email.jpg,file.png,finger.jpg,logo.jpg,temp1.py,user.jpg,T:\public\aaaaTamir\client\x,tam.txt')
 
         self.Show()
 
@@ -718,6 +719,9 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         if self.getType(file) == 'folder':
             fileImg.Bind(wx.EVT_LEFT_DCLICK, self.get_into_folder)
 
+        if self.getType(file) == 'back':
+            fileImg.Bind(wx.EVT_LEFT_DOWN, self.handle_back)
+
         #add the name of the file\image\folder
         file_name = wx.StaticText(self, -1, label=file)
         file_name.SetForegroundColour(wx.WHITE)
@@ -733,7 +737,10 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         :param fileName: name of file
         :return:  "image" if the file is some image, "file" if the file is some text file, "folder" if the fileName if folder, "no"
         '''
-        if not '.' in fileName:     #mean that the filename if folder
+
+        if fileName == 'back':
+            return 'back'
+        elif not '.' in fileName:     #mean that the filename if folder
             return 'folder'
         else:
             typ = fileName.split('.')[1]
@@ -758,6 +765,8 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         widget = event.GetEventObject()
         folder_name = widget.GetName()
 
+        #reset the screen
+        self.DestroyChildren()
 
         self.path += '\\' + folder_name
         self.createFilesSizer(self.files[self.path])
@@ -769,14 +778,29 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         else:
             wx.MessageBox('Downloaded error', 'Trive error', wx.OK | wx.ICON_ERROR)
 
+    def handle_back(self, event):
+        '''
+
+        :param event:
+        :return: go one folder back from the current path
+        '''
+
+        self.DestroyChildren()
+        self.path = self.path[:self.path.rindex('\\')]
+        self.createFilesSizer(self.files[self.path])
+
     def add_file(self, file_name):
         '''
 
         :param file_name:
         :return:
         '''
-        self.files.append(file_name)
-        self.createFilesSizer()
+        self.files[self.path].append(file_name)
+        if self.getType(file_name) == 'folder':
+            self.files[self.path + '\\' + file_name] = ['back']
+
+        #self.DestroyChildren()
+        self.createFilesSizer(self.files[self.path])
         # file_sizer = self.createFileSizer(file_name)
         # self.filesSizer.AddSpacer(45)
         # self.filesSizer.Add(file_sizer, 0, flag=wx.ALIGN_CENTER | wx.ALL)
@@ -797,8 +821,12 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         for f in lst:
             # means that we enter new directory
             if '\\' in f:
+                if in_top:
+                    in_top = False
                 current_dir =  f
                 self.files[current_dir] = []
+                if not in_top:
+                    self.files[current_dir].append('back')
             # means that f is file or folder in the current directory
             else:
                 self.files[current_dir].append(f)
@@ -815,7 +843,6 @@ class AccountPanel(wx.Panel):
         panelDepth = wx.DisplaySize()[0] - 300
         panelLength = wx.DisplaySize()[1] - 350
 
-        screenLength = wx.DisplaySize()[1]
         screenDepth = wx.DisplaySize()[0]
 
         # create a new panel
@@ -911,6 +938,7 @@ class AccountPanel(wx.Panel):
         if dlg.ShowModal() == wx.ID_OK:
             new_password = dlg.GetValue()
             self.frame.q.put(('change_detail', [f'password:{new_password}']))
+            pub.subscribe(self.handle_change_details_ans, 'change_details')
 
     def handle_change_email(self, event):
         '''
@@ -918,14 +946,23 @@ class AccountPanel(wx.Panel):
         :param event:change email pressed
         :return: get the new email and notify the logic
         '''
+
         dlg = wx.TextEntryDialog(None, 'Enter new Email: ', 'Change Email', '', style=wx.TextEntryDialogStyle)
 
         if dlg.ShowModal() == wx.ID_OK:
             new_email = dlg.GetValue()
             self.frame.q.put(('change_detail', [f'email:{new_email}']))
+            pub.subscribe(self.handle_change_details_ans, 'change_details')
 
     def handle_logOut(self, event):
         pass
+
+    def handle_change_details_ans(self, answer):
+
+        if answer == 'ok':
+            wx.MessageBox('change detail successfully', 'Trive', wx.OK | wx.ICON_INFORMATION)
+        else:
+            wx.MessageBox('there was an error changing the detail, try again later', 'Trive error', wx.OK | wx.ICON_ERROR)
 
 
 class OptionsMenu(wx.Menu):

@@ -43,7 +43,7 @@ class ClientCom:
         else:
             while True:
                 try:
-                    msg_len = int(self.soc.recv(2).decode())
+                    msg_len = int(self.soc.recv(3).decode())
                     msg = self.soc.recv(msg_len).decode()
                 except Exception as e:
                     print(self.serverPort)
@@ -60,7 +60,7 @@ class ClientCom:
         :return: sends the msg to the server
         '''
         try:
-            self.soc.send(str(len(msg)).encode())
+            self.soc.send(str(len(msg)).zfill(3).encode())
             self.soc.send(msg.encode())
         except Exception as e:
             print(f'in send msg - {str(e)}')

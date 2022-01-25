@@ -18,7 +18,7 @@ def create_folder(path):
     :return: creates the folder
     '''
     try:
-        os.makedirs(f'C:\\Trive\\{path}')
+        os.makedirs(path)
         return 'ok'
     except:
         return 'no'

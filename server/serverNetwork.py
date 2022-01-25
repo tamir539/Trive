@@ -20,16 +20,17 @@ class ServerCom:
         self.running = True
         threading.Thread(target=self.recv_msg).start()
 
-    def send_msg(self, soc, msg):
+    def send_msg(self, ip, msg):
         '''
 
         :param soc:client socket
         :param msg: string
         :return: sends the string to the socket
         '''
-        if soc in self.socs.keys():
+        soc = self.get_soc_by_ip(ip)
+        if soc:
             try:
-                soc.send(str(len(msg)).encode())
+                soc.send(str(len(msg)).zfill(3).encode())
                 soc.send(msg.encode())
             except Exception as e:
                 print(f'in sendMsg - {str(e)}')
@@ -72,13 +73,13 @@ class ServerCom:
                 else:
                     # receive data from exist client
                     try:
-                        msg_len = current_socket.recv(2).decode()
+                        msg_len = current_socket.recv(3).decode()
                         msg = current_socket.recv(int(msg_len)).decode()
                     except Exception as e:
                         print('in recv - ', str(e))
                         del self.socs[current_socket]
                     else:
-                        self.q.put((msg, current_socket, self.socs[current_socket]))
+                        self.q.put((msg, self.socs[current_socket]))
 
     def recv_file(self, file_len, file_name):
         '''
@@ -135,3 +136,15 @@ class ServerCom:
         block_ip_file = open('blocked_ips.txt', 'a')
         block_ip_file.write(ip + '\n')
         block_ip_file.close()
+
+    def get_soc_by_ip(self, ip):
+        '''
+
+        :param ip:ip of user
+        :return: the socket of this ip
+        '''
+
+        for soc in self.socs.keys():
+            if self.socs[soc] == ip:
+                return soc
+        return None

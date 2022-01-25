@@ -28,9 +28,7 @@ def check_network_q(network_q):
         #the arguments from the server
         args = msg_after_unpack[1]
         print(args)
-        if command == 'send_all_files':
-            get_all_files(args)
-        elif command == 'download':
+        if command == 'download':
             threading.Thread(target= download_answer, args = (args, )).start()
         else:
             wx.CallAfter(pub.sendMessage, command, answer = args[0])
@@ -216,7 +214,8 @@ def download_answer(args):
     '''
     port = int(args[0])
     length = int(args[1])
-    file_name = args[2]
+    path = args[2]
+    file_name = path[path.rindex('\\') + 1:]
     ready_q = queue.Queue()     #get massage in this q when the download finished
     print('in download answer')
     download_network = ClientCom(server_ip, port, ready_q, True)

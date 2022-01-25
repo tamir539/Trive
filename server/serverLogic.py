@@ -40,9 +40,8 @@ def check_network_q(network_q):
         command = msg_after_unpack[0]
         #the parameters the client gave
         args = msg_after_unpack[1]
-        #the socket
+        #the ip
         args.append(msg[1])
-        args.append(msg[2])
         func_by_command[command](args)
 
 
@@ -56,8 +55,7 @@ def handle_login(args):
     print('in handle login')
     username = args[0]
     password = args[1]
-    soc = args[2]
-    ip = args[3]
+    ip = args[2]
     #send username and password to decryption
     hashed_password = myDB.getPasswordOfUser(username)
     answer = 'no'
@@ -67,8 +65,8 @@ def handle_login(args):
         print(ip, ' blocked')
     elif myDB.check_username_exist(username) and password == hashed_password:#hashlib.md5(password.encode()) == hashed_password:
         answer = 'ok'
-        username_connected[soc] = username
-        handle_send_all_files(username)
+        username_connected[ip] = username
+        handle_send_all_files(username, ip)
     else:
         if ip not in trys_by_ip.keys():
             trys_by_ip[ip] = 1
@@ -79,7 +77,7 @@ def handle_login(args):
     #build the msg by the protocol
     ans_to_send = prot.create_login_response_msg(answer)
     #send the answer
-    network.send_msg(soc, ans_to_send)
+    network.send_msg(ip, ans_to_send)
 
 
 def handle_register(args):
@@ -95,18 +93,21 @@ def handle_register(args):
     username = args[0]
     password = args[1]
     email = args[2]
-    soc = args[3]
+    ip = args[3]
     # send username and password to decryption
     answer = 'un'
     if myDB.add_user(username, email, password):
         answer = 'ok'
-        os.makedirs(f'{trive_location}\\{username}')
+        try:
+            os.makedirs(f'{trive_location}\\{username}')
+        except:
+            pass
     # send the answer to encryption
     # encryption
     # build the msg by the protocol
     ans_to_send = prot.create_register_response_msg(answer)
     # send the answer
-    network.send_msg(soc, ans_to_send)
+    network.send_msg(ip, ans_to_send)
 
 
 def handle_change_details(args):
@@ -122,13 +123,16 @@ def handle_change_details(args):
     change = args[0].split(':')[0]
     #the new value for the feild
     new_value = args[0].split(':')[1]
-    soc = args[1]
-    username = username_connected[soc]
+    ip = args[1]
+    username = username_connected[ip]
     if change == 'email':
-        myDB.change_email(username, new_value)
+        ans = myDB.change_email(username, new_value)
     else:
-        myDB.change_password(username, new_value)
+        ans = myDB.change_password(username, new_value)
 
+    msg_by_protocol = prot.create_change_detail_response_msg(ans)
+
+    network.send_msg(ip, msg_by_protocol)
 
 def handle_forgot_password(args):
     '''
@@ -169,12 +173,14 @@ def handle_forgot_password(args):
         print('email Sent')
 
 
-def handle_send_all_files(username):
+def handle_send_all_files(username, ip):
     '''
 
     :param username:username
     :return: send all his files to the client
     '''
+    msg_by_protocol = prot.pack_file_names(trive_location + '\\' + username)
+    network.send_msg(ip, msg_by_protocol)
 
 
 def handle_upload(args):
@@ -192,9 +198,8 @@ def handle_download(args):
     :param args:relevante for the download
     :return: send the file to the client
     '''
-    soc = args[1]
-    path = trive_location + '\\' + username_connected[soc]
-    path += args[0]
+    ip = args[1]
+    path = args[0]
 
     length = Sfile.get_file_length(path)
 
@@ -206,7 +211,7 @@ def handle_download(args):
 
     msg_by_protocol = prot.create_download_response_msg(str(length), str(port), file_name)
     #encryption
-    network.send_msg(soc, msg_by_protocol)
+    network.send_msg(ip, msg_by_protocol)
     q = queue.Queue()
 
 
@@ -243,11 +248,11 @@ def handle_create_folder(args):
     '''
     print('handle create folder')
     path = args[0]
-    soc = args[1]
-    username = username_connected[soc]
-    ans = Sfile.create_folder(f'{username}\\{path}')
+    print(path)
+    ip = args[1]
+    ans = Sfile.create_folder(path)
     answer = prot.create_create_folder_response_msg(ans)
-    network.send_msg(soc, answer)
+    network.send_msg(ip, answer)
 
 
 def handle_share(args):
@@ -267,7 +272,7 @@ def handle_change_file_name(args):
 
 
 #the loaction of all the files
-trive_location = 'D:\\Trive'
+trive_location = 'C:\\Trive'
 
 create_Trive_directory(trive_location)
 
@@ -280,6 +285,6 @@ taken_ports = []    #all the taken ports
 
 
 network = ServerCom(1111, network_q)
-username_connected = {}     #socket -> the username that are now connected
+username_connected = {}     #ip -> the username that are now connected
 
 threading.Thread(target= check_network_q, args= (network_q, )).start()

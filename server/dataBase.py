@@ -81,6 +81,9 @@ class DB:
             sql = f"UPDATE {self.usersTable} set Password = '{password}' Where Username = '{username}'"
             self.cursor.execute(sql)
             self.conn.commit()
+            return 'ok'
+        return 'no'
+
 
     def change_email(self, username, newEmail):
         '''
@@ -93,6 +96,8 @@ class DB:
             sql = f"UPDATE {self.usersTable} set Email = '{newEmail}' Where Username = '{username}'"
             self.cursor.execute(sql)
             self.conn.commit()
+            return 'ok'
+        return 'no'
 
     def getPasswordOfUser(self, username):
         '''

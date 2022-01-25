@@ -1,66 +1,6 @@
 '''
 all the protocol functions of the cient
 '''
-import os
-
-
-# def unpack_file_names(str):
-#     '''
-#     in the client!
-#     :param str: string that represent all the files structure of user
-#     :return: build the files structure
-#     '''
-#
-#     #create list that represent the string
-#     lst = str.split(',')
-#     current_dir = 'C:\\temp'
-#
-#
-#     top_files = []
-#     in_top = True
-#
-#     for f in lst:
-#         #means that we enter new directory
-#         if '\\' in f:
-#             in_top = False
-#             current_dir = f
-#         #means that f is file in the current directory
-#         elif '.' in f:
-#             if in_top:
-#                 top_files.append(f)
-#             file = open(current_dir+'\\'+f,'w')
-#             file.close()
-#         # means that f is directory in the current directory
-#         else:
-#             os.makedirs(current_dir+'\\'+f)
-#             if in_top:
-#                 top_files.append(f)
-
-
-def unpack_file_names(str):
-    '''
-    in the client!
-    :param str: string that represent all the files structure of user
-    :return: build the files structure
-    '''
-
-    #create list that represent the string
-    lst = str.split(',')
-    #the dir where we are packing to right now
-    current_dir = 'C:\\Users\\user\\downloads\\tamir_packed'
-
-    for f in lst:
-        #means that we enter new directory
-        if '\\' in f:
-            f = f.replace('tamir', 'tamir_packed')
-            current_dir = f
-        #means that f is file in the current directory
-        elif '.' in f:
-            file = open(current_dir+'\\'+f,'w')
-            file.close()
-        # means that f is directory in the current directory
-        else:
-            os.makedirs(current_dir+'\\'+f)
 
 
 def unpack(msg):
@@ -69,10 +9,11 @@ def unpack(msg):
     :param msg:msg from the server
     :return: unpack the massage by the protocol and returns tuple with the command and the parameters to the client
     '''
-    command_by_code = {'02': 'login', '03': 'register', '04': 'send_all_files', '05': 'upload',
+    command_by_code = {'02': 'login', '03': 'register', '04': 'get_all_files', '05': 'upload',
                        '06': 'download', '07': 'delete', '08': 'add_to_folder', '09': 'create_folder',
                        '10': 'change_details', '11': 'share', '13': 'change_name', '14': 'forgot_password'}
     code = msg[:2]
+    print(msg)
     msg = msg[2:]
     args = msg.split('&')
     return command_by_code[code], args

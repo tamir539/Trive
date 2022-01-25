@@ -26,7 +26,7 @@ def pack_file_names(path):
             list_of_files.append(filename)
 
     #from the list build the string to send
-    return ",".join(x for x in list_of_files)
+    return '04' + ",".join(x for x in list_of_files)
 
 
 def create_all_files_msg(msg):
