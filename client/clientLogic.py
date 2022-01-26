@@ -174,7 +174,13 @@ def send_share(args):
     :param args:virtual file path to file, username to share with
     :return: send request to share that file
     '''
-    print('in share')
+    path = args[0]
+    username = args[1]
+
+    msg_by_protocol = prot.create_share_file_request_msg(path, username)
+    #encryption
+    network.send_msg(msg_by_protocol)
+
 
 
 def send_delete(args):

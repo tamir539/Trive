@@ -1,5 +1,4 @@
 import os
-import sys
 import shutil
 
 def get_file_length(path):
@@ -54,3 +53,31 @@ def delete_file(path):
         shutil.rmtree(path)
         return 'ok'
     return 'no'
+
+
+def share_file(trive_path, path, username):
+    '''
+
+    :param trive_path:path of trive
+    :param path: path of the file or folder to share
+    :param username: username to share with
+    :return: move the file\ folder to the username shared folder
+    '''
+
+    if os.path.isdir(path):
+        folder_name = path[path.rindex('\\') + 1:]
+        try:
+            shutil.copytree(path, trive_path + '\\' + username + '\\shared\\' + folder_name, copy_function = shutil.copy)
+            return 'ok'
+        except Exception as e:
+            print('in share file ', str(e))
+            return 'no'
+    else:
+        try:
+            shutil.copy2(path, trive_path + '\\' + username + '\\shared' )
+            return 'ok'
+        except:
+            return 'no'
+
+
+share_file('D:\Trive', 'D:\Trive\\tamir\\aaa.txt', 'try1')

@@ -686,6 +686,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         pub.subscribe(self.get_files, 'get_all_files')
         pub.subscribe(self.rename_ans, 'rename')
         pub.subscribe(self.delete_ans, 'delete')
+        pub.subscribe(self.share_ans, 'share')
         #self.get_files(r'T:\public\aaaaTamir\client,draws,x,graphic.py,T:\public\aaaaTamir\client\draws,email.jpg,file.png,finger.jpg,logo.jpg,temp1.py,user.jpg,T:\public\aaaaTamir\client\x,tam.txt')
 
         self.Show()
@@ -924,6 +925,19 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         print(self.files)
         if last_name in self.path:
             self.path.replace(last_name, new_name)
+
+    def share_ans(self, answer):
+        '''
+
+        :param answer:answer from the server
+        :return: show the user the answer
+        '''
+        if answer == 'ok':
+            wx.MessageBox('Shared successfully', 'Trive error', wx.OK | wx.ICON_INFORMATION)
+        elif answer == 'un':
+            wx.MessageBox('Username not exists!', 'Trive error', wx.OK | wx.ICON_ERROR)
+        else:
+            wx.MessageBox('There was an error sharing the file, try again later...!', 'Trive error', wx.OK | wx.ICON_ERROR)
 
 
 class AccountPanel(wx.Panel):

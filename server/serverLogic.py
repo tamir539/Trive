@@ -266,6 +266,17 @@ def handle_share(args):
     :param args:file to share, username to share with
     :return: try to share the file and return answer to the client
     '''
+    path = args[0]
+    username = args[1]
+    ip = args[2]
+    myDB = DB('Trive')
+    if myDB.check_username_exist(username):
+        ans = Sfile.share_file(trive_location, path, username)
+    else:
+        ans = 'un'
+    msg_by_protocol = prot.create_share_file_response_msg(ans)
+    #encryption
+    network.send_msg(ip, msg_by_protocol)
 
 
 def handle_change_file_name(args):
