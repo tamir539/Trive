@@ -21,7 +21,6 @@ def create_Trive_directory(path):
         pass
 
 
-
 def check_network_q(network_q):
     '''
 
@@ -286,7 +285,7 @@ def handle_change_file_name(args):
     network.send_msg(ip, msg_by_protocol)
 
 #the loaction of all the files
-trive_location = 'C:\\Trive'
+trive_location = 'D:\\Trive'
 
 create_Trive_directory(trive_location)
 

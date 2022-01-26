@@ -785,6 +785,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         self.DestroyChildren()
 
         self.path += '\\' + folder_name
+        #print(self.files.keys())
         self.createFilesSizer(self.files[self.path])
 
     def download_ans(self, ans):
@@ -868,6 +869,8 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         :param file_name:name of file to rename
         :return: change the name on the screen
         '''
+        if self.getType(last_name) == 'folder':
+            self.change_folder_name(last_name, new_name)
         files: list = self.files[self.path]
         files[files.index(last_name)] = new_name
         self.DestroyChildren()
@@ -896,6 +899,31 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
             self.delete_file(file_name)
         else:
             wx.MessageBox('Delete error, try other name or try again later...', 'Trive error', wx.OK | wx.ICON_ERROR)
+
+    def change_folder_name(self, last_name, new_name):
+        '''
+
+        :param last_name:
+        :param new_name:
+        :return:
+        '''
+        new_dict = {}
+        for key in self.files.keys():
+            # print(key)
+            # print(self.files.keys())
+            print(key)
+            if last_name in key:
+                new_key = key.replace(last_name, new_name)
+                #print(key, '-> ', new_key)
+                new_dict[new_key] = self.files[key]
+                # del self.files[key]
+            else:
+                new_dict[key] = self.files[key]
+
+        self.files = new_dict
+        print(self.files)
+        if last_name in self.path:
+            self.path.replace(last_name, new_name)
 
 
 class AccountPanel(wx.Panel):
