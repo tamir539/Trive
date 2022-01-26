@@ -36,8 +36,7 @@ class ServerCom:
                 soc.send(msg.encode())
             except Exception as e:
                 print(f'in sendMsg - {str(e)}')
-            else:
-                print('sent ----- ', msg)
+
     def send_file(self, path):
         '''
 
@@ -72,43 +71,41 @@ class ServerCom:
                         self.socs[client] = address[0]
                     else:
                         self.send_msg(client, 'blocked')
-                        print('sent block')
                 else:
                     # receive data from exist client
                     try:
                         msg_len = current_socket.recv(3).decode()
                         msg = current_socket.recv(int(msg_len)).decode()
                     except Exception as e:
-                        print('in recv - ', str(e))
+                        print('in recv - ',self.port,  str(e))
                         del self.socs[current_socket]
                     else:
                         if not self.file:
                             self.q.put((msg, self.socs[current_socket]))
                         else:
-                            print('to recv file')
                             command, args = prot.unpack_msg(msg)
-                            length, file_name, file_path  = args
-                            self.recv_file(length, file_path)
+                            length, file_path, file_name  = args
+                            self.recv_file(length, file_path, file_name)
 
 
-    def recv_file(self, file_len, file_name):
+    def recv_file(self, file_len, file_path, file_name):
         '''
 
         :param file_len:length of the file to recive
         :param file_name: name of the file
         :return: recive all the file data, save it in the uploads folder, notify with msg in q when finish
         '''
-        print('22222')
         file_data = bytearray()
+        file_len = int(file_len)
         # recv all the data
         while len(file_data) < file_len:
-            print(1)
             size = file_len - len(file_data)
             try:
                 if size >= 1024:
-                    file_data.extend(self.socs[0].recv(1024))
+                    file_data.extend(list(self.socs.keys())[0].recv(1024))
                 else:
-                    file_data.extend(self.socs[0].recv(size))
+                    if size != 0:
+                        file_data.extend(list(self.socs.keys())[0].recv(size))
                     break
             except Exception as e:
                 print(f'in recv file - {str(e)}')
@@ -116,18 +113,14 @@ class ServerCom:
                 break
 
         if file_data is not None:
-            path = 'D:\\Trive\\uploads'
-            try:
-                os.makedirs(path)
-            except Exception as e:
-                print(f'in recv file 2 - {str(e)}')
-            else:
-                with open(path+'\\'+file_name, 'wb') as f:
-                    f.write(file_data)
-                self.q.put(('upload','ok',file_name, self.socs[0]))
+            with open(file_path + '\\' + file_name, 'wb') as f:
+                f.write(file_data)
+            self.q.put(('upload', 'ok', file_name, self.socs[list(self.socs.keys())[0]]))
         else:
-            self.q.put(('upload','no',file_name, self.socs[0]))
+            self.q.put(('upload','no',file_name, self.socs[list(self.socs.keys())[0]]))
         self.servSoc.close()
+        self.socs = {}
+        self.running = False
 
 
     def check_if_blocked(self, ip):

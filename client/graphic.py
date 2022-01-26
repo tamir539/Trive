@@ -255,13 +255,10 @@ class LoginPanel(wx.Panel):
         '''
 
         ans = answer.split(',')[0]
-        print('ans :' + ans)
-        email = answer.split(',')[1]
-        print('email :' + email)
-
         if ans == 'no':
             self.errorMsg('Wrong username or password')
         elif ans =='ok':
+            email = answer.split(',')[1]
             self.frame.username = self.username
             self.frame.email = email
             #move to loby
@@ -500,7 +497,7 @@ class LobyPanel(wx.Panel):
         # font for the text
         self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
-
+        pub.subscribe(self.uplod_answer, 'upload')
 
         #create the files scroller
         self.scrollFiles = ScrollFilesPanel(self, self.parent.frame)
@@ -565,7 +562,6 @@ class LobyPanel(wx.Panel):
         openFileDialog.ShowModal()
         path = openFileDialog.GetPath()
         openFileDialog.Destroy()
-        print(path)
         if self.getType(path.split('\\')[-1]) == 'no':
             self.errorMsg('Trive doesnt support this type of files')
         else:
@@ -644,6 +640,20 @@ class LobyPanel(wx.Panel):
         :return: create and shoe the error massage
         '''
         wx.MessageBox(msg, 'Trive Error', wx.OK | wx.ICON_HAND )
+
+    def uplod_answer(self, answer):
+        '''
+
+        :param answer:answer from the server from the upload
+        :return: show the answer for the server
+        '''
+        ans = answer.split(',')[0]
+        file_name = answer.split(',')[1]
+        if ans == 'ok':
+            wx.MessageBox(f'{file_name} uploaded successfully', 'Trive',wx.OK | wx.ICON_INFORMATION)
+            self.scrollFiles.add_file(file_name)
+        else:
+            wx.MessageBox(f'There was an error in uploading {file_name}', 'Trive Error',wx.OK | wx.ICON_ERROR)
 
 
 class ScrollFilesPanel(scrolled.ScrolledPanel):
@@ -786,7 +796,6 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         self.DestroyChildren()
 
         self.path += '\\' + folder_name
-        #print(self.files.keys())
         self.createFilesSizer(self.files[self.path])
 
     def download_ans(self, ans):
@@ -910,19 +919,13 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         '''
         new_dict = {}
         for key in self.files.keys():
-            # print(key)
-            # print(self.files.keys())
-            print(key)
             if last_name in key:
                 new_key = key.replace(last_name, new_name)
-                #print(key, '-> ', new_key)
                 new_dict[new_key] = self.files[key]
-                # del self.files[key]
             else:
                 new_dict[key] = self.files[key]
 
         self.files = new_dict
-        print(self.files)
         if last_name in self.path:
             self.path.replace(last_name, new_name)
 
@@ -938,6 +941,15 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
             wx.MessageBox('Username not exists!', 'Trive error', wx.OK | wx.ICON_ERROR)
         else:
             wx.MessageBox('There was an error sharing the file, try again later...!', 'Trive error', wx.OK | wx.ICON_ERROR)
+
+    def add_file(self, file_name):
+        '''
+
+        :return:add file to the current path
+        '''
+        self.files[self.path].append(file_name)
+        self.DestroyChildren()
+        self.createFilesSizer(self.files[self.path])
 
 
 class AccountPanel(wx.Panel):
@@ -973,7 +985,6 @@ class AccountPanel(wx.Panel):
         self.try_username = 'Username: ' + self.frame.username
 
         self.addOptins()
-        print('username: ', self.frame.username)
         #create the email text
         self.email = wx.StaticText(self, -1, label=try_email)
         self.email.SetForegroundColour(wx.WHITE)

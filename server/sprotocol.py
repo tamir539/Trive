@@ -44,7 +44,7 @@ def unpack_msg(msg):
     :param msg:msg from the client
     :return: unpack by the protocol and returns to the main server the msg and the relevants args
     '''
-    command_by_code = {'02': 'login', '03': 'register', '04': 'send_all_files', '16': 'upload_request',
+    command_by_code = {'02': 'login', '03': 'register', '04': 'send_all_files', '05': 'upload', '16': 'upload_request',
                        '06':'download', '07': 'delete', '08': 'add_to_folder', '09': 'create_folder',
                        '10': 'change_details', '11': 'share', '13': 'change_name', '14': 'forgot_password'}
     #the code of the msg

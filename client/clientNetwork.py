@@ -52,7 +52,6 @@ class ClientCom:
                     self.soc.close()
                     exit()
                 else:
-                    print('the mag in recive: ', msg)
                     self.q.put(msg)
 
     def send_msg(self, msg):
@@ -68,7 +67,7 @@ class ClientCom:
             print(f'in send msg - {str(e)}')
             self.soc.close()
 
-    def send_file(self, filePath, server_path):
+    def send_file(self, filePath, server_path, file_name):
         '''
 
         :param filePath: path for file
@@ -76,11 +75,10 @@ class ClientCom:
         '''
         file = open(filePath, 'rb')
         data = file.read()
-        print(len(data))
-        msg_after_protocol = prot.create_upload_file_msg(server_path, len(data))
+        msg_after_protocol = prot.create_upload_file_msg(server_path, len(data), file_name)
         total_msg = str(len(msg_after_protocol)).zfill(3) + msg_after_protocol
         try:
-            self.soc.send(total_msg.decode())
+            self.soc.send(total_msg.encode())
             self.soc.send(data)
         except Exception as e:
             print(f'in send file - {str(e)}')

@@ -33,20 +33,18 @@ def check_network_q(network_q):
                        'change_name': handle_change_file_name, 'forgot_password': handle_forgot_password}
     while True:
         msg = network_q.get()
-        print('msg ----->>>>> ', msg)
-        if msg[0].startswith('upload'):
+        if msg[0] == 'upload':
             handle_upload_status(msg[1:])
-        #do decryption
-        msg_after_unpack = prot.unpack_msg(msg[0])
-        print('msg after unpack -- ',msg_after_unpack)
-        #the command that the client requested
-        command = msg_after_unpack[0]
-        #the parameters the client gave
-        args = msg_after_unpack[1]
-        #the ip
-        args.append(msg[1])
-        print('argss after append: ' , args)
-        func_by_command[command](args)
+        else:
+            #do decryption
+            msg_after_unpack = prot.unpack_msg(msg[0])
+            #the command that the client requested
+            command = msg_after_unpack[0]
+            #the parameters the client gave
+            args = msg_after_unpack[1]
+            #the ip
+            args.append(msg[1])
+            func_by_command[command](args)
 
 
 def handle_login(args):
@@ -56,7 +54,6 @@ def handle_login(args):
     :return: check the login and returns answer to the client
     '''
     myDB = DB('Trive')
-    print('in handle login')
     username = args[0]
     password = args[1]
     ip = args[2]
@@ -66,7 +63,6 @@ def handle_login(args):
     if ip in trys_by_ip.keys() and trys_by_ip[ip] == 4:
         network.block_ip(ip)
         answer = 'blocked'
-        print(ip, ' blocked')
     elif myDB.check_username_exist(username) and password == hashed_password:#hashlib.md5(password.encode()) == hashed_password:
         answer = 'ok' + ',' + myDB.get_email_of_user(username)
         username_connected[ip] = username
@@ -80,7 +76,6 @@ def handle_login(args):
     #encryption
     #build the msg by the protocol
     ans_to_send = prot.create_login_response_msg(answer)
-    print('ans to send ', ans_to_send)
     #send the answer
     network.send_msg(ip, ans_to_send)
 
@@ -91,8 +86,6 @@ def handle_register(args):
     :param args: args to the register
     :return: check the register and returns answer to the client
     '''
-    print('in handle register')
-
     myDB = DB('Trive')
 
     username = args[0]
@@ -175,8 +168,7 @@ def handle_forgot_password(args):
         send.ehlo()
         send.starttls()
         send.login(sender, 'Triveamir539')
-        send.sendmail(sender, to, password)  # {password}')
-        print('email Sent')
+        send.sendmail(sender, to, password)
 
 
 def handle_send_all_files(username, ip):
@@ -195,8 +187,8 @@ def handle_upload_status(args):
     :param args: args to the upload
     :return: recive the file and return answer to the client
     '''
-    status, file_path, ip = args
-    msg_by_protocol = prot.create_upload_file_response_msg(status)
+    status, file_name, ip = args
+    msg_by_protocol = prot.create_upload_file_response_msg(status+','+file_name)
     #encryption
     network.send_msg(ip, msg_by_protocol)
 
@@ -204,7 +196,6 @@ def handle_upload_status(args):
 def handle_upload_request(args):
 
     ip = args[1]
-    print('ippppppppp ', ip)
     port = random.randint(1000, 65000)
     while port in taken_ports:
         port = random.randint(1000, 65000)
@@ -213,8 +204,6 @@ def handle_upload_request(args):
     #encryption
     network.send_msg(ip, msg_by_protocol)
     upload_network = ServerCom(port, network_q, True)
-    print('opened upload network')
-
 
 
 
@@ -244,7 +233,6 @@ def handle_download(args):
 
     send_netwotk = ServerCom(port, q)
     send_netwotk.send_file(path)
-    print('sent file ', path)
 
 
 def handle_delete(args):
@@ -276,9 +264,7 @@ def handle_create_folder(args):
     :param args:path to create the folder in
     :return: try to create the folder and return answer to the client
     '''
-    print('handle create folder')
     path = args[0]
-    print(path)
     ip = args[1]
     ans = Sfile.create_folder(path)
     answer = prot.create_create_folder_response_msg(ans)
@@ -321,7 +307,7 @@ def handle_change_file_name(args):
     network.send_msg(ip, msg_by_protocol)
 
 #the loaction of all the files
-trive_location = 'D:\\Trive'
+trive_location = 'C:\\Trive'
 
 create_Trive_directory(trive_location)
 

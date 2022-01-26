@@ -7,7 +7,15 @@ from pubsub import pub
 import cprotocol as prot
 import os
 import psutil
+import time
 
+
+global upload_server_path
+global upload_path
+global file_name
+upload_path = ''
+upload_server_path = ''
+file_name = ''
 
 def check_network_q(network_q):
     '''
@@ -22,12 +30,10 @@ def check_network_q(network_q):
         #decryption
         #unpack by protocol
         msg_after_unpack = prot.unpack(msg)
-        print(msg_after_unpack)
         #the command from the server
         command = msg_after_unpack[0]
         #the arguments from the server
         args = msg_after_unpack[1]
-        print('command: ', command)
         if command == 'upload_port':
             upload(args[0])
         elif command == 'download':
@@ -161,9 +167,13 @@ def send_upload_request(args):
     :param args:file path to file
     :return: send request to upload that file
     '''
-    print('in send upload')
+    global upload_path
+    global upload_server_path
+    global file_name
+
     #path in this computer
     upload_path = args[0]
+    file_name = upload_path[upload_path.rindex('\\') + 1:]
     #path to upload in the server
     upload_server_path = args[1]
     msg_by_protocol = prot.create_upload_request_file_msg()
@@ -172,11 +182,13 @@ def send_upload_request(args):
 
 
 def upload(port):
+    global upload_path
+    global upload_server_path
+    global file_name
 
     client_upload = ClientCom(server_ip, int(port), network_q)
-    client_upload.send_file(upload_path, upload_server_path)
-
-
+    time.sleep(1)
+    client_upload.send_file(upload_path, upload_server_path, file_name)
 
 
 def send_add_to_folder(args):
@@ -277,8 +289,7 @@ has_upload_server = False
 
 file_name_by_port = {}      #download port -> file name
 
-upload_path = ''
-upload_server_path = ''
+
 
 
 network = ClientCom(server_ip, 1111, network_q)

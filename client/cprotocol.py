@@ -67,7 +67,7 @@ def create_upload_request_file_msg():
     return code
 
 
-def create_upload_file_msg(file_new_path, file_len):
+def create_upload_file_msg(file_new_path, file_len, file_name):
     '''
 
     :param file_name: name of the file
@@ -76,7 +76,7 @@ def create_upload_file_msg(file_new_path, file_len):
     :return: creates the massage by the protocol
     '''
     code = '05'
-    msg = code + file_len +'&' + '&' + file_new_path
+    msg = code + str(file_len) + '&' + file_new_path + '&' + file_name
     return msg
 
 
