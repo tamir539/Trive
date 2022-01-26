@@ -6,8 +6,10 @@ import queue
 
 class MyFrame(wx.Frame):
     def __init__(self, q, parent=None):
-        self.username = ''
+
         super(MyFrame, self).__init__(parent, title="Trive", size=wx.DisplaySize())
+        self.username = ''
+        self.email = ''
         # create main panel - to put on the others panels
         main_panel = MainPanel(self)
         box = wx.BoxSizer(wx.VERTICAL)
@@ -212,7 +214,7 @@ class LoginPanel(wx.Panel):
         if not username or not password :
             self.errorMsg('You must enter username and password!')
         else:
-            self.frame.username = username
+            self.username = username
             self.frame.q.put((self.flag, [username, password]))
 
     def handle_reg(self,event):
@@ -251,9 +253,17 @@ class LoginPanel(wx.Panel):
         :param answer: answer from the server
         :return: if answer is "ok" go to the lobby, otherwise error msg
         '''
-        if answer == 'no':
+
+        ans = answer.split(',')[0]
+        print('ans :' + ans)
+        email = answer.split(',')[1]
+        print('email :' + email)
+
+        if ans == 'no':
             self.errorMsg('Wrong username or password')
-        elif answer =='ok':
+        elif ans =='ok':
+            self.frame.username = self.username
+            self.frame.email = email
             #move to loby
             self.Hide()
             self.parent.loby.Show()
@@ -605,6 +615,9 @@ class LobyPanel(wx.Panel):
         else:
             self.account.Show()
             self.scrollFiles.Hide()
+            #set the username and email of the user
+            self.account.username.SetLabel(f'Username: {self.frame.username}')
+            self.account.email.SetLabel(f'Email: {self.frame.email}')
             self.accountOrFiles.SetLabel('Files')
 
         self.inAccount = not self.inAccount
@@ -884,6 +897,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         else:
             wx.MessageBox('Delete error, try other name or try again later...', 'Trive error', wx.OK | wx.ICON_ERROR)
 
+
 class AccountPanel(wx.Panel):
 
     def __init__(self, parent, frame):
@@ -896,7 +910,6 @@ class AccountPanel(wx.Panel):
         wx.Panel.__init__(self, parent,pos =((screenDepth - panelDepth)//2, 200), size=(panelDepth, panelLength ), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
-        self.username = self.parent.parent.login.username
         self.__create_screen__()
 
     def __create_screen__(self):
@@ -915,23 +928,23 @@ class AccountPanel(wx.Panel):
         user_img = wx.StaticBitmap(self, -1 ,user,  pos = (wx.DisplaySize()[0] - wx.DisplaySize()[0]//7, 30), size = (user.GetWidth(), user.GetHeight()))
 
         try_email = 'Email: tamir.burstein@gmail.com'
-        try_username = 'Username: ' + self.frame.username
+        self.try_username = 'Username: ' + self.frame.username
 
         self.addOptins()
-
+        print('username: ', self.frame.username)
         #create the email text
-        email = wx.StaticText(self, -1, label=try_email)
-        email.SetForegroundColour(wx.WHITE)
-        email.SetFont(self.font)
+        self.email = wx.StaticText(self, -1, label=try_email)
+        self.email.SetForegroundColour(wx.WHITE)
+        self.email.SetFont(self.font)
 
         # create the username text
-        username = wx.StaticText(self, -1, try_username)
-        username.SetForegroundColour(wx.WHITE)
-        username.SetFont(self.font)
+        self.username = wx.StaticText(self, -1, label = self.try_username)
+        self.username.SetForegroundColour(wx.WHITE)
+        self.username.SetFont(self.font)
 
         self.sizer.Add(user_img,0, wx.ALIGN_CENTER | wx.ALL, 5)
-        self.sizer.Add(email,0,wx.ALL, 5)
-        self.sizer.Add(username, 0, wx.ALL, 5)
+        self.sizer.Add(self.email,0,wx.ALL, 5)
+        self.sizer.Add(self.username, 0, wx.ALL, 5)
         self.sizer.AddSpacer(100)
         self.sizer.Add(self.optionsSizer, 0, wx.ALIGN_CENTER | wx.ALL, 5)
 

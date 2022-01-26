@@ -64,7 +64,7 @@ def handle_login(args):
         answer = 'blocked'
         print(ip, ' blocked')
     elif myDB.check_username_exist(username) and password == hashed_password:#hashlib.md5(password.encode()) == hashed_password:
-        answer = 'ok'
+        answer = 'ok' + ',' + myDB.get_email_of_user(username)
         username_connected[ip] = username
         handle_send_all_files(username, ip)
     else:
@@ -76,6 +76,7 @@ def handle_login(args):
     #encryption
     #build the msg by the protocol
     ans_to_send = prot.create_login_response_msg(answer)
+    print('ans to send ', ans_to_send)
     #send the answer
     network.send_msg(ip, ans_to_send)
 
