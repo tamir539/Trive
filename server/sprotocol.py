@@ -44,7 +44,7 @@ def unpack_msg(msg):
     :param msg:msg from the client
     :return: unpack by the protocol and returns to the main server the msg and the relevants args
     '''
-    command_by_code = {'02': 'login', '03': 'register', '04': 'send_all_files', '05': 'upload',
+    command_by_code = {'02': 'login', '03': 'register', '04': 'send_all_files', '16': 'upload_request',
                        '06':'download', '07': 'delete', '08': 'add_to_folder', '09': 'create_folder',
                        '10': 'change_details', '11': 'share', '13': 'change_name', '14': 'forgot_password'}
     #the code of the msg
@@ -92,6 +92,15 @@ def create_upload_file_response_msg(msg):
     :return:build and return the msg by the protocol
     '''
     return create_response('05', msg)
+
+
+def create_upload_file_response_port_msg(msg):
+    '''
+
+    :param msg:string that describes response to upload
+    :return:build and return the msg by the protocol
+    '''
+    return create_response('16', msg)
 
 
 def create_delete_file_response_msg(msg):

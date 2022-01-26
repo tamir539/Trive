@@ -4,10 +4,11 @@ import queue
 import threading
 import time
 import os
+import sprotocol as prot
 
 class ServerCom:
 
-    def __init__(self, port, q):
+    def __init__(self, port, q, file = False):
         '''
 
         :param port:port to talk with a client
@@ -18,6 +19,7 @@ class ServerCom:
         self.q = q
         self.socs = {}  #socket -> his ip adress
         self.running = True
+        self.file = file
         threading.Thread(target=self.recv_msg).start()
 
     def send_msg(self, ip, msg):
@@ -34,7 +36,8 @@ class ServerCom:
                 soc.send(msg.encode())
             except Exception as e:
                 print(f'in sendMsg - {str(e)}')
-
+            else:
+                print('sent ----- ', msg)
     def send_file(self, path):
         '''
 
@@ -79,7 +82,14 @@ class ServerCom:
                         print('in recv - ', str(e))
                         del self.socs[current_socket]
                     else:
-                        self.q.put((msg, self.socs[current_socket]))
+                        if not self.file:
+                            self.q.put((msg, self.socs[current_socket]))
+                        else:
+                            print('to recv file')
+                            command, args = prot.unpack_msg(msg)
+                            length, file_name, file_path  = args
+                            self.recv_file(length, file_path)
+
 
     def recv_file(self, file_len, file_name):
         '''
@@ -106,7 +116,7 @@ class ServerCom:
                 break
 
         if file_data is not None:
-            path = 'C:\\Trive\\uploads'
+            path = 'D:\\Trive\\uploads'
             try:
                 os.makedirs(path)
             except Exception as e:
@@ -114,8 +124,11 @@ class ServerCom:
             else:
                 with open(path+'\\'+file_name, 'wb') as f:
                     f.write(file_data)
-                self.q.put((f'got-{file_name}', self.socs[0]))
-                print(self.q.get())
+                self.q.put(('upload','ok',file_name, self.socs[0]))
+        else:
+            self.q.put(('upload','no',file_name, self.socs[0]))
+        self.servSoc.close()
+
 
     def check_if_blocked(self, ip):
         '''

@@ -3,6 +3,7 @@ import queue
 import threading
 import os
 import time
+import cprotocol as prot
 
 
 class ClientCom:
@@ -45,11 +46,13 @@ class ClientCom:
                 try:
                     msg_len = int(self.soc.recv(3).decode())
                     msg = self.soc.recv(msg_len).decode()
+
                 except Exception as e:
                     print(f'in recv msg 2 - {str(e)}')
                     self.soc.close()
                     exit()
                 else:
+                    print('the mag in recive: ', msg)
                     self.q.put(msg)
 
     def send_msg(self, msg):
@@ -65,7 +68,7 @@ class ClientCom:
             print(f'in send msg - {str(e)}')
             self.soc.close()
 
-    def send_file(self, filePath):
+    def send_file(self, filePath, server_path):
         '''
 
         :param filePath: path for file
@@ -74,7 +77,10 @@ class ClientCom:
         file = open(filePath, 'rb')
         data = file.read()
         print(len(data))
+        msg_after_protocol = prot.create_upload_file_msg(server_path, len(data))
+        total_msg = str(len(msg_after_protocol)).zfill(3) + msg_after_protocol
         try:
+            self.soc.send(total_msg.decode())
             self.soc.send(data)
         except Exception as e:
             print(f'in send file - {str(e)}')

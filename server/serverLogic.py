@@ -27,20 +27,25 @@ def check_network_q(network_q):
     :param q:network queue
     :return: check if there is a new massage
     '''
-    func_by_command = {'login': handle_login, 'register': handle_register, 'upload': handle_upload,
+    func_by_command = {'login': handle_login, 'register': handle_register, 'upload_request': handle_upload_request,
                        'download' : handle_download, 'delete': handle_delete, 'add_to_folder': handle_add_to_folder,
                        'create_folder':handle_create_folder, 'change_details': handle_change_details, 'share': handle_share,
                        'change_name': handle_change_file_name, 'forgot_password': handle_forgot_password}
     while True:
         msg = network_q.get()
+        print('msg ----->>>>> ', msg)
+        if msg[0].startswith('upload'):
+            handle_upload_status(msg[1:])
         #do decryption
         msg_after_unpack = prot.unpack_msg(msg[0])
+        print('msg after unpack -- ',msg_after_unpack)
         #the command that the client requested
         command = msg_after_unpack[0]
         #the parameters the client gave
         args = msg_after_unpack[1]
         #the ip
         args.append(msg[1])
+        print('argss after append: ' , args)
         func_by_command[command](args)
 
 
@@ -184,13 +189,33 @@ def handle_send_all_files(username, ip):
     network.send_msg(ip, msg_by_protocol)
 
 
-def handle_upload(args):
+def handle_upload_status(args):
     '''
 
     :param args: args to the upload
     :return: recive the file and return answer to the client
     '''
-    pass
+    status, file_path, ip = args
+    msg_by_protocol = prot.create_upload_file_response_msg(status)
+    #encryption
+    network.send_msg(ip, msg_by_protocol)
+
+
+def handle_upload_request(args):
+
+    ip = args[1]
+    print('ippppppppp ', ip)
+    port = random.randint(1000, 65000)
+    while port in taken_ports:
+        port = random.randint(1000, 65000)
+
+    msg_by_protocol = prot.create_upload_file_response_port_msg(str(port))
+    #encryption
+    network.send_msg(ip, msg_by_protocol)
+    upload_network = ServerCom(port, network_q, True)
+    print('opened upload network')
+
+
 
 
 def handle_download(args):

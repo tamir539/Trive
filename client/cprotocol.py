@@ -11,7 +11,8 @@ def unpack(msg):
     '''
     command_by_code = {'02': 'login', '03': 'register', '04': 'get_all_files', '05': 'upload',
                        '06': 'download', '07': 'delete', '08': 'add_to_folder', '09': 'create_folder',
-                       '10': 'change_details', '11': 'share', '13': 'rename', '14': 'forgot_password'}
+                       '10': 'change_details', '11': 'share', '13': 'rename', '14': 'forgot_password',
+                       '16': 'upload_port'}
     code = msg[:2]
     msg = msg[2:]
     args = msg.split('&')
@@ -54,7 +55,19 @@ def create_all_file_recive_msg(ans):
     return msg
 
 
-def create_upload_file_msg(file_name, file_new_path, file_len):
+def create_upload_request_file_msg():
+    '''
+
+    :param file_name: name of the file
+    :param file_new_path: where to put the file in the server
+    :param file_len: file length
+    :return: creates the massage by the protocol
+    '''
+    code = '16'
+    return code
+
+
+def create_upload_file_msg(file_new_path, file_len):
     '''
 
     :param file_name: name of the file
@@ -63,7 +76,7 @@ def create_upload_file_msg(file_name, file_new_path, file_len):
     :return: creates the massage by the protocol
     '''
     code = '05'
-    msg = code + file_len +'&' + file_name + '&' + file_new_path
+    msg = code + file_len +'&' + '&' + file_new_path
     return msg
 
 

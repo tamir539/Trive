@@ -569,7 +569,7 @@ class LobyPanel(wx.Panel):
         if self.getType(path.split('\\')[-1]) == 'no':
             self.errorMsg('Trive doesnt support this type of files')
         else:
-            self.frame.q.put(('upload', [path]))
+            self.frame.q.put(('upload', [path, self.scrollFiles.path]))
 
     def getType(self, fileName):
         '''

@@ -22,11 +22,15 @@ def check_network_q(network_q):
         #decryption
         #unpack by protocol
         msg_after_unpack = prot.unpack(msg)
+        print(msg_after_unpack)
         #the command from the server
         command = msg_after_unpack[0]
         #the arguments from the server
         args = msg_after_unpack[1]
-        if command == 'download':
+        print('command: ', command)
+        if command == 'upload_port':
+            upload(args[0])
+        elif command == 'download':
             threading.Thread(target= download_answer, args = (args, )).start()
         else:
             wx.CallAfter(pub.sendMessage, command, answer = args[0])
@@ -39,7 +43,7 @@ def check_graphic_q(graphic_q):
     :return: check if there is a new massage
     '''
     func_by_command = {'register': send_register, 'login': send_login, 'forgot_password': send_forgot_password, 'change_detail': send_change_detail,
-                       'download': send_download, 'upload': send_upload, 'share': send_share, 'add_to_folder': send_add_to_folder, 'rename': send_rename,
+                       'download': send_download, 'upload': send_upload_request, 'share': send_share, 'add_to_folder': send_add_to_folder, 'rename': send_rename,
                        'delete': send_delete, 'create_folder': send_create_folder}
     while True:
         msg = graphic_q.get()
@@ -151,13 +155,28 @@ def send_rename(args):
     network.send_msg(msg_by_protocol)
 
 
-def send_upload(args):
+def send_upload_request(args):
     '''
 
     :param args:file path to file
     :return: send request to upload that file
     '''
     print('in send upload')
+    #path in this computer
+    upload_path = args[0]
+    #path to upload in the server
+    upload_server_path = args[1]
+    msg_by_protocol = prot.create_upload_request_file_msg()
+    #encryption
+    network.send_msg(msg_by_protocol)
+
+
+def upload(port):
+
+    client_upload = ClientCom(server_ip, int(port), network_q)
+    client_upload.send_file(upload_path, upload_server_path)
+
+
 
 
 def send_add_to_folder(args):
@@ -254,7 +273,13 @@ network_q = queue.Queue()
 graphic_q = queue.Queue()
 server_ip = '127.0.0.1'
 
+has_upload_server = False
+
 file_name_by_port = {}      #download port -> file name
+
+upload_path = ''
+upload_server_path = ''
+
 
 network = ClientCom(server_ip, 1111, network_q)
 
