@@ -2,7 +2,6 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 from pubsub import pub
 import queue
-import threading
 
 
 class MyFrame(wx.Frame):
@@ -11,6 +10,9 @@ class MyFrame(wx.Frame):
         super(MyFrame, self).__init__(parent, title="Trive", size=wx.DisplaySize())
         self.username = ''
         self.email = ''
+        self.status_bar = self.CreateStatusBar(1)
+        self.status_bar.SetBackgroundColour(wx.BLACK)
+
         # create main panel - to put on the others panels
         main_panel = MainPanel(self)
         box = wx.BoxSizer(wx.VERTICAL)
@@ -562,13 +564,14 @@ class LobyPanel(wx.Panel):
         openFileDialog = wx.FileDialog(self, "Open", "", "", "",wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         openFileDialog.ShowModal()
         path = openFileDialog.GetPath()
+        file_name = path[path.rindex('\\') + 1:]
         openFileDialog.Destroy()
-        if self.getType(path.split('\\')[-1]) == 'no':
+        if self.getType(path.split('\\')[-1]) == 'no' and 1!=1:
             self.errorMsg('Trive doesnt support this type of files')
         else:
+            self.frame.status_bar.SetBackgroundColour(wx.WHITE)
+            self.frame.status_bar.SetStatusText(f'Uploading {file_name}')
             self.frame.q.put(('upload', [path, self.scrollFiles.path]))
-            self.uploading = True
-            self.loading_upload()
 
     def getType(self, fileName):
         '''
@@ -650,7 +653,8 @@ class LobyPanel(wx.Panel):
         :param answer:answer from the server from the upload
         :return: show the answer for the server
         '''
-
+        self.frame.status_bar.SetBackgroundColour(wx.BLACK)
+        self.frame.status_bar.SetStatusText('')
         ans = answer.split(',')[0]
         file_name = answer.split(',')[1]
         if ans == 'ok':
@@ -658,14 +662,6 @@ class LobyPanel(wx.Panel):
             self.scrollFiles.add_file(file_name)
         else:
             wx.MessageBox(f'There was an error in uploading {file_name}', 'Trive Error',wx.OK | wx.ICON_ERROR)
-
-    def loading_upload(self):
-        """
-        Copied from the wxPython demo
-        """
-        self.loading = wx.MessageBox('Uploading...', 'Trive')
-
-
 
 
 class ScrollFilesPanel(scrolled.ScrolledPanel):
@@ -685,10 +681,6 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         self.parent = parent
         self.files = {}     #folder path -> all the files in this path
         self.got_files = False
-
-
-
-
         self.path = ''      #the virtual path we are in
 
         self.__create_screen__()
@@ -724,17 +716,21 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         self.filesSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         itemsInsizerCount = 0
+        char_count = 0
+        self.placeFilesSizer.AddSpacer(20)
 
         for file in files:
-            if itemsInsizerCount > 9:   #check that there are not more then 10 files in a row
+            if char_count + len(file) > 70 or itemsInsizerCount > 6:   #check that there are not more then 10 files in a row
                 self.placeFilesSizer.Add(self.filesSizer)
                 self.filesSizer = wx.BoxSizer(wx.HORIZONTAL)
                 self.placeFilesSizer.AddSpacer(50)
                 itemsInsizerCount = 0
+                char_count = 0
 
             self.filesSizer.AddSpacer(45)
             self.filesSizer.Add(self.createFileSizer(file), 0, flag=wx.ALIGN_CENTER | wx.ALL)
             itemsInsizerCount += 1
+            char_count += len(file)
 
         self.placeFilesSizer.Add(self.filesSizer)
         self.SetSizer(self.placeFilesSizer)
@@ -785,7 +781,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
             typ = fileName.split('.')[1]
             if typ == 'jpg' or typ == 'bmp' or typ == 'png' or typ == 'svg':
                 return 'image'
-            elif typ == 'txt' or typ == 'py' or typ == 'java' or typ == 'word' or typ == 'bin' or typ == 'doc' or typ == 'docx' or typ == 'asm':
+            elif typ == 'txt' or typ == 'py' or typ == 'java' or typ == 'word' or typ == 'bin' or typ == 'doc' or typ == 'docx' or typ == 'asm' or typ == 'pdf':
                 return 'file'
             else:
                 return 'no'
@@ -811,6 +807,13 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         self.createFilesSizer(self.files[self.path])
 
     def download_ans(self, ans):
+        '''
+
+        :param ans:answer from the server about the download
+        :return: show the answer for the user
+        '''
+        self.frame.status_bar.SetBackgroundColour(wx.BLACK)
+        self.frame.status_bar.SetStatusText('')
         if ans == 'ok':
             wx.MessageBox('Downloaded successfully', 'Trive', wx.OK | wx.ICON_INFORMATION)
         else:
@@ -1141,6 +1144,8 @@ class OptionsMenu(wx.Menu):
 
     def download(self):
         self.parent.frame.q.put(('download', [self.path + '\\' + self.file_name]))
+        self.parent.frame.status_bar.SetBackgroundColour(wx.WHITE)
+        self.parent.frame.status_bar.SetStatusText(f'Downloading {self.file_name}')
 
     def rename(self):
 
