@@ -2,6 +2,7 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 from pubsub import pub
 import queue
+import threading
 
 
 class MyFrame(wx.Frame):
@@ -477,7 +478,7 @@ class LobyPanel(wx.Panel):
         self.inAccount = False
         self.account = None
         self.scrollFiles = None
-
+        self.loading = None
         self.new_folder_name = ''
         self.__create_screen__()
 
@@ -566,6 +567,8 @@ class LobyPanel(wx.Panel):
             self.errorMsg('Trive doesnt support this type of files')
         else:
             self.frame.q.put(('upload', [path, self.scrollFiles.path]))
+            self.uploading = True
+            self.loading_upload()
 
     def getType(self, fileName):
         '''
@@ -647,6 +650,7 @@ class LobyPanel(wx.Panel):
         :param answer:answer from the server from the upload
         :return: show the answer for the server
         '''
+
         ans = answer.split(',')[0]
         file_name = answer.split(',')[1]
         if ans == 'ok':
@@ -654,6 +658,14 @@ class LobyPanel(wx.Panel):
             self.scrollFiles.add_file(file_name)
         else:
             wx.MessageBox(f'There was an error in uploading {file_name}', 'Trive Error',wx.OK | wx.ICON_ERROR)
+
+    def loading_upload(self):
+        """
+        Copied from the wxPython demo
+        """
+        self.loading = wx.MessageBox('Uploading...', 'Trive')
+
+
 
 
 class ScrollFilesPanel(scrolled.ScrolledPanel):
@@ -940,16 +952,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         elif answer == 'un':
             wx.MessageBox('Username not exists!', 'Trive error', wx.OK | wx.ICON_ERROR)
         else:
-            wx.MessageBox('There was an error sharing the file, try again later...!', 'Trive error', wx.OK | wx.ICON_ERROR)
-
-    def add_file(self, file_name):
-        '''
-
-        :return:add file to the current path
-        '''
-        self.files[self.path].append(file_name)
-        self.DestroyChildren()
-        self.createFilesSizer(self.files[self.path])
+            wx.MessageBox('There was an error sharing the file, try again later...!', 'Trive error', wx.OK | wx.ICON_ERROR)\
 
 
 class AccountPanel(wx.Panel):
@@ -964,6 +967,9 @@ class AccountPanel(wx.Panel):
         wx.Panel.__init__(self, parent,pos =((screenDepth - panelDepth)//2, 200), size=(panelDepth, panelLength ), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
+        #in case that the user change his email
+        self.new_email = ''
+        self.change_type = ''       #if last change was email -> 'email', otherwise - 'password'
         self.__create_screen__()
 
     def __create_screen__(self):
@@ -1052,6 +1058,7 @@ class AccountPanel(wx.Panel):
             new_password = dlg.GetValue()
             self.frame.q.put(('change_detail', [f'password:{new_password}']))
             pub.subscribe(self.handle_change_details_ans, 'change_details')
+            self.change_type = 'password'
 
     def handle_change_email(self, event):
         '''
@@ -1066,6 +1073,8 @@ class AccountPanel(wx.Panel):
             new_email = dlg.GetValue()
             self.frame.q.put(('change_detail', [f'email:{new_email}']))
             pub.subscribe(self.handle_change_details_ans, 'change_details')
+            self.change_type = 'email'
+            self.new_email = new_email
 
     def handle_logOut(self, event):
         pass
@@ -1074,6 +1083,8 @@ class AccountPanel(wx.Panel):
 
         if answer == 'ok':
             wx.MessageBox('change detail successfully', 'Trive', wx.OK | wx.ICON_INFORMATION)
+            if self.change_type == 'email':
+                self.email.SetLabel(f'Email: {self.new_email}')
         else:
             wx.MessageBox('there was an error changing the detail, try again later', 'Trive error', wx.OK | wx.ICON_ERROR)
 
