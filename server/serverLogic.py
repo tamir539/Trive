@@ -8,6 +8,7 @@ import smtplib
 import random
 import Sfile
 import os
+import string
 
 
 def create_Trive_directory(path):
@@ -63,7 +64,7 @@ def handle_login(args):
     if ip in trys_by_ip.keys() and trys_by_ip[ip] == 4:
         network.block_ip(ip)
         answer = 'blocked'
-    elif myDB.check_username_exist(username) and password == hashed_password:#hashlib.md5(password.encode()) == hashed_password:
+    elif myDB.check_username_exist(username) and hashlib.md5(password.encode()).hexdigest() == hashed_password:
         answer = 'ok' + ',' + myDB.get_email_of_user(username)
         username_connected[ip] = username
         handle_send_all_files(username, ip)
@@ -89,7 +90,7 @@ def handle_register(args):
     myDB = DB('Trive')
 
     username = args[0]
-    password = args[1]
+    password = hashlib.md5(args[1].encode()).hexdigest()
     email = args[2]
     ip = args[3]
     # send username and password to decryption
@@ -126,7 +127,8 @@ def handle_change_details(args):
     if change == 'email':
         ans = myDB.change_email(username, new_value)
     else:
-        ans = myDB.change_password(username, new_value)
+        password = hashlib.md5(new_value.encode()).hexdigest()
+        ans = myDB.change_password(username, password)
 
     msg_by_protocol = prot.create_change_detail_response_msg(ans)
 
@@ -194,7 +196,11 @@ def handle_upload_status(args):
 
 
 def handle_upload_request(args):
+    '''
 
+    :param args:ip
+    :return: create server upload and send the new port to the client
+    '''
     ip = args[1]
     port = random.randint(1000, 65000)
     while port in taken_ports:
@@ -204,7 +210,6 @@ def handle_upload_request(args):
     #encryption
     network.send_msg(ip, msg_by_protocol)
     upload_network = ServerCom(port, network_q, True)
-
 
 
 def handle_download(args):
@@ -306,6 +311,51 @@ def handle_change_file_name(args):
     #encryption
     network.send_msg(ip, msg_by_protocol)
 
+
+def get_key(username):
+    '''
+
+    :param username: username
+    :return: returns the key of the username
+    '''
+    file = open('key_by_username.txt', 'r')
+    data = file.read()
+    lines = data.split('\n')
+    file.close()
+    for line in lines:
+        if line.startswith(username):
+            return line.split('-')[1]
+
+
+def set_key(username):
+    '''
+
+    :param username:username
+    :return: creates new key for the username and return the new key
+    '''
+    #get all the current keys
+    file = open('key_by_username.txt', 'r')
+    data = file.read()
+    lines = data.split('\n')
+    keys = []
+    file.close()
+    for line in lines:
+        if line.startswith(username):
+            keys.append(line.split('-')[1])
+
+    # #create a random key
+    key = string.ascii_lowercase
+    key = ''.join(random.sample(key, len(key)))
+    while key in keys:
+         key = string.ascii_lowercase
+         key = ''.join(random.sample(key, len(key)))
+    #add the key to the file
+    file = open('key_by_username.txt', 'a')
+    file.write(f'\n{username}-{key}')
+    file.close()
+    return key
+
+
 #the loaction of all the files
 trive_location = 'C:\\Trive'
 
@@ -315,8 +365,6 @@ create_Trive_directory(trive_location)
 network_q = queue.Queue()
 trys_by_ip = {} #ip -> times that tryd to login from this ip
 taken_ports = []    #all the taken ports
-
-
 
 
 network = ServerCom(1111, network_q)
