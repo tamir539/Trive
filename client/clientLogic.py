@@ -8,6 +8,8 @@ import cprotocol as prot
 import os
 import psutil
 import time
+from Encryption import AESCipher
+from Encryption import Defi
 
 
 global upload_server_path
@@ -16,6 +18,7 @@ global file_name
 upload_path = ''
 upload_server_path = ''
 file_name = ''
+
 
 def check_network_q(network_q):
     '''
@@ -213,7 +216,6 @@ def send_share(args):
     network.send_msg(msg_by_protocol)
 
 
-
 def send_delete(args):
     '''
 
@@ -224,7 +226,6 @@ def send_delete(args):
     msg_by_protocol = prot.create_delete_file_request_msg(path)
     #encryption
     network.send_msg(msg_by_protocol)
-
 
 
 def send_create_folder(args):
@@ -289,11 +290,7 @@ has_upload_server = False
 
 file_name_by_port = {}      #download port -> file name
 
-
-
-
 network = ClientCom(server_ip, 1111, network_q)
-
 
 threading.Thread(target= start_graphic, args= (graphic_q, )).start()
 threading.Thread(target= check_network_q, args= (network_q, ), daemon=True).start()

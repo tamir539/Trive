@@ -2,13 +2,47 @@ import queue
 import threading
 import sprotocol as prot
 from serverNetwork import ServerCom
-from dataBase import  DB
+from dataBase import DB
 import hashlib
 import smtplib
 import random
 import Sfile
 import os
 import string
+from Encryption import AESCipher
+from Encryption import Defi
+
+
+def encrypt_key(key):
+    '''
+
+    :param key:aes key
+    :return: encryption aes key
+    '''
+    s = 11
+    new_key = ''
+    for i in range(len(key)):
+        char = key[i]
+        # Encrypt lowercase characters in plain text
+        new_key += chr((ord(char) + s - 97) % 26 + 97)
+    return new_key
+
+
+def decrypt_key(key):
+    '''
+
+    :param key:encrypted key
+    :return: dectypted key
+    '''
+    letters = 'abcdefghijklmnopqrstuvwxyz'
+    new_key = ''
+    for c in key:
+        num = letters.find(c)
+        num = num - 11
+        if num < 0:
+            num = num + len(letters)
+        new_key = new_key + letters[num]
+    return new_key
 
 
 def create_Trive_directory(path):
@@ -93,9 +127,10 @@ def handle_register(args):
     password = hashlib.md5(args[1].encode()).hexdigest()
     email = args[2]
     ip = args[3]
+    key = set_key()
     # send username and password to decryption
     answer = 'un'
-    if myDB.add_user(username, email, password):
+    if myDB.add_user(username, email, password, key):
         answer = 'ok'
         try:
             os.makedirs(f'{trive_location}\\{username}\\shared')
@@ -312,48 +347,22 @@ def handle_change_file_name(args):
     network.send_msg(ip, msg_by_protocol)
 
 
-def get_key(username):
-    '''
-
-    :param username: username
-    :return: returns the key of the username
-    '''
-    file = open('key_by_username.txt', 'r')
-    data = file.read()
-    lines = data.split('\n')
-    file.close()
-    for line in lines:
-        if line.startswith(username):
-            return line.split('-')[1]
-
-
-def set_key(username):
+def set_key():
     '''
 
     :param username:username
     :return: creates new key for the username and return the new key
     '''
+    myDB = DB('trive')
     #get all the current keys
-    file = open('key_by_username.txt', 'r')
-    data = file.read()
-    lines = data.split('\n')
-    keys = []
-    file.close()
-    for line in lines:
-        if line.startswith(username):
-            keys.append(line.split('-')[1])
-
+    keys = myDB.get_all_keys()
     # #create a random key
     key = string.ascii_lowercase
     key = ''.join(random.sample(key, len(key)))
     while key in keys:
          key = string.ascii_lowercase
          key = ''.join(random.sample(key, len(key)))
-    #add the key to the file
-    file = open('key_by_username.txt', 'a')
-    file.write(f'\n{username}-{key}')
-    file.close()
-    return key
+    return encrypt_key(key)
 
 
 #the loaction of all the files

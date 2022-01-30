@@ -31,7 +31,7 @@ class DB:
 
         :return: creates the users table if not exists
         '''
-        users = F"CREATE TABLE IF NOT EXISTS {self.usersTable} (Username TEXT, Email TEXT, Password TEXT)"
+        users = F"CREATE TABLE IF NOT EXISTS {self.usersTable} (Username TEXT, Email TEXT, Password TEXT, Key TEXT)"
         self.cursor.execute(users)
         self.conn.commit()
 
@@ -54,7 +54,7 @@ class DB:
         self.cursor.execute(sql)
         return not (len(self.cursor.fetchall()) == 0)
 
-    def add_user(self, username, email, password):
+    def add_user(self, username, email, password, key):
         '''
 
         :param username:
@@ -65,7 +65,7 @@ class DB:
         ret = False
         if not (self.check_username_exist(username)):
             ret = True
-            sql = f"INSERT INTO {self.usersTable} VALUES ('{username}','{email}','{password}')"
+            sql = f"INSERT INTO {self.usersTable} VALUES ('{username}','{email}','{password}','{key}')"
             self.cursor.execute(sql)
             self.conn.commit()
         return ret
@@ -83,7 +83,6 @@ class DB:
             self.conn.commit()
             return 'ok'
         return 'no'
-
 
     def change_email(self, username, newEmail):
         '''
@@ -127,6 +126,31 @@ class DB:
         else:
             return
 
+    def get_key_of_user(self, username):
+        '''
+        :param username:username
+        :return: key of username
+        '''
+        if self.check_username_exist(username):
+            sql = f"SELECT Key from {self.usersTable} WHERE Username == '{username}'"
+            self.cursor.execute(sql)
+            key = self.cursor.fetchall()
+            return key[0][0]
+        else:
+            return
+
+    def get_all_keys(self):
+        '''
+
+        :return:all the keys
+        '''
+        sql = f"SELECT Key from {self.usersTable}"
+        self.cursor.execute(sql)
+        key = self.cursor.fetchall()
+        keys = []
+        for k in key:
+            keys.append(k[0])
+        return keys
 
     def check_ip_exist_for_username(self, username, ip):
         '''
@@ -173,10 +197,15 @@ class DB:
             ret = True
         return ret
 
+
+
+
 if __name__ == '__main__':
     myDB = DB('Trive')
-    myDB.add_user('Tamir539', 'tamir.burstein@gmail.com', 'fdjighfduighgfd')
+    myDB.add_user('jhfgj', 'tamir.burstein@gmail.com', 'fdjighfduighgfd', '123')
     print(myDB.check_username_exist('Tamir539'))
-    myDB.add_ip_for_username('Tamir539', '1.1.1.1')
+
+    #myDB.add_ip_for_username('Tamir539', '1.1.1.1')
+    myDB.get_all_keys()
 
 
