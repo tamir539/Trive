@@ -42,11 +42,21 @@ class AESCipher(object):
 
 class Defi:
     def __init__(self):
-        self.a = random.randint(1, 283)
+        self.a = random.randint(1, 100000)
 
     def publish(self):
-        return 47 ** self.a % 283
+        return 47 ** self.a % 100000
 
     def compute_secret(self, gb):
-        return gb ** self.a % 283
+        return gb ** self.a % 100000
+
+
+
+if __name__ == '__main__':
+    client1 = Defi()
+    print(client1.publish())
+    server1 = Defi()
+    print(server1.publish())
+    print(client1.compute_secret(server1.publish()))
+    print(server1.compute_secret(client1.publish()))
 

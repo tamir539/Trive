@@ -2,6 +2,7 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 from pubsub import pub
 import queue
+import re
 
 
 class MyFrame(wx.Frame):
@@ -445,8 +446,14 @@ class RegisterPanel(wx.Panel):
         password = self.passWordField.GetValue()
         email = self.emailField.GetValue()
 
+        #check email input
+        pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+        result = re.match(pattern, email)
+
         if not username or not password or not email:
             self.errorMsg('You must enter username, password and email')
+        elif not result:
+            wx.MessageBox('Invalid Email', 'Trive Error', wx.OK | wx.ICON_ERROR)
         else:
             self.email = email
             self.username = username
@@ -1153,7 +1160,21 @@ class OptionsMenu(wx.Menu):
 
         if dlg.ShowModal() == wx.ID_OK:
             name = dlg.GetValue()
-            self.parent.frame.q.put(('rename', [self.path + '\\' + self.file_name, name]))
+            #check input for the new name
+            if self.file_typ == 'folder':
+                pattern = "^[A-Za-z1-9_!#&]*$"
+                result = re.match(pattern, name)
+            elif self.file_typ == 'file':
+                pattern = "^[\w,\s-]+\.[A-Za-z1-9_]{1,4}$"
+                result = re.match(pattern, name) and self.parent.getType(name) == 'file'
+            else:
+                pattern = "^[\w,\s-]+\.[A-Za-z1-9_]{1,4}$"
+                result = re.match(pattern, name) and self.parent.getType(name) == 'image'
+
+            if result:
+                self.parent.frame.q.put(('rename', [self.path + '\\' + self.file_name, name]))
+            else:
+                wx.MessageBox('Invalid name', 'Trive Error', wx.OK | wx.ICON_ERROR)
 
     def share(self):
 

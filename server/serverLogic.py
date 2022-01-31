@@ -366,7 +366,7 @@ def set_key():
 
 
 #the loaction of all the files
-trive_location = 'C:\\Trive'
+trive_location = 'D:\\Trive'
 
 create_Trive_directory(trive_location)
 
