@@ -42,10 +42,10 @@ class AESCipher(object):
 
 class Defi:
     def __init__(self):
-        self.a = random.randint(1, 283)
+        self.a = random.randint(1, 100000)
 
     def publish(self):
-        return 47 ** self.a % 283
+        return 47 ** self.a % 100000
 
     def compute_secret(self, gb):
-        return gb ** self.a % 283
+        return gb ** self.a % 100000

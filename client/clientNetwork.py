@@ -4,6 +4,7 @@ import threading
 import os
 import time
 import cprotocol as prot
+from Encryption import Defi
 
 
 class ClientCom:
@@ -22,9 +23,28 @@ class ClientCom:
         self.q = q
         self.soc = socket.socket()
         if not file:
-            threading.Thread(target = self.__recv_msg__, daemon=True).start()
+            threading.Thread(target = self.switch_keys, daemon=True).start()
         else:
             self.connect()
+
+    def switch_keys(self):
+        '''
+
+        :return:switch keys with the server
+        '''
+
+        defi = Defi()
+        my_publish = defi.publish()
+        try:
+            self.soc.connect((self.serverIp, self.serverPort))
+            server_publish = int(self.soc.recv(5).decode())
+            self.soc.send(str(my_publish).encode())
+        except Exception as e:
+            print(f'in recv msg - {str(e)}')
+        else:
+            key_str = str(defi.compute_secret(server_publish))
+            self.q.put(f'key-{key_str}')
+            threading.Thread(target=self.__recv_msg__(), daemon=True).start()
 
     def connect(self):
         try:
@@ -37,22 +57,17 @@ class ClientCom:
 
         :return:recive msg from the server and put the msg in q
         '''
-        try:
-            self.soc.connect((self.serverIp, self.serverPort))
-        except Exception as e:
-            print(f'in recv msg - {str(e)}')
-        else:
-            while True:
-                try:
-                    msg_len = int(self.soc.recv(3).decode())
-                    msg = self.soc.recv(msg_len).decode()
+        while True:
+            try:
+                msg_len = int(self.soc.recv(3).decode())
+                msg = self.soc.recv(msg_len).decode()
 
-                except Exception as e:
-                    print(f'in recv msg 2 - {str(e)}')
-                    self.soc.close()
-                    exit()
-                else:
-                    self.q.put(msg)
+            except Exception as e:
+                print(f'in recv msg 2 - {str(e)}')
+                self.soc.close()
+                exit()
+            else:
+                self.q.put(msg)
 
     def send_msg(self, msg):
         '''
@@ -60,9 +75,11 @@ class ClientCom:
         :param msg: string
         :return: sends the msg to the server
         '''
+        if type(msg) == 'str':
+            msg = msg.encode()
         try:
             self.soc.send(str(len(msg)).zfill(3).encode())
-            self.soc.send(msg.encode())
+            self.soc.send(msg)
         except Exception as e:
             print(f'in send msg - {str(e)}')
             self.soc.close()

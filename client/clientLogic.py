@@ -9,16 +9,16 @@ import os
 import psutil
 import time
 from Encryption import AESCipher
-from Encryption import Defi
 
 
 global upload_server_path
 global upload_path
 global file_name
+global key
 upload_path = ''
 upload_server_path = ''
 file_name = ''
-
+key = None
 
 def check_network_q(network_q):
     '''
@@ -26,23 +26,29 @@ def check_network_q(network_q):
     :param q:network queue
     :return: check if there is a new massage
     '''
+    global key
+
     while True:
         #get the msg from the network
         msg = network_q.get()
-        #do decryption
-        #decryption
-        #unpack by protocol
-        msg_after_unpack = prot.unpack(msg)
-        #the command from the server
-        command = msg_after_unpack[0]
-        #the arguments from the server
-        args = msg_after_unpack[1]
-        if command == 'upload_port':
-            upload(args[0])
-        elif command == 'download':
-            threading.Thread(target= download_answer, args = (args, )).start()
+        if msg.startswith('key'):
+            key_str = msg.split('-')[1]
+            key = AESCipher(key_str)
         else:
-            wx.CallAfter(pub.sendMessage, command, answer = args[0])
+            #do decryption
+            #decryption
+            #unpack by protocol
+            msg_after_unpack = prot.unpack(msg)
+            #the command from the server
+            command = msg_after_unpack[0]
+            #the arguments from the server
+            args = msg_after_unpack[1]
+            if command == 'upload_port':
+                upload(args[0])
+            elif command == 'download':
+                threading.Thread(target= download_answer, args = (args, )).start()
+            else:
+                wx.CallAfter(pub.sendMessage, command, answer = args[0])
 
 
 def check_graphic_q(graphic_q):
@@ -104,9 +110,9 @@ def send_login(args):
     # create the msg by the protocol
     msg_by_protocol = prot.create_login_msg(username, password)
     # take to encryption
-    # encryption
+    msg_encrypted = key.encrypt(msg_by_protocol)
     # send the msg
-    network.send_msg(msg_by_protocol)
+    network.send_msg(msg_encrypted)
 
 
 def send_forgot_password(args):
@@ -289,6 +295,8 @@ server_ip = '127.0.0.1'
 has_upload_server = False
 
 file_name_by_port = {}      #download port -> file name
+
+key = None      #my aes key
 
 network = ClientCom(server_ip, 1111, network_q)
 

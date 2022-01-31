@@ -5,6 +5,7 @@ import threading
 import time
 import os
 import sprotocol as prot
+from Encryption import Defi
 
 class ServerCom:
 
@@ -68,7 +69,7 @@ class ServerCom:
                     client, address = self.servSoc.accept()
                     if not self.check_if_blocked(address[0]):
                         print(f'{address[0]} - connected')
-                        self.socs[client] = address[0]
+                        threading.Thread(target= self.switch_keys, args= (client, address[0], )).start()
                     else:
                         self.send_msg(client, 'blocked')
                 else:
@@ -86,6 +87,26 @@ class ServerCom:
                             command, args = prot.unpack_msg(msg)
                             length, file_path, file_name  = args
                             self.recv_file(length, file_path, file_name)
+
+    def switch_keys(self, soc, ip):
+        '''
+
+        :param soc:client socket
+        :param ip: ip of the client
+        :return: switch keys with the client
+        '''
+        defi = Defi()
+        msg = str(defi.publish())
+        try:
+            soc.send(msg.encode())
+            recived = int(soc.recv(5).decode())
+        except Exception as e:
+            print(f'in switch_keys 1 - {str(e)}')
+        else:
+            key = str(defi.compute_secret(recived))
+            self.q.put(('key', key, ip))
+            #add the socket to the socket that switched keys
+            self.socs[soc] = ip
 
 
     def recv_file(self, file_len, file_path, file_name):
@@ -121,7 +142,6 @@ class ServerCom:
         self.servSoc.close()
         self.socs = {}
         self.running = False
-
 
     def check_if_blocked(self, ip):
         '''

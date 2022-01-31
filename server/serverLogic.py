@@ -8,41 +8,8 @@ import smtplib
 import random
 import Sfile
 import os
-import string
+import os
 from Encryption import AESCipher
-from Encryption import Defi
-
-
-def encrypt_key(key):
-    '''
-
-    :param key:aes key
-    :return: encryption aes key
-    '''
-    s = 11
-    new_key = ''
-    for i in range(len(key)):
-        char = key[i]
-        # Encrypt lowercase characters in plain text
-        new_key += chr((ord(char) + s - 97) % 26 + 97)
-    return new_key
-
-
-def decrypt_key(key):
-    '''
-
-    :param key:encrypted key
-    :return: dectypted key
-    '''
-    letters = 'abcdefghijklmnopqrstuvwxyz'
-    new_key = ''
-    for c in key:
-        num = letters.find(c)
-        num = num - 11
-        if num < 0:
-            num = num + len(letters)
-        new_key = new_key + letters[num]
-    return new_key
 
 
 def create_Trive_directory(path):
@@ -70,15 +37,19 @@ def check_network_q(network_q):
         msg = network_q.get()
         if msg[0] == 'upload':
             handle_upload_status(msg[1:])
+        elif msg[0] == 'key':
+            set_key(msg[1], msg[2])
         else:
-            #do decryption
-            msg_after_unpack = prot.unpack_msg(msg[0])
+            ip = msg[1]
+            msg = msg[0]
+            decrypted_msg = key_by_ip[ip].decrypt(msg)
+            msg_after_unpack = prot.unpack_msg(decrypted_msg)
             #the command that the client requested
             command = msg_after_unpack[0]
             #the parameters the client gave
             args = msg_after_unpack[1]
             #the ip
-            args.append(msg[1])
+            args.append(ip)
             func_by_command[command](args)
 
 
@@ -347,22 +318,15 @@ def handle_change_file_name(args):
     network.send_msg(ip, msg_by_protocol)
 
 
-def set_key():
+def set_key(key, ip):
     '''
 
-    :param username:username
-    :return: creates new key for the username and return the new key
+    :param key:string key to create aes key
+    :param ip: ip of theclient
+    :return: add the key to the "key_by_ip"
     '''
-    myDB = DB('trive')
-    #get all the current keys
-    keys = myDB.get_all_keys()
-    # #create a random key
-    key = string.ascii_lowercase
-    key = ''.join(random.sample(key, len(key)))
-    while key in keys:
-         key = string.ascii_lowercase
-         key = ''.join(random.sample(key, len(key)))
-    return encrypt_key(key)
+    aes_key = AESCipher(key)
+    key_by_ip[ip] = aes_key
 
 
 #the loaction of all the files
@@ -374,6 +338,8 @@ create_Trive_directory(trive_location)
 network_q = queue.Queue()
 trys_by_ip = {} #ip -> times that tryd to login from this ip
 taken_ports = []    #all the taken ports
+
+key_by_ip = {}      #client ip -> aes key
 
 
 network = ServerCom(1111, network_q)
