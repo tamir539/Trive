@@ -111,7 +111,7 @@ def create_add_file_to_folder_request_msg(file_path, folder_path):
     :return: creates the massage by the protocol
     '''
     code = '08'
-    msg = code + file_path + folder_path
+    msg = code + file_path + '&' + folder_path
     return msg
 
 

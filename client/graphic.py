@@ -534,7 +534,10 @@ class LobyPanel(wx.Panel):
         self.optionsSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.optionsSizer.AddSpacer(80)
 
-        # create the upload button
+        # create the paste button
+        self.createBtn(self.optionsSizer, "Paste here", self.handle_paste)
+
+        # create the account button
         self.accountOrFiles = self.createBtn(self.optionsSizer, "Account", self.handle_account)
 
         # create the upload button
@@ -570,11 +573,16 @@ class LobyPanel(wx.Panel):
         '''
         openFileDialog = wx.FileDialog(self, "Open", "", "", "",wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         openFileDialog.ShowModal()
+        #path of the selected file
         path = openFileDialog.GetPath()
+        #name of the file
         file_name = path[path.rindex('\\') + 1:]
         openFileDialog.Destroy()
-        if self.getType(path.split('\\')[-1]) == 'no' and 1!=1:
+        if self.getType(path.split('\\')[-1]) == 'no':
             self.errorMsg('Trive doesnt support this type of files')
+        #check that the file isnt allready exists
+        elif file_name in self.scrollFiles.files[self.scrollFiles.path]:
+            self.errorMsg('File allready exists')
         else:
             self.frame.status_bar.SetBackgroundColour(wx.WHITE)
             self.frame.status_bar.SetStatusText(f'Uploading {file_name}')
@@ -670,6 +678,33 @@ class LobyPanel(wx.Panel):
         else:
             wx.MessageBox(f'There was an error in uploading {file_name}', 'Trive Error',wx.OK | wx.ICON_ERROR)
 
+    def handle_paste(self, event):
+        '''
+
+        :param event:
+        :return: paste the last copyed file in this path
+        '''
+        copyied = self.scrollFiles.copying
+        if copyied == '':
+            self.errorMsg('No file or folder has been selected')
+        else:
+            self.frame.q.put(('add_to_folder', [copyied, self.scrollFiles.path]))
+            pub.subscribe(self.add_to_folder_answer, 'add_to_folder')
+
+    def add_to_folder_answer(self, answer):
+        '''
+
+        :param answer:answer from the server
+        :return:show the answer to the client
+        '''
+
+        if answer == 'ok':
+            copyied = self.scrollFiles.copying
+            copyied_name = copyied[copyied.rindex('\\') + 1:]
+            delete_from_path = copyied[:copyied.rindex('\\')]
+            #add the file to the selected folder
+            self.scrollFiles.add_file(copyied_name)
+
 
 class ScrollFilesPanel(scrolled.ScrolledPanel):
     '''
@@ -689,7 +724,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         self.files = {}     #folder path -> all the files in this path
         self.got_files = False
         self.path = ''      #the virtual path we are in
-
+        self.copying = ''       #the virtual path for the file that now in copy
         self.__create_screen__()
 
     def __create_screen__(self):
@@ -1121,12 +1156,11 @@ class OptionsMenu(wx.Menu):
 
         self.Bind(wx.EVT_MENU, self.getChosen)
         if self.file_typ == 'file':
-            self.commandById = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Add to folder', 5: 'Edit' ,6: 'Delete'}
-            self.funcById = {1: self.download, 2: self.rename, 3: self.share, 4:self.addToFolder, 5:self.edit, 6: self.delete}  #button id -> function that handle if the button selected
+            self.commandById = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Copy', 5: 'Edit' ,6: 'Delete'}
+            self.funcById = {1: self.download, 2: self.rename, 3: self.share, 4:self.copy_file, 5:self.edit, 6: self.delete}  #button id -> function that handle if the button selected
         else:
-            self.commandById = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Add to folder', 6: 'Delete'}
-            self.funcById = {1: self.download, 2: self.rename, 3: self.share, 4: self.addToFolder, 6: self.delete}
-
+            self.commandById = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Copy', 6: 'Delete', 7:'Paste'}
+            self.funcById = {1: self.download, 2: self.rename, 3: self.share, 4: self.copy_file, 6: self.delete, 7:self.paste_file}
         for id in self.commandById.keys():
             self.createOption(id)
 
@@ -1185,10 +1219,13 @@ class OptionsMenu(wx.Menu):
         if dlg.ShowModal() == wx.ID_OK:
             username = dlg.GetValue()
             self.parent.frame.q.put(('share', [self.path + '\\' + self.file_name, username]))
-            wx.MessageBox(f'If the username exists, he will get the {self.file_typ}', 'Trive', wx.OK)
 
     def addToFolder(self):
-        print('add to folder')
+        '''
+
+        :return:notify the logic to add this file to folder
+        '''
+        wx.MessageBox('Select folder to insert the file to', 'Add to folder', wx.OK | wx.ICON_INFORMATION)
 
     def delete(self):
         question = wx.MessageBox('Are you sure you want to delete this file? ', 'Trive Error', wx.YES | wx.NO | wx.ICON_WARNING)
@@ -1197,6 +1234,20 @@ class OptionsMenu(wx.Menu):
 
     def edit(self):
         print('edit')
+
+    def copy_file(self):
+        '''
+
+        :return:change the now coping file in the parent
+        '''
+        self.parent.copying = self.path + '\\' + self.file_name
+
+    def paste_file(self):
+        '''
+
+        :return:move the copyied file or folder to this folder
+        '''
+        self.parent.frame.q.put(('add_to_folder'))
 
 
 if __name__ == '__main__':

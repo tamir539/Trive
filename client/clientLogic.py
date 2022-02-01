@@ -221,6 +221,14 @@ def send_add_to_folder(args):
     :param args:virtual file path to file, virtual file path to folder
     :return: send request to add that file to folder
     '''
+    file_to_copy = args[0]
+    copy_to = args[1]
+
+    msg_by_protocol = prot.create_add_file_to_folder_request_msg(file_to_copy, copy_to)
+    # take to encryption
+    msg_encrypted = key.encrypt(msg_by_protocol)
+    # send the msg
+    network.send_msg(msg_encrypted)
 
 
 def send_share(args):

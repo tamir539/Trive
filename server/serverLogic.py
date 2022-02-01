@@ -280,6 +280,17 @@ def handle_add_to_folder(args):
     :param args: file path and folder path
     :return: try to add the file to the folder and return answer to the client
     '''
+    file_to_copy = args[0]
+    copy_to = args[1]
+    ip = args[2]
+
+    ans = Sfile.move_file(file_to_copy, copy_to)
+    msg_by_protocol = prot.create_insert_file_to_folder_response_msg(ans)
+    # send the answer to encryption
+    encrypted_msg = key_by_ip[ip].encrypt(msg_by_protocol)
+    # send the answer
+    network.send_msg(ip, encrypted_msg)
+
 
 
 def handle_create_folder(args):
