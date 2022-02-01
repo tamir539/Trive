@@ -755,7 +755,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         img = wx.Image(f'draws\\{self.getType(file)}.png', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         fileImg = wx.StaticBitmap(self, -1, img, (650, -2), (img.GetWidth(), img.GetHeight()))
         fileImg.SetName(file)
-        fileImg.Bind(wx.EVT_RIGHT_DOWN, self.onFileClick)
+
         fileSizer.Add(fileImg, 0, wx.CENTER | wx.ALL)
 
         if self.getType(file) == 'folder':
@@ -763,6 +763,8 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
 
         if self.getType(file) == 'back':
             fileImg.Bind(wx.EVT_LEFT_DOWN, self.handle_back)
+        else:
+            fileImg.Bind(wx.EVT_RIGHT_DOWN, self.onFileClick)
 
         #add the name of the file\image\folder
         file_name = wx.StaticText(self, -1, label=file)

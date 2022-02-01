@@ -9,7 +9,7 @@ from Encryption import Defi
 
 class ServerCom:
 
-    def __init__(self, port, q, file = False):
+    def __init__(self, port, q, upload_server = False, download_server = False):
         '''
 
         :param port:port to talk with a client
@@ -20,7 +20,9 @@ class ServerCom:
         self.q = q
         self.socs = {}  #socket -> his ip adress
         self.running = True
-        self.file = file
+        self.upload_server = upload_server  #true - > need to recv file
+        self.download_server = download_server      #"true" -> need to send file
+        self.has_client = False     #true -> client connected, false otherwise
         threading.Thread(target=self.recv_msg).start()
 
     def send_msg(self, ip, msg):
@@ -30,11 +32,13 @@ class ServerCom:
         :param msg: string
         :return: sends the string to the socket
         '''
+        if type(msg) == 'str':
+            msg = msg.encode()
         soc = self.get_soc_by_ip(ip)
         if soc:
             try:
                 soc.send(str(len(msg)).zfill(3).encode())
-                soc.send(msg.encode())
+                soc.send(msg)
             except Exception as e:
                 print(f'in sendMsg - {str(e)}')
 
@@ -45,6 +49,8 @@ class ServerCom:
         :param soc: client socket
         :return: send the file to the client
         '''
+        while not self.has_client:
+            pass
         time.sleep(0.2)
         file = open(path, 'rb')
         data = file.read()
@@ -67,9 +73,13 @@ class ServerCom:
                 if current_socket is self.servSoc:
                     # new client
                     client, address = self.servSoc.accept()
-                    if not self.check_if_blocked(address[0]):
+                    if not self.check_if_blocked(address[0]) and not self.upload_server and not self.download_server:
                         print(f'{address[0]} - connected')
                         threading.Thread(target= self.switch_keys, args= (client, address[0], )).start()
+                    elif not self.check_if_blocked(address[0]) and (self.upload_server or self.download_server):
+                        #if download or upload server, no switch keys
+                        self.has_client = True
+                        self.socs[client] = address[0]
                     else:
                         self.send_msg(client, 'blocked')
                 else:
@@ -81,9 +91,11 @@ class ServerCom:
                         print('in recv - ',self.port,  str(e))
                         del self.socs[current_socket]
                     else:
-                        if not self.file:
+                        if not self.upload_server:
+                            #recive regular msg
                             self.q.put((msg, self.socs[current_socket]))
                         else:
+                            #recive upload msg
                             command, args = prot.unpack_msg(msg)
                             length, file_path, file_name  = args
                             self.recv_file(length, file_path, file_name)
@@ -107,7 +119,6 @@ class ServerCom:
             self.q.put(('key', key, ip))
             #add the socket to the socket that switched keys
             self.socs[soc] = ip
-
 
     def recv_file(self, file_len, file_path, file_name):
         '''

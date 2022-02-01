@@ -78,12 +78,12 @@ def handle_login(args):
             trys_by_ip[ip] = 1
         else:
             trys_by_ip[ip] += 1
-    #send the answer to encryption
-    #encryption
     #build the msg by the protocol
     ans_to_send = prot.create_login_response_msg(answer)
+    # send the answer to encryption
+    encrypted_msg = key_by_ip[ip].encrypt(ans_to_send)
     #send the answer
-    network.send_msg(ip, ans_to_send)
+    network.send_msg(ip, encrypted_msg)
 
 
 def handle_register(args):
@@ -111,8 +111,10 @@ def handle_register(args):
     # encryption
     # build the msg by the protocol
     ans_to_send = prot.create_register_response_msg(answer)
+    # send the answer to encryption
+    encrypted_msg = key_by_ip[ip].encrypt(ans_to_send)
     # send the answer
-    network.send_msg(ip, ans_to_send)
+    network.send_msg(ip, encrypted_msg)
 
 
 def handle_change_details(args):
@@ -136,9 +138,11 @@ def handle_change_details(args):
         password = hashlib.md5(new_value.encode()).hexdigest()
         ans = myDB.change_password(username, password)
 
-    msg_by_protocol = prot.create_change_detail_response_msg(ans)
-
-    network.send_msg(ip, msg_by_protocol)
+    ans_to_send = prot.create_change_detail_response_msg(ans)
+    # send the answer to encryption
+    encrypted_msg = key_by_ip[ip].encrypt(ans_to_send)
+    # send the answer
+    network.send_msg(ip, encrypted_msg)
 
 
 def handle_forgot_password(args):
@@ -186,7 +190,10 @@ def handle_send_all_files(username, ip):
     :return: send all his files to the client
     '''
     msg_by_protocol = prot.pack_file_names(trive_location + '\\' + username)
-    network.send_msg(ip, msg_by_protocol)
+    # send the answer to encryption
+    encrypted_msg = key_by_ip[ip].encrypt(msg_by_protocol)
+    # send the answer
+    network.send_msg(ip, encrypted_msg)
 
 
 def handle_upload_status(args):
@@ -197,8 +204,10 @@ def handle_upload_status(args):
     '''
     status, file_name, ip = args
     msg_by_protocol = prot.create_upload_file_response_msg(status+','+file_name)
-    #encryption
-    network.send_msg(ip, msg_by_protocol)
+    # send the answer to encryption
+    encrypted_msg = key_by_ip[ip].encrypt(msg_by_protocol)
+    # send the answer
+    network.send_msg(ip, encrypted_msg)
 
 
 def handle_upload_request(args):
@@ -213,9 +222,11 @@ def handle_upload_request(args):
         port = random.randint(1000, 65000)
 
     msg_by_protocol = prot.create_upload_file_response_port_msg(str(port))
-    #encryption
-    network.send_msg(ip, msg_by_protocol)
-    upload_network = ServerCom(port, network_q, True)
+    # send the answer to encryption
+    encrypted_msg = key_by_ip[ip].encrypt(msg_by_protocol)
+    # send the answer
+    network.send_msg(ip, encrypted_msg)
+    upload_network = ServerCom(port, network_q, upload_server= True)
 
 
 def handle_download(args):
@@ -236,14 +247,13 @@ def handle_download(args):
     file_name = args[0][1:]
 
     msg_by_protocol = prot.create_download_response_msg(str(length), str(port), file_name)
-    #encryption
-    network.send_msg(ip, msg_by_protocol)
+    # send the answer to encryption
+    encrypted_msg = key_by_ip[ip].encrypt(msg_by_protocol)
+    # send the answer
+    network.send_msg(ip, encrypted_msg)
     q = queue.Queue()
-
-
-
-    send_netwotk = ServerCom(port, q)
-    send_netwotk.send_file(path)
+    send_netwotk = ServerCom(port, q, download_server=True)
+    threading.Thread(target = send_netwotk.send_file, args= (path, )).start()
 
 
 def handle_delete(args):
@@ -258,7 +268,10 @@ def handle_delete(args):
 
     ans = Sfile.delete_file(path)
     msg_by_protocol = prot.create_delete_file_response_msg(ans + ',' + now_name)
-    network.send_msg(ip, msg_by_protocol)
+    # send the answer to encryption
+    encrypted_msg = key_by_ip[ip].encrypt(msg_by_protocol)
+    # send the answer
+    network.send_msg(ip, encrypted_msg)
 
 
 def handle_add_to_folder(args):
@@ -278,8 +291,11 @@ def handle_create_folder(args):
     path = args[0]
     ip = args[1]
     ans = Sfile.create_folder(path)
-    answer = prot.create_create_folder_response_msg(ans)
-    network.send_msg(ip, answer)
+    msg_by_protocol = prot.create_create_folder_response_msg(ans)
+    # send the answer to encryption
+    encrypted_msg = key_by_ip[ip].encrypt(msg_by_protocol)
+    # send the answer
+    network.send_msg(ip, encrypted_msg)
 
 
 def handle_share(args):
@@ -297,8 +313,10 @@ def handle_share(args):
     else:
         ans = 'un'
     msg_by_protocol = prot.create_share_file_response_msg(ans)
-    #encryption
-    network.send_msg(ip, msg_by_protocol)
+    # send the answer to encryption
+    encrypted_msg = key_by_ip[ip].encrypt(msg_by_protocol)
+    # send the answer
+    network.send_msg(ip, encrypted_msg)
 
 
 def handle_change_file_name(args):
@@ -314,8 +332,10 @@ def handle_change_file_name(args):
 
     ans = Sfile.rename_file(path, new_name)
     msg_by_protocol = prot.create_change_file_name_response_msg(ans+','+now_name+','+new_name)
-    #encryption
-    network.send_msg(ip, msg_by_protocol)
+    # send the answer to encryption
+    encrypted_msg = key_by_ip[ip].encrypt(msg_by_protocol)
+    # send the answer
+    network.send_msg(ip, encrypted_msg)
 
 
 def set_key(key, ip):

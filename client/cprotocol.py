@@ -77,6 +77,7 @@ def create_upload_file_msg(file_new_path, file_len, file_name):
     '''
     code = '05'
     msg = code + str(file_len) + '&' + file_new_path + '&' + file_name
+    print(msg)
     return msg
 
 
@@ -145,6 +146,7 @@ def create_share_file_request_msg(file_path, username):
     '''
     code = '11'
     msg = code + file_path + '&' + username
+    print(msg)
     return msg
 
 

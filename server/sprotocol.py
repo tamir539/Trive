@@ -52,6 +52,7 @@ def unpack_msg(msg):
     msg = msg[2:]
     #all the arguments of the msg
     args = msg.split('&')
+
     return command_by_code[code], args
 
 

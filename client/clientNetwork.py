@@ -9,7 +9,7 @@ from Encryption import Defi
 
 class ClientCom:
 
-    def __init__(self, serverIp, serverPort, q, file = False):
+    def __init__(self, serverIp, serverPort, q, file = False, key = None):
         '''
 
         :param file: "true" if this network is to recv file and "false" otherwise
@@ -22,10 +22,15 @@ class ClientCom:
         self.serverPort = serverPort
         self.q = q
         self.soc = socket.socket()
-        if not file:
+        if not file and not key:
             threading.Thread(target = self.switch_keys, daemon=True).start()
-        else:
+        elif file:
+
             self.connect()
+        else:
+            self.key = key
+            self.connect()
+            threading.Thread(target=self.recv_file, daemon=True).start()
 
     def switch_keys(self):
         '''
@@ -84,16 +89,18 @@ class ClientCom:
             print(f'in send msg - {str(e)}')
             self.soc.close()
 
-    def send_file(self, filePath, server_path, file_name):
+    def send_file(self, filePath, server_path, file_name, key):
         '''
 
         :param filePath: path for file
         :return: sends the data to the server
         '''
+        time.sleep(0.1)
         file = open(filePath, 'rb')
         data = file.read()
         msg_after_protocol = prot.create_upload_file_msg(server_path, len(data), file_name)
         total_msg = str(len(msg_after_protocol)).zfill(3) + msg_after_protocol
+        #035051336&D:\Trive\tamir&Encryption.py
         try:
             self.soc.send(total_msg.encode())
             self.soc.send(data)
@@ -106,7 +113,6 @@ class ClientCom:
 
         :return:recv file from the server, download the file to downloads and add msg to q when finish recive
         '''
-
         file_data = bytearray()
         fileLen = int(fileLen)
         #recv all the data

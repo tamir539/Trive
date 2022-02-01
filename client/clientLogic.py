@@ -36,9 +36,9 @@ def check_network_q(network_q):
             key = AESCipher(key_str)
         else:
             #do decryption
-            #decryption
+            decrypted_msg = key.decrypt(msg)
             #unpack by protocol
-            msg_after_unpack = prot.unpack(msg)
+            msg_after_unpack = prot.unpack(decrypted_msg)
             #the command from the server
             command = msg_after_unpack[0]
             #the arguments from the server
@@ -94,9 +94,10 @@ def send_register(args):
     #create the msg by the protocol
     msg_by_protocol = prot.create_register_msg(username, password, email)
     #take to encryption
-    #encryption
-    #send the msg
-    network.send_msg(msg_by_protocol)
+    # take to encryption
+    msg_encrypted = key.encrypt(msg_by_protocol)
+    # send the msg
+    network.send_msg(msg_encrypted)
 
 
 def send_login(args):
@@ -125,9 +126,10 @@ def send_forgot_password(args):
     # create the msg by the protocol
     msg_by_protocol = prot.create_forgot_password_request_msg(email)
     # take to encryption
-    # encryption
+    # take to encryption
+    msg_encrypted = key.encrypt(msg_by_protocol)
     # send the msg
-    network.send_msg(msg_by_protocol)
+    network.send_msg(msg_encrypted)
 
 
 def send_change_detail(args):
@@ -139,9 +141,10 @@ def send_change_detail(args):
     new_value = args[0]
     #create the msg by the protocol
     msg_by_protocol = prot.create_change_details_request_msg(new_value)
-    #take to encryption
-    #decryption
-    network.send_msg(msg_by_protocol)
+    # take to encryption
+    msg_encrypted = key.encrypt(msg_by_protocol)
+    # send the msg
+    network.send_msg(msg_encrypted)
 
 
 def send_download(args):
@@ -153,8 +156,11 @@ def send_download(args):
     path = args[0]
 
     msg_by_protocol = prot.create_download_file_request_msg(path)
-    #encryption
-    network.send_msg(msg_by_protocol)
+    print(msg_by_protocol)
+    # take to encryption
+    msg_encrypted = key.encrypt(msg_by_protocol)
+    # send the msg
+    network.send_msg(msg_encrypted)
 
 
 def send_rename(args):
@@ -165,9 +171,11 @@ def send_rename(args):
     '''
     path = args[0]
     new_name = args[1]
-    #encryption
     msg_by_protocol = prot.create_change_file_name_request_msg(path, new_name)
-    network.send_msg(msg_by_protocol)
+    # take to encryption
+    msg_encrypted = key.encrypt(msg_by_protocol)
+    # send the msg
+    network.send_msg(msg_encrypted)
 
 
 def send_upload_request(args):
@@ -186,18 +194,25 @@ def send_upload_request(args):
     #path to upload in the server
     upload_server_path = args[1]
     msg_by_protocol = prot.create_upload_request_file_msg()
-    #encryption
-    network.send_msg(msg_by_protocol)
+    # take to encryption
+    msg_encrypted = key.encrypt(msg_by_protocol)
+    # send the msg
+    network.send_msg(msg_encrypted)
 
 
 def upload(port):
+    '''
+
+    :param port: server port
+    :return: upload the file to the server in the port
+    '''
     global upload_path
     global upload_server_path
     global file_name
 
     client_upload = ClientCom(server_ip, int(port), network_q)
-    time.sleep(1)
-    client_upload.send_file(upload_path, upload_server_path, file_name)
+    threading.Thread(target=client_upload.send_file, args= (upload_path, upload_server_path, file_name, key, )).start()
+    #client_upload.send_file(upload_path, upload_server_path, file_name, key)
 
 
 def send_add_to_folder(args):
@@ -218,8 +233,10 @@ def send_share(args):
     username = args[1]
 
     msg_by_protocol = prot.create_share_file_request_msg(path, username)
-    #encryption
-    network.send_msg(msg_by_protocol)
+    # take to encryption
+    msg_encrypted = key.encrypt(msg_by_protocol)
+    # send the msg
+    network.send_msg(msg_encrypted)
 
 
 def send_delete(args):
@@ -230,8 +247,10 @@ def send_delete(args):
     '''
     path = args[0]
     msg_by_protocol = prot.create_delete_file_request_msg(path)
-    #encryption
-    network.send_msg(msg_by_protocol)
+    # take to encryption
+    msg_encrypted = key.encrypt(msg_by_protocol)
+    # send the msg
+    network.send_msg(msg_encrypted)
 
 
 def send_create_folder(args):
@@ -242,17 +261,10 @@ def send_create_folder(args):
     '''
     path = args[0]
     msg_by_protocol = prot.create_create_folder_request_msg(path)
-    #encryption
-    network.send_msg(msg_by_protocol)
-
-
-def get_all_files(args):
-    '''
-
-    :param args: the files structure from the server
-    :return: builds the structure back and deliver to the graphic
-    '''
-    pass
+    # take to encryption
+    msg_encrypted = key.encrypt(msg_by_protocol)
+    # send the msg
+    network.send_msg(msg_encrypted)
 
 
 def download_answer(args):
