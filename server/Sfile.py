@@ -103,5 +103,34 @@ def move_file(path, move_to):
             return 'no'
 
 
+def encrypt_file(path, key):
+    '''
+
+    :param path:path to file to encrypt
+    :param key: aes key to encrypt with
+    :return:
+    '''
+
+
+    with open(path, 'rb') as in_file:
+        with open(out_file_path, 'wb') as out_file:
+            # Write salt if present
+            if self._salt is not None:
+                out_file.write(self._salt)
+
+            # Write filesize of original
+            out_file.write(struct.pack('L', filesize))
+
+            # Encrypt to eof
+            eof = False
+            while not eof:
+                in_data = in_file.read(16)
+                if len(in_data) == 0:
+                    eof = True
+                else:
+                    out_data = aes_cbc_256.encrypt_block(bytearray(in_data))
+                    out_file.write(self.fix_bytes(out_data))
+
+
 
 share_file('D:\Trive', 'D:\Trive\\tamir\\aaa.txt', 'try1')

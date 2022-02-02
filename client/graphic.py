@@ -896,12 +896,15 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         :param answer:all the files in the structure
         :return:builds on the screen the file structure
         '''
+        self.DestroyChildren()
+
         current_dir = answer.split(',')[0]
         self.files[current_dir] = []
         lst = answer.split(',')
         lst.remove(current_dir)
         in_top = True
-        self.path = current_dir
+        if self.path == '':
+            self.path = current_dir
 
         for f in lst:
             # means that we enter new directory
@@ -1159,8 +1162,8 @@ class OptionsMenu(wx.Menu):
             self.commandById = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Copy', 5: 'Edit' ,6: 'Delete'}
             self.funcById = {1: self.download, 2: self.rename, 3: self.share, 4:self.copy_file, 5:self.edit, 6: self.delete}  #button id -> function that handle if the button selected
         else:
-            self.commandById = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Copy', 6: 'Delete', 7:'Paste'}
-            self.funcById = {1: self.download, 2: self.rename, 3: self.share, 4: self.copy_file, 6: self.delete, 7:self.paste_file}
+            self.commandById = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Copy', 6: 'Delete'}
+            self.funcById = {1: self.download, 2: self.rename, 3: self.share, 4: self.copy_file, 6: self.delete}
         for id in self.commandById.keys():
             self.createOption(id)
 

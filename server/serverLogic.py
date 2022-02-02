@@ -290,6 +290,7 @@ def handle_add_to_folder(args):
     encrypted_msg = key_by_ip[ip].encrypt(msg_by_protocol)
     # send the answer
     network.send_msg(ip, encrypted_msg)
+    handle_send_all_files( username_connected[ip], ip)
 
 
 
