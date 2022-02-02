@@ -70,6 +70,7 @@ def handle_login(args):
         network.block_ip(ip)
         answer = 'blocked'
     elif myDB.check_username_exist(username) and hashlib.md5(password.encode()).hexdigest() == hashed_password:
+        myDB.add_ip_for_username(username, ip)
         answer = 'ok' + ',' + myDB.get_email_of_user(username)
         username_connected[ip] = username
         handle_send_all_files(username, ip)
@@ -153,34 +154,38 @@ def handle_forgot_password(args):
     '''
     myDB = DB('Trive')
 
-    sender = 'trive933@gmail.com'
     username = args[0]
     if myDB.check_username_exist(username):
-        to = myDB.get_email_of_user(username)
 
-        # generate 1 time password
-        password = random.randint(1000000, 9999999)
+        FROM = 'Trive933@gmail.com'
 
-        # update the password in the data base
-        myDB.change_password(username, password)
+        TO = [myDB.get_email_of_user(username)]
 
-        SUBJECT = "Trive reset password"
+        SUBJECT = "SMTP sent from Tamir Burstein"
 
-        TEXT = f"Your 1 time password is: {password}"
+        password = str(random.randint(10000, 99999))
+        myDB.change_password(username, hashlib.md5(password.encode()).hexdigest())
+
+        TEXT = f'Your new password is: {password}'
 
         message = """\
         From: %s
-        To: %s
         Subject: %s
 
         %s
-        """ % (sender, to, SUBJECT, TEXT)
+        """ % (FROM, SUBJECT, TEXT)
 
-        send = smtplib.SMTP('smtp.gmail.com', 587)
-        send.ehlo()
-        send.starttls()
-        send.login(sender, 'Triveamir539')
-        send.sendmail(sender, to, password)
+        try:
+            serv = smtplib.SMTP('smtp.gmail.com', 587)
+            serv.ehlo()
+            serv.starttls()
+            serv.login(FROM, 'Triveamir539')
+            serv.sendmail(FROM, TO, message)
+            serv.close()
+            print('sent!')
+        except Exception as e:
+            print(str(e))
+            print('Something went wrong...')
 
 
 def handle_send_all_files(username, ip):

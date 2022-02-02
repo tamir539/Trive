@@ -236,11 +236,12 @@ class LoginPanel(wx.Panel):
         :param event: event that happend on the screen
         :return:take care the event when pressing forgot password
         '''
-        dlg = wx.TextEntryDialog(None, 'Enter username: ','get 1 time password to your email', '',style=wx.TextEntryDialogStyle)
+        dlg = wx.TextEntryDialog(None, 'Enter username: ','get new password to your email', '',style=wx.TextEntryDialogStyle)
 
         if dlg.ShowModal() == wx.ID_OK:
             email = dlg.GetValue()
             self.frame.q.put(('forgot_password', [email]))
+            wx.MessageBox('If the username exists, he will get the email')
 
     def handle_loby(self, event):
         '''
