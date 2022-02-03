@@ -86,7 +86,7 @@ class ServerCom:
                     # receive data from exist client
                     try:
                         msg_len = current_socket.recv(3).decode()
-                        msg = current_socket.recv(int(msg_len)).decode()
+                        msg = current_socket.recv(int(msg_len))
                     except Exception as e:
                         print('in recv - ',self.port,  str(e))
                         del self.socs[current_socket]

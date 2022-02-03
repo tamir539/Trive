@@ -1,5 +1,6 @@
 import os
 import shutil
+from Encryption import AESCipher
 
 def get_file_length(path):
     '''
@@ -111,26 +112,30 @@ def encrypt_file(path, key):
     :return:
     '''
 
+    out_file_path = 'D:\\Trive\\enc_file'
+
+    file_data = bytearray()
 
     with open(path, 'rb') as in_file:
+        data = in_file.read()
+        file_len = len(data)
+
+    while len(file_data) < file_len:
+        size = file_len - len(file_data)
+        try:
+            if size >= 1024:
+                file_data.extend(key.encrypt(size))
+                data = data[:1024]
+            else:
+                if size != 0:
+                    file_data.extend(key.encrypt(size))
+                break
+        except Exception as e:
+            print(f'in encrypt file - {str(e)}')
+            file_data = None
+            break
+    if file_data:
         with open(out_file_path, 'wb') as out_file:
-            # Write salt if present
-            if self._salt is not None:
-                out_file.write(self._salt)
-
-            # Write filesize of original
-            out_file.write(struct.pack('L', filesize))
-
-            # Encrypt to eof
-            eof = False
-            while not eof:
-                in_data = in_file.read(16)
-                if len(in_data) == 0:
-                    eof = True
-                else:
-                    out_data = aes_cbc_256.encrypt_block(bytearray(in_data))
-                    out_file.write(self.fix_bytes(out_data))
+            out_file.write(file_data)
 
 
-
-share_file('D:\Trive', 'D:\Trive\\tamir\\aaa.txt', 'try1')

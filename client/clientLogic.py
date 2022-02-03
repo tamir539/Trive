@@ -38,7 +38,7 @@ class Logic:
         while True:
             #get the msg from the self.network
             msg = network_q.get()
-            if msg.startswith('key'):
+            if type(msg) is str and msg.startswith('key'):
                 key_str = msg.split('-')[1]
                 self.key = AESCipher(key_str)
             else:
@@ -210,7 +210,8 @@ class Logic:
         :return: upload the file to the server in the port
         '''
         client_upload = ClientCom(server_ip, int(port), self.network_q)
-        threading.Thread(target=client_upload.send_file, args= (self.upload_path, self.upload_server_path, self.file_name, self.key, )).start()
+        encrypted_upload_path = self.key.encrypt_file
+        threading.Thread(target=client_upload.send_file, args= (encrypted_upload_path, self.upload_server_path, self.file_name, self.key, )).start()
         #client_upload.send_file(upload_path, upload_server_path, file_name, key)
     
     
