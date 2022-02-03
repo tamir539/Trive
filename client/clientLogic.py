@@ -288,7 +288,7 @@ class Logic:
         file_name = path[path.rindex('\\') + 1:]
         ready_q = queue.Queue()     #get massage in this q when the download finished
         download_network = ClientCom(server_ip, port, ready_q, True)
-        download_network.recv_file(length, file_name)
+        download_network.recv_file(length, file_name, self.key)
         while True:
             finish = ready_q.get()
             wx.CallAfter(pub.sendMessage, 'finish_download', ans=finish)

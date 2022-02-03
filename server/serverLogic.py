@@ -210,6 +210,7 @@ def handle_upload_status(args):
     :return: recive the file and return answer to the client
     '''
     status, encrypted_path, file_name, ip = args
+    encrypted_path = encrypted_path  + '\\' + file_name
     msg_by_protocol = prot.create_upload_file_response_msg(status+','+file_name)
     # send the answer to encryption
     encrypted_msg = key_by_ip[ip].encrypt(msg_by_protocol)
@@ -217,10 +218,10 @@ def handle_upload_status(args):
     network.send_msg(ip, encrypted_msg)
     if status =='ok':
         #decrypt the file with the client key
-        key_by_ip[ip].decrypt_file(encrypted_path + '\\' + file_name)
+        key_by_ip[ip].decrypt_file(encrypted_path)
         #encrypt the file with the server files key
         k = AESCipher(files_key)
-        k.decrypt_file(encrypted_path)
+        k.encrypt_file(encrypted_path)
 
 
 def handle_upload_request(args):
@@ -266,7 +267,15 @@ def handle_download(args):
     network.send_msg(ip, encrypted_msg)
     q = queue.Queue()
     send_netwotk = ServerCom(port, q, download_server=True)
-    threading.Thread(target = send_netwotk.send_file, args= (path, )).start()
+
+    #decrypt the file
+    k = AESCipher(files_key)
+    k.decrypt_file(path)
+
+    #encrypt the file with the key of the client
+    key_by_ip[ip].encrypt_file(path)
+
+    threading.Thread(target = send_netwotk.send_file, args= (path, key_by_ip[ip], k )).start()
 
 
 def handle_delete(args):

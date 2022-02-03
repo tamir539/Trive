@@ -42,9 +42,11 @@ class ServerCom:
             except Exception as e:
                 print(f'in sendMsg - {str(e)}')
 
-    def send_file(self, path):
+    def send_file(self, path, client_key, server_key):
         '''
 
+        :param client_key: aes of the client to decrypt the file after sending
+        :param server_key: aes of the server files to encrypt the file
         :param path:path to the file
         :param soc: client socket
         :return: send the file to the client
@@ -54,12 +56,16 @@ class ServerCom:
         time.sleep(0.2)
         file = open(path, 'rb')
         data = file.read()
+        file.close()
         try:
             list(self.socs.keys())[0].send(data)
             self.running = False
             self.servSoc.close()
         except Exception as e:
             print(f'in send file - {str(e)}')
+        else:
+            client_key.decrypt_file(path)
+            server_key.encrypt_file(path)
 
     def recv_msg(self):
 

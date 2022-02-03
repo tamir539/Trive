@@ -488,7 +488,7 @@ class LobyPanel(wx.Panel):
         self.inAccount = False
         self.account = None
         self.scrollFiles = None
-        self.loading = None
+        self.uploading = False      #'true' - > upload in progress
         self.new_folder_name = ''
         self.__create_screen__()
 
@@ -579,7 +579,9 @@ class LobyPanel(wx.Panel):
         #name of the file
         file_name = path[path.rindex('\\') + 1:]
         openFileDialog.Destroy()
-        if self.getType(path.split('\\')[-1]) == 'no':
+        if self.uploading:
+            self.errorMsg('Wait the other upload to finish!')
+        elif self.getType(path.split('\\')[-1]) == 'no':
             self.errorMsg('Trive doesnt support this type of files')
         #check that the file isnt allready exists
         elif file_name in self.scrollFiles.files[self.scrollFiles.path]:
@@ -588,6 +590,7 @@ class LobyPanel(wx.Panel):
             self.frame.status_bar.SetBackgroundColour(wx.WHITE)
             self.frame.status_bar.SetStatusText(f'Uploading {file_name}')
             self.frame.q.put(('upload', [path, self.scrollFiles.path]))
+            self.uploading = True
 
     def getType(self, fileName):
         '''
@@ -616,9 +619,12 @@ class LobyPanel(wx.Panel):
 
         if dlg.ShowModal() == wx.ID_OK:
             self.new_folder_name = dlg.GetValue()
-            path = self.scrollFiles.path + '\\' + self.new_folder_name   #calculate the virtual path
-            self.frame.q.put(('create_folder', [path]))
-            pub.subscribe(self.handle_create_folder_answer, 'create_folder')
+            if self.new_folder_name == 'shared':
+                wx.MessageBox('Unavailabale name', 'Trive Error', wx.OK | wx.ICON_ERROR)
+            else:
+                path = self.scrollFiles.path + '\\' + self.new_folder_name   #calculate the virtual path
+                self.frame.q.put(('create_folder', [path]))
+                pub.subscribe(self.handle_create_folder_answer, 'create_folder')
 
     def handle_account(self, event):
         '''
@@ -678,6 +684,7 @@ class LobyPanel(wx.Panel):
             self.scrollFiles.add_file(file_name)
         else:
             wx.MessageBox(f'There was an error in uploading {file_name}', 'Trive Error',wx.OK | wx.ICON_ERROR)
+        self.uploading = False
 
     def handle_paste(self, event):
         '''
@@ -799,7 +806,8 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
 
         if self.getType(file) == 'back':
             fileImg.Bind(wx.EVT_LEFT_DOWN, self.handle_back)
-        else:
+
+        elif file != 'shared':
             fileImg.Bind(wx.EVT_RIGHT_DOWN, self.onFileClick)
 
         #add the name of the file\image\folder
@@ -1162,9 +1170,13 @@ class OptionsMenu(wx.Menu):
         if self.file_typ == 'file':
             self.commandById = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Copy', 5: 'Edit' ,6: 'Delete'}
             self.funcById = {1: self.download, 2: self.rename, 3: self.share, 4:self.copy_file, 5:self.edit, 6: self.delete}  #button id -> function that handle if the button selected
-        else:
+        elif self.file_typ == 'image':
             self.commandById = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Copy', 6: 'Delete'}
             self.funcById = {1: self.download, 2: self.rename, 3: self.share, 4: self.copy_file, 6: self.delete}
+        else :
+            self.commandById = { 2: 'Rename', 3: 'Share', 4: 'Copy', 6: 'Delete'}
+            self.funcById = { 2: self.rename, 3: self.share, 4: self.copy_file, 6: self.delete}
+
         for id in self.commandById.keys():
             self.createOption(id)
 

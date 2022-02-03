@@ -37,7 +37,7 @@ class AESCipher(object):
         plaintext = cipher.decrypt(ciphertext[AES.block_size:])
         return plaintext.rstrip(b"\0").decode()
 
-    def encrypt_file(self, file_path, new_path):
+    def encrypt_file(self, file_path):
         '''
 
         :param file_name:file path to encrypt
@@ -47,9 +47,8 @@ class AESCipher(object):
         with open(file_path, 'rb') as fo:
             plaintext = fo.read()
         enc = self.encrypt(plaintext)
-        with open(new_path + file_name, 'wb') as fo:
+        with open(file_path, 'wb') as fo:
             fo.write(enc)
-        return new_path + file_name
 
     def decrypt_file(self, file_path):
         print(file_path)

@@ -37,11 +37,11 @@ class AESCipher(object):
             fo.write(enc)
         return new_path + file_name
 
-    def decrypt_file(self, file_path, new_path):
+    def decrypt_file(self, file_path):
         with open(file_path, 'rb') as fo:
             ciphertext = fo.read()
         dec = self.decrypt(ciphertext).encode()
-        with open(new_path, 'wb') as fo:
+        with open(file_path, 'wb') as fo:
             fo.write(dec)
 
 
