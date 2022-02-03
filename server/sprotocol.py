@@ -47,10 +47,14 @@ def unpack_msg(msg):
     command_by_code = {'02': 'login', '03': 'register', '04': 'send_all_files', '05': 'upload', '16': 'upload_request',
                        '06':'download', '07': 'delete', '08': 'add_to_folder', '09': 'create_folder',
                        '10': 'change_details', '11': 'share', '13': 'change_name', '14': 'forgot_password'}
+    if type(msg) is bytes:
+        msg = msg.decode()
     #the code of the msg
     code = msg[:2]
     msg = msg[2:]
     #all the arguments of the msg
+
+    print('msg iss ', msg)
     args = msg.split('&')
 
     return command_by_code[code], args

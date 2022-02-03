@@ -24,7 +24,10 @@ class Logic:
         graphic_q = queue.Queue()
 
         self.network = ClientCom(server_ip, 1111, self.network_q)
-
+        try:
+            os.makedirs('C:\\Trive_uploads')
+        except:
+            pass
         threading.Thread(target=self.start_graphic, args=(graphic_q,)).start()
         threading.Thread(target=self.check_network_q, args=(self.network_q,), daemon=True).start()
         threading.Thread(target=self.check_graphic_q, args=(graphic_q,), daemon=True).start()
@@ -201,8 +204,7 @@ class Logic:
         msg_encrypted = self.key.encrypt(msg_by_protocol)
         # send the msg
         self.network.send_msg(msg_encrypted)
-    
-    
+
     def upload(self,port):
         '''
     
@@ -210,11 +212,10 @@ class Logic:
         :return: upload the file to the server in the port
         '''
         client_upload = ClientCom(server_ip, int(port), self.network_q)
-        encrypted_upload_path = self.key.encrypt_file
-        threading.Thread(target=client_upload.send_file, args= (encrypted_upload_path, self.upload_server_path, self.file_name, self.key, )).start()
+        encrypted_path = self.key.encrypt_file(self.upload_path, 'C:\\Trive_uploads\\')
+        threading.Thread(target=client_upload.send_file, args= (encrypted_path, self.upload_server_path, self.file_name, self.key, )).start()
         #client_upload.send_file(upload_path, upload_server_path, file_name, key)
-    
-    
+
     def send_add_to_folder(self, args):
         '''
     

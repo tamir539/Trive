@@ -10,6 +10,8 @@ import Sfile
 import os
 import os
 from Encryption import AESCipher
+from settings import TRIVE_LOCATION as trive_location
+from settings import FILES_KEY as files_key
 
 
 def create_Trive_directory(path):
@@ -207,12 +209,18 @@ def handle_upload_status(args):
     :param args: args to the upload
     :return: recive the file and return answer to the client
     '''
-    status, file_name, ip = args
+    status, encrypted_path, file_name, ip = args
     msg_by_protocol = prot.create_upload_file_response_msg(status+','+file_name)
     # send the answer to encryption
     encrypted_msg = key_by_ip[ip].encrypt(msg_by_protocol)
     # send the answer
     network.send_msg(ip, encrypted_msg)
+    if status =='ok':
+        #decrypt the file with the client key
+        key_by_ip[ip].decrypt_file(encrypted_path + '\\' + file_name)
+        #encrypt the file with the server files key
+        k = AESCipher(files_key)
+        k.decrypt_file(encrypted_path)
 
 
 def handle_upload_request(args):
@@ -366,8 +374,7 @@ def set_key(key, ip):
     key_by_ip[ip] = aes_key
 
 
-#the loaction of all the files
-trive_location = 'D:\\Trive'
+
 
 create_Trive_directory(trive_location)
 

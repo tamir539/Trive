@@ -147,9 +147,10 @@ class ServerCom:
         if file_data is not None:
             with open(file_path + '\\' + file_name, 'wb') as f:
                 f.write(file_data)
-            self.q.put(('upload', 'ok', file_name, self.socs[list(self.socs.keys())[0]]))
+                f.close()
+            self.q.put(('upload', 'ok', file_path, file_name, self.socs[list(self.socs.keys())[0]]))
         else:
-            self.q.put(('upload','no',file_name, self.socs[list(self.socs.keys())[0]]))
+            self.q.put(('upload', 'no', file_path, file_name, self.socs[list(self.socs.keys())[0]]))
         self.servSoc.close()
         self.socs = {}
         self.running = False

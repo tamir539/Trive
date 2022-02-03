@@ -27,19 +27,21 @@ class AESCipher(object):
         plaintext = cipher.decrypt(ciphertext[AES.block_size:])
         return plaintext.rstrip(b"\0").decode()
 
-    def encrypt_file(self, file_name):
-        with open(file_name, 'rb') as fo:
+    def encrypt_file(self, file_path, new_path):
+
+        file_name = file_path[file_path.rindex('\\'):]
+        with open(file_path, 'rb') as fo:
             plaintext = fo.read()
         enc = self.encrypt(plaintext)
-        with open(file_name + ".enc", 'wb') as fo:
+        with open(new_path + file_name, 'wb') as fo:
             fo.write(enc)
+        return new_path + file_name
 
-
-    def decrypt_file(self, file_name):
-        with open(file_name, 'rb') as fo:
+    def decrypt_file(self, file_path, new_path):
+        with open(file_path, 'rb') as fo:
             ciphertext = fo.read()
         dec = self.decrypt(ciphertext).encode()
-        with open(file_name[:-4], 'wb') as fo:
+        with open(new_path, 'wb') as fo:
             fo.write(dec)
 
 
