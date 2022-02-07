@@ -12,9 +12,10 @@ def unpack(msg):
     command_by_code = {'02': 'login', '03': 'register', '04': 'get_all_files', '05': 'upload',
                        '06': 'download', '07': 'delete', '08': 'add_to_folder', '09': 'create_folder',
                        '10': 'change_details', '11': 'share', '13': 'rename', '14': 'forgot_password',
-                       '16': 'upload_port'}
+                       '16': 'upload_port', '17': 'edit'}
     code = msg[:2]
     msg = msg[2:]
+    print(msg)
     args = msg.split('&')
     return command_by_code[code], args
 
@@ -159,6 +160,17 @@ def create_change_file_name_request_msg(file_path, new_name):
     '''
     code = '13'
     msg = code + file_path + '&' + new_name
+    return msg
+
+
+def create_edit_file_request_msg(path):
+    '''
+
+    :param path:path to the file
+    :return: creates and return the message by the protocol
+    '''
+    code = '17'
+    msg = code + path
     return msg
 
 

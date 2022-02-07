@@ -46,7 +46,7 @@ def unpack_msg(msg):
     '''
     command_by_code = {'02': 'login', '03': 'register', '04': 'send_all_files', '05': 'upload', '16': 'upload_request',
                        '06':'download', '07': 'delete', '08': 'add_to_folder', '09': 'create_folder',
-                       '10': 'change_details', '11': 'share', '13': 'change_name', '14': 'forgot_password'}
+                       '10': 'change_details', '11': 'share', '13': 'change_name', '14': 'forgot_password', '17': 'edit'}
     if type(msg) is bytes:
         msg = msg.decode()
     #the code of the msg
@@ -68,6 +68,18 @@ def create_download_response_msg(file_len, port, file_name):
     '''
     msg = port + '&' + file_len + '&' + file_name
     return create_response('06', msg)
+
+
+def create_edit_response_msg(file_len, port, file_name):
+    '''
+
+    :param file_len:length of file
+    :param port: port for the download server
+    :param file_name: file_name
+    :return: builds and return the msg by the protocol
+    '''
+    msg = port + '&' + file_len + '&' + file_name
+    return create_response('17', msg)
 
 
 def create_login_response_msg(msg):

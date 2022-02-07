@@ -33,7 +33,7 @@ def check_network_q(network_q):
     func_by_command = {'login': handle_login, 'register': handle_register, 'upload_request': handle_upload_request,
                        'download' : handle_download, 'delete': handle_delete, 'add_to_folder': handle_add_to_folder,
                        'create_folder':handle_create_folder, 'change_details': handle_change_details, 'share': handle_share,
-                       'change_name': handle_change_file_name, 'forgot_password': handle_forgot_password}
+                       'change_name': handle_change_file_name, 'forgot_password': handle_forgot_password, 'edit': handle_edit}
     while True:
         msg = network_q.get()
         if msg[0] == 'upload':
@@ -252,6 +252,7 @@ def handle_download(args):
 
     length = Sfile.get_file_length(path)
 
+    # generate new port for the download server
     port = random.randint(1000, 65000)
     while port in taken_ports:
         port = random.randint(1000, 65000)
@@ -274,6 +275,41 @@ def handle_download(args):
     key_by_ip[ip].encrypt_file(path)
 
     threading.Thread(target = send_netwotk.send_file, args= (path, key_by_ip[ip], k )).start()
+
+
+def handle_edit(args):
+    '''
+
+    :param args:relevante for the download
+    :return: send the file to the client
+    '''
+    ip = args[1]
+    path = args[0]
+
+    length = Sfile.get_file_length(path)
+
+    #generate new port for the download server
+    port = random.randint(1000, 65000)
+    while port in taken_ports:
+        port = random.randint(1000, 65000)
+
+
+    msg_by_protocol = prot.create_edit_response_msg(str(length), str(port), path)
+    # send the answer to encryption
+    encrypted_msg = key_by_ip[ip].encrypt(msg_by_protocol)
+    # send the answer
+    network.send_msg(ip, encrypted_msg)
+    q = queue.Queue()
+    send_netwotk = ServerCom(port, q, download_server=True)
+
+    # decrypt the file
+    k = AESCipher(files_key)
+    k.decrypt_file(path)
+
+    # encrypt the file with the key of the client
+    key_by_ip[ip].encrypt_file(path)
+
+    threading.Thread(target=send_netwotk.send_file, args=(path, key_by_ip[ip], k)).start()
 
 
 def handle_delete(args):

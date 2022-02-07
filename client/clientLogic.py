@@ -57,10 +57,11 @@ class Logic:
                     self.upload(args[0])
                 elif command == 'download':
                     threading.Thread(target= self.download_answer, args = (args, )).start()
+                elif command == 'edit':
+                    threading.Thread(target=self.edit_answer, args=(args,)).start()
                 else:
                     wx.CallAfter(pub.sendMessage, command, answer = args[0])
-    
-    
+
     def check_graphic_q(self, graphic_q):
         '''
     
@@ -76,8 +77,7 @@ class Logic:
             args = msg[1]
             func_by_command[flag](args)
             #wx.CallAfter(pub.sendMessage, command, massage = args[0])
-    
-    
+
     def start_graphic(self, graphic_q):
         '''
     
@@ -89,7 +89,6 @@ class Logic:
         app.MainLoop()
         #kill all the threads
         self.finish()
-    
     
     def send_register(self, args):
         '''
@@ -108,8 +107,7 @@ class Logic:
         msg_encrypted = self.key.encrypt(msg_by_protocol)
         # send the msg
         self.network.send_msg(msg_encrypted)
-    
-    
+
     def send_login(self, args):
         '''
     
@@ -125,7 +123,6 @@ class Logic:
         # send the msg
         self.network.send_msg(msg_encrypted)
 
-
     def handle_edit(self, args):
         '''
 
@@ -133,10 +130,14 @@ class Logic:
         :return:
         '''
         file_path = args[0]
-        self.send_download(args)
 
+        msg_by_protocol = prot.create_edit_file_request_msg(file_path)
 
-    
+        # take to encryption
+        msg_encrypted = self.key.encrypt(msg_by_protocol)
+        # send the msg
+        self.network.send_msg(msg_encrypted)
+
     def send_forgot_password(self, args):
         '''
     
@@ -151,8 +152,7 @@ class Logic:
         msg_encrypted = self.key.encrypt(msg_by_protocol)
         # send the msg
         self.network.send_msg(msg_encrypted)
-    
-    
+
     def send_change_detail(self, args):
         '''
     
@@ -166,8 +166,7 @@ class Logic:
         msg_encrypted = self.key.encrypt(msg_by_protocol)
         # send the msg
         self.network.send_msg(msg_encrypted)
-    
-    
+
     def send_download(self, args):
         '''
     
@@ -182,8 +181,7 @@ class Logic:
         msg_encrypted = self.key.encrypt(msg_by_protocol)
         # send the msg
         self.network.send_msg(msg_encrypted)
-    
-    
+
     def send_rename(self, args):
         '''
     
@@ -197,8 +195,7 @@ class Logic:
         msg_encrypted = self.key.encrypt(msg_by_protocol)
         # send the msg
         self.network.send_msg(msg_encrypted)
-    
-    
+
     def send_upload_request(self, args):
         '''
     
@@ -207,6 +204,7 @@ class Logic:
         '''
         #path in this computer
         self.upload_path = args[0]
+        print(1111, self.upload_path)
         self.file_name = self.upload_path[self.upload_path.rindex('\\') + 1:]
         #path to upload in the server
         self.upload_server_path = args[1]
@@ -242,7 +240,6 @@ class Logic:
         # send the msg
         self.network.send_msg(msg_encrypted)
     
-    
     def send_share(self, args):
         '''
     
@@ -257,8 +254,7 @@ class Logic:
         msg_encrypted = self.key.encrypt(msg_by_protocol)
         # send the msg
         self.network.send_msg(msg_encrypted)
-    
-    
+
     def send_delete(self, args):
         '''
     
@@ -271,8 +267,7 @@ class Logic:
         msg_encrypted = self.key.encrypt(msg_by_protocol)
         # send the msg
         self.network.send_msg(msg_encrypted)
-    
-    
+
     def send_create_folder(self, args):
         '''
     
@@ -285,8 +280,7 @@ class Logic:
         msg_encrypted = self.key.encrypt(msg_by_protocol)
         # send the msg
         self.network.send_msg(msg_encrypted)
-    
-    
+
     def download_answer(self, args):
         '''
     
@@ -303,7 +297,46 @@ class Logic:
         while True:
             finish = ready_q.get()
             wx.CallAfter(pub.sendMessage, 'finish_download', ans=finish)
-    
+
+    def edit_answer(self, args):
+        '''
+
+        :param args:details for download server
+        :return: download the file, open it and check for changes
+        '''
+        port = int(args[0])
+        length = int(args[1])
+        path = args[2]
+        file_name = path[path.rindex('\\') + 1:]
+        ready_q = queue.Queue()  # get massage in this q when the download finished
+        try:
+            os.makedirs('C:\\hidden')
+        except:
+            pass
+        download_network = ClientCom(server_ip, port, ready_q, True)
+        download_network.recv_file(length, file_name, self.key, path = 'C:\\hidden')
+        finish = ready_q.get()
+        if finish:
+            threading.Thread(target = self.follow_file, args=(f'C:\\hidden\\{file_name}', path)).start()
+
+    def follow_file(self, file_path, server_path):
+        '''
+
+        :param path:path for file to  follow
+        :param server_path: the path of the file in the server
+        :return: upload the file to the server in each change
+        '''
+        path_without_name = file_path[:file_path.rindex('\\')]
+        last_edited = os.path.getmtime(file_path)
+        while True:
+            try:
+                if os.path.getmtime(file_path) != last_edited:
+                    self.send_upload_request([path_without_name, server_path])
+                    last_edited = os.path.getmtime(file_path)  # update the last change time
+                if False:   #check if the file closed
+                    print(1)
+            except:
+                pass
     
     def finish(self):
         '''
