@@ -8,7 +8,6 @@ import smtplib
 import random
 import Sfile
 import os
-import os
 from Encryption import AESCipher
 from settings import TRIVE_LOCATION as trive_location
 from settings import FILES_KEY as files_key
@@ -184,7 +183,6 @@ def handle_forgot_password(args):
             serv.login(FROM, 'Triveamir539')
             serv.sendmail(FROM, TO, message)
             serv.close()
-            print('sent!')
         except Exception as e:
             print(str(e))
             print('Something went wrong...')

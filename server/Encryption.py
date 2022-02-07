@@ -26,16 +26,20 @@ class AESCipher(object):
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
         return (iv + cipher.encrypt(message))
 
-    def decrypt(self, ciphertext):
+    def decrypt(self, ciphertext, file = False):
         '''
 
         :param ciphertext:msg to decrypt
+        :param file: "true" - decrypt file, "false" - decrypt string
         :return: decrypted massage
         '''
         iv = ciphertext[:AES.block_size]
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
         plaintext = cipher.decrypt(ciphertext[AES.block_size:])
-        return plaintext.rstrip(b"\0").decode()
+        if file:
+            return plaintext.rstrip(b"\0")
+        else:
+            return plaintext.rstrip(b"\0").decode()
 
     def encrypt_file(self, file_path):
         '''
@@ -43,7 +47,6 @@ class AESCipher(object):
         :param file_name:file path to encrypt
         :return: the new path to the encrypted file
         '''
-        file_name = file_path[file_path.rindex('\\'):]
         with open(file_path, 'rb') as fo:
             plaintext = fo.read()
         enc = self.encrypt(plaintext)
@@ -51,10 +54,14 @@ class AESCipher(object):
             fo.write(enc)
 
     def decrypt_file(self, file_path):
-        print(file_path)
+        '''
+
+        :param file_path: path of the file to decrypt
+        :return:decrypt the file
+        '''
         with open(file_path, 'rb') as fo:
             ciphertext = fo.read()
-        dec = self.decrypt(ciphertext).encode()
+        dec = self.decrypt(ciphertext, True)
         with open(file_path, 'wb') as fo:
             fo.write(dec)
 
@@ -76,10 +83,6 @@ if __name__ == '__main__':
 
     my_key = AESCipher(key)
 
-    text = my_key.encrypt('tamir')
-    print(text)
-    print(my_key.decrypt(text))
-
-    #my_key.encrypt_file('c:\\temp\\new_cat.png')
-    #my_key.decrypt_file('c:\\temp\\temp.png.enc')
+    #my_key.encrypt_file('c:\\temp\\cat.png')
+    my_key.decrypt_file('c:\\temp\\cat.png')
 

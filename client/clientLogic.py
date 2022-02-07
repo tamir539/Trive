@@ -69,7 +69,7 @@ class Logic:
         '''
         func_by_command = {'register': self.send_register, 'login': self.send_login, 'forgot_password': self.send_forgot_password, 'change_detail': self.send_change_detail,
                            'download': self.send_download, 'upload': self.send_upload_request, 'share': self.send_share, 'add_to_folder': self.send_add_to_folder, 'rename': self.send_rename,
-                           'delete': self.send_delete, 'create_folder': self.send_create_folder}
+                           'delete': self.send_delete, 'create_folder': self.send_create_folder, 'edit': self.handle_edit}
         while True:
             msg = graphic_q.get()
             flag = msg[0]
@@ -124,7 +124,18 @@ class Logic:
         msg_encrypted = self.key.encrypt(msg_by_protocol)
         # send the msg
         self.network.send_msg(msg_encrypted)
-    
+
+
+    def handle_edit(self, args):
+        '''
+
+        :param args:path to the file to edit
+        :return:
+        '''
+        file_path = args[0]
+        self.send_download(args)
+
+
     
     def send_forgot_password(self, args):
         '''
@@ -166,7 +177,7 @@ class Logic:
         path = args[0]
     
         msg_by_protocol = prot.create_download_file_request_msg(path)
-        print(msg_by_protocol)
+
         # take to encryption
         msg_encrypted = self.key.encrypt(msg_by_protocol)
         # send the msg

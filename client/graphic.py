@@ -1249,7 +1249,17 @@ class OptionsMenu(wx.Menu):
             self.parent.frame.q.put(('delete', [self.path + '\\' + self.file_name]))
 
     def edit(self):
-        print('edit')
+        '''
+
+        :return:handle edit file
+        '''
+        file_typ = self.file_name.split('.')[1]
+        ok_files = ['txt', 'docx', 'pptm', 'xlsx']
+        if file_typ in ok_files:
+            self.parent.frame.q.put(('edit', [self.path + '\\' + self.file_name]))
+        else:
+            wx.MessageBox('Trive cant edit this file!', 'Trive Error', wx.OK | wx.ICON_ERROR)
+
 
     def copy_file(self):
         '''

@@ -53,8 +53,6 @@ def unpack_msg(msg):
     code = msg[:2]
     msg = msg[2:]
     #all the arguments of the msg
-
-    print('msg iss ', msg)
     args = msg.split('&')
 
     return command_by_code[code], args
@@ -170,9 +168,3 @@ def create_response(code, msg):
     :return:create and return response msg by the protocol
     '''
     return code+msg
-
-
-
-if __name__ == '__main__':
-    s = pack_file_names('T:\\public\\aaaaTamir\\client')
-    print(s)
