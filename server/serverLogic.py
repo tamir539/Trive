@@ -34,6 +34,7 @@ def check_network_q(network_q):
                        'download' : handle_download, 'delete': handle_delete, 'add_to_folder': handle_add_to_folder,
                        'create_folder':handle_create_folder, 'change_details': handle_change_details, 'share': handle_share,
                        'change_name': handle_change_file_name, 'forgot_password': handle_forgot_password, 'edit': handle_edit}
+                       #'edit_upload'}
     while True:
         msg = network_q.get()
         if msg[0] == 'upload':
@@ -100,10 +101,9 @@ def handle_register(args):
     password = hashlib.md5(args[1].encode()).hexdigest()
     email = args[2]
     ip = args[3]
-    key = set_key()
     # send username and password to decryption
     answer = 'un'
-    if myDB.add_user(username, email, password, key):
+    if myDB.add_user(username, email, password):
         answer = 'ok'
         try:
             os.makedirs(f'{trive_location}\\{username}\\shared')
@@ -207,13 +207,14 @@ def handle_upload_status(args):
     :param args: args to the upload
     :return: recive the file and return answer to the client
     '''
-    status, encrypted_path, file_name, ip = args
+    status, edit, encrypted_path, file_name, ip = args
     encrypted_path = encrypted_path  + '\\' + file_name
-    msg_by_protocol = prot.create_upload_file_response_msg(status+','+file_name)
-    # send the answer to encryption
-    encrypted_msg = key_by_ip[ip].encrypt(msg_by_protocol)
-    # send the answer
-    network.send_msg(ip, encrypted_msg)
+    if not edit:
+        msg_by_protocol = prot.create_upload_file_response_msg(status+','+file_name)
+        # send the answer to encryption
+        encrypted_msg = key_by_ip[ip].encrypt(msg_by_protocol)
+        # send the answer
+        network.send_msg(ip, encrypted_msg)
     if status =='ok':
         #decrypt the file with the client key
         key_by_ip[ip].decrypt_file(encrypted_path)
@@ -228,6 +229,11 @@ def handle_upload_request(args):
     :param args:ip
     :return: create server upload and send the new port to the client
     '''
+    edit = args[0]
+    if edit == 'edit':
+        edit = True
+    else:
+        edit = False
     ip = args[1]
     port = random.randint(1000, 65000)
     while port in taken_ports:
@@ -238,7 +244,7 @@ def handle_upload_request(args):
     encrypted_msg = key_by_ip[ip].encrypt(msg_by_protocol)
     # send the answer
     network.send_msg(ip, encrypted_msg)
-    upload_network = ServerCom(port, network_q, upload_server= True)
+    upload_network = ServerCom(port, network_q, upload_server= True, edit_server=edit)
 
 
 def handle_download(args):
@@ -349,7 +355,6 @@ def handle_add_to_folder(args):
     handle_send_all_files( username_connected[ip], ip)
 
 
-
 def handle_create_folder(args):
     '''
 
@@ -415,8 +420,6 @@ def set_key(key, ip):
     '''
     aes_key = AESCipher(key)
     key_by_ip[ip] = aes_key
-
-
 
 
 create_Trive_directory(trive_location)

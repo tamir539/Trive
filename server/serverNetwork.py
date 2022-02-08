@@ -9,7 +9,7 @@ from Encryption import Defi
 
 class ServerCom:
 
-    def __init__(self, port, q, upload_server = False, download_server = False):
+    def __init__(self, port, q, upload_server = False, download_server = False, edit_server = False):
         '''
 
         :param port:port to talk with a client
@@ -22,6 +22,7 @@ class ServerCom:
         self.running = True
         self.upload_server = upload_server  #true - > need to recv file
         self.download_server = download_server      #"true" -> need to send file
+        self.edit_server = edit_server      #true - need to recive file with no answer to the client
         self.has_client = False     #true -> client connected, false otherwise
         threading.Thread(target=self.recv_msg).start()
 
@@ -154,9 +155,15 @@ class ServerCom:
             with open(file_path + '\\' + file_name, 'wb') as f:
                 f.write(file_data)
                 f.close()
-            self.q.put(('upload', 'ok', file_path, file_name, self.socs[list(self.socs.keys())[0]]))
+            if self.edit_server:
+                self.q.put(('upload', 'ok', True, file_path, file_name, self.socs[list(self.socs.keys())[0]]))
+            else:
+                self.q.put(('upload', 'ok', False, file_path, file_name, self.socs[list(self.socs.keys())[0]]))
         else:
-            self.q.put(('upload', 'no', file_path, file_name, self.socs[list(self.socs.keys())[0]]))
+            if self.edit_server:
+                self.q.put(('upload', 'no', True, file_path, file_name, self.socs[list(self.socs.keys())[0]]))
+            else:
+                self.q.put(('upload', 'no', False, file_path, file_name, self.socs[list(self.socs.keys())[0]]))
         self.servSoc.close()
         self.socs = {}
         self.running = False

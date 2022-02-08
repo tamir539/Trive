@@ -196,7 +196,7 @@ class Logic:
         # send the msg
         self.network.send_msg(msg_encrypted)
 
-    def send_upload_request(self, args):
+    def send_upload_request(self, args, edit = False):
         '''
     
         :param args:file path to file
@@ -204,11 +204,27 @@ class Logic:
         '''
         #path in this computer
         self.upload_path = args[0]
-        print(1111, self.upload_path)
         self.file_name = self.upload_path[self.upload_path.rindex('\\') + 1:]
         #path to upload in the server
         self.upload_server_path = args[1]
-        msg_by_protocol = prot.create_upload_request_file_msg()
+        msg_by_protocol = prot.create_upload_request_file_msg(edit)
+        # take to encryption
+        msg_encrypted = self.key.encrypt(msg_by_protocol)
+        # send the msg
+        self.network.send_msg(msg_encrypted)
+
+    def send_edit_request(self, args):
+        '''
+
+        :param args:file path to file
+        :return: send request to upload that file
+        '''
+        # path in this computer
+        self.upload_path = args[0]
+        self.file_name = self.upload_path[self.upload_path.rindex('\\') + 1:]
+        # path to upload in the server
+        self.upload_server_path = args[1]
+        msg_by_protocol = prot.create_upload_edit_request_msg()
         # take to encryption
         msg_encrypted = self.key.encrypt(msg_by_protocol)
         # send the msg
@@ -326,18 +342,45 @@ class Logic:
         :param server_path: the path of the file in the server
         :return: upload the file to the server in each change
         '''
-        path_without_name = file_path[:file_path.rindex('\\')]
+        #self.open_file(file_path)
+        server_path_without_name = server_path[:server_path.rindex('\\')]
         last_edited = os.path.getmtime(file_path)
         while True:
             try:
                 if os.path.getmtime(file_path) != last_edited:
-                    self.send_upload_request([path_without_name, server_path])
+                    self.send_upload_request([file_path, server_path_without_name], True)
                     last_edited = os.path.getmtime(file_path)  # update the last change time
                 if False:   #check if the file closed
                     print(1)
             except:
                 pass
-    
+
+    def open_file(self, file_path):
+        '''
+
+        :param file_path:path of the file to open
+        :return: open the file
+        '''
+        file_typ = file_path.split('.')[1]
+        #file_name = file_typ[file_path.rstrip('\\') + 1:]
+        notepad = ['py', 'txt', 'java', 'asm']
+        word = ['doc', 'docx']
+        excel = ['xlsx']
+        power_point = ['pptm']
+        if file_typ in notepad:
+            #open notepad
+            osCommandString = f"notepad.exe {file_path}"
+            os.system(osCommandString)
+        elif file_typ in word:
+            #open word
+            pass
+        elif file_typ in excel:
+            #open excel
+            pass
+        elif file_typ in power_point:
+            #open powerpoint
+            pass
+
     def finish(self):
         '''
     

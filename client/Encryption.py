@@ -77,3 +77,4 @@ class Defi:
 
     def compute_secret(self, gb):
         return gb ** self.a % 100000
+

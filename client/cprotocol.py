@@ -15,7 +15,6 @@ def unpack(msg):
                        '16': 'upload_port', '17': 'edit'}
     code = msg[:2]
     msg = msg[2:]
-    print(msg)
     args = msg.split('&')
     return command_by_code[code], args
 
@@ -56,15 +55,14 @@ def create_all_file_recive_msg(ans):
     return msg
 
 
-def create_upload_request_file_msg():
+def create_upload_request_file_msg(edit = False):
     '''
 
-    :param file_name: name of the file
-    :param file_new_path: where to put the file in the server
-    :param file_len: file length
     :return: creates the massage by the protocol
     '''
     code = '16'
+    if edit:
+        code += 'edit'
     return code
 
 
@@ -78,7 +76,6 @@ def create_upload_file_msg(file_new_path, file_len, file_name):
     '''
     code = '05'
     msg = code + str(file_len) + '&' + file_new_path + '&' + file_name
-    print(msg)
     return msg
 
 
@@ -147,7 +144,6 @@ def create_share_file_request_msg(file_path, username):
     '''
     code = '11'
     msg = code + file_path + '&' + username
-    print(msg)
     return msg
 
 

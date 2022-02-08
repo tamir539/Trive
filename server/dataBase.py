@@ -31,7 +31,7 @@ class DB:
 
         :return: creates the users table if not exists
         '''
-        users = F"CREATE TABLE IF NOT EXISTS {self.usersTable} (Username TEXT, Email TEXT, Password TEXT, Key TEXT)"
+        users = F"CREATE TABLE IF NOT EXISTS {self.usersTable} (Username TEXT, Email TEXT, Password TEXT)"
         self.cursor.execute(users)
         self.conn.commit()
 
@@ -54,7 +54,7 @@ class DB:
         self.cursor.execute(sql)
         return not (len(self.cursor.fetchall()) == 0)
 
-    def add_user(self, username, email, password, key):
+    def add_user(self, username, email, password):
         '''
 
         :param username:
@@ -65,7 +65,7 @@ class DB:
         ret = False
         if not (self.check_username_exist(username)):
             ret = True
-            sql = f"INSERT INTO {self.usersTable} VALUES ('{username}','{email}','{password}','{key}')"
+            sql = f"INSERT INTO {self.usersTable} VALUES ('{username}','{email}','{password}')"
             self.cursor.execute(sql)
             self.conn.commit()
         return ret
