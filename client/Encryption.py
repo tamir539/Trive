@@ -63,7 +63,7 @@ class AESCipher(object):
         '''
         with open(file_path, 'rb') as fo:
             ciphertext = fo.read()
-        dec = self.decrypt(ciphertext).encode()
+        dec = self.decrypt(ciphertext, True)
         with open(file_path, 'wb') as fo:
             fo.write(dec)
 

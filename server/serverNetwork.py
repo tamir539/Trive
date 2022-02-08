@@ -79,16 +79,20 @@ class ServerCom:
             for current_socket in rlist:
                 if current_socket is self.servSoc:
                     # new client
-                    client, address = self.servSoc.accept()
-                    if not self.check_if_blocked(address[0]) and not self.upload_server and not self.download_server:
-                        print(f'{address[0]} - connected')
-                        threading.Thread(target= self.switch_keys, args= (client, address[0], )).start()
-                    elif not self.check_if_blocked(address[0]) and (self.upload_server or self.download_server):
-                        #if download or upload server, no switch keys
-                        self.has_client = True
-                        self.socs[client] = address[0]
+                    try:
+                        client, address = self.servSoc.accept()
+                    except Exception as e:
+                        print(f'in accept client - {str(e)}')
                     else:
-                        self.send_msg(client, 'blocked')
+                        if not self.check_if_blocked(address[0]) and not self.upload_server and not self.download_server:
+                            print(f'{address[0]} - connected')
+                            threading.Thread(target= self.switch_keys, args= (client, address[0], )).start()
+                        elif not self.check_if_blocked(address[0]) and (self.upload_server or self.download_server):
+                            #if download or upload server, no switch keys
+                            self.has_client = True
+                            self.socs[client] = address[0]
+                        else:
+                            self.send_msg(client, 'blocked')
                 else:
                     # receive data from exist client
                     try:

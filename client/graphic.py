@@ -604,7 +604,7 @@ class LobyPanel(wx.Panel):
             typ = fileName.split('.')[1]
             if typ == 'jpg' or typ == 'bmp' or typ == 'png' or typ == 'svg':
                 return 'img'
-            elif typ == 'txt' or typ == 'py' or typ == 'java' or typ == 'word' or typ == 'bin' or typ == 'doc' or typ == 'docx' or typ == 'asm':
+            elif typ == 'txt' or typ == 'py' or typ == 'java' or typ == 'word' or typ == 'bin' or typ == 'doc' or typ == 'docx' or typ == 'asm' or typ == 'pptx':
                 return 'file'
             else:
                 return 'no'
@@ -834,7 +834,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
             typ = fileName.split('.')[1]
             if typ == 'jpg' or typ == 'bmp' or typ == 'png' or typ == 'svg':
                 return 'image'
-            elif typ == 'txt' or typ == 'py' or typ == 'java' or typ == 'word' or typ == 'bin' or typ == 'doc' or typ == 'docx' or typ == 'asm' or typ == 'pdf':
+            elif typ == 'txt' or typ == 'py' or typ == 'java' or typ == 'word' or typ == 'bin' or typ == 'doc' or typ == 'docx' or typ == 'asm' or typ == 'pdf' or typ == 'pptx':
                 return 'file'
             else:
                 return 'no'
@@ -893,7 +893,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         if self.getType(file_name) == 'folder':
             self.files[self.path + '\\' + file_name] = ['back']
 
-        #self.DestroyChildren()
+        self.DestroyChildren()
         self.createFilesSizer(self.files[self.path])
         # file_sizer = self.createFileSizer(file_name)
         # self.filesSizer.AddSpacer(45)
@@ -1254,7 +1254,7 @@ class OptionsMenu(wx.Menu):
         :return:handle edit file
         '''
         file_typ = self.file_name.split('.')[1]
-        ok_files = ['txt', 'docx', 'pptm', 'xlsx']
+        ok_files = ['txt', 'docx', 'xlsx', 'py', 'java', 'asm', 'pptx']
         if file_typ in ok_files:
             self.parent.frame.q.put(('edit', [self.path + '\\' + self.file_name]))
         else:

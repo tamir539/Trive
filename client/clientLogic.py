@@ -9,6 +9,7 @@ import os
 import psutil
 from Encryption import AESCipher
 from settings import SERVER_IP as server_ip
+import time
 
 class Logic:
     def __init__(self):
@@ -342,18 +343,29 @@ class Logic:
         :param server_path: the path of the file in the server
         :return: upload the file to the server in each change
         '''
-        #self.open_file(file_path)
-        server_path_without_name = server_path[:server_path.rindex('\\')]
-        last_edited = os.path.getmtime(file_path)
+        self.open_file(file_path)
+        time.sleep(3)
         while True:
             try:
-                if os.path.getmtime(file_path) != last_edited:
-                    self.send_upload_request([file_path, server_path_without_name], True)
-                    last_edited = os.path.getmtime(file_path)  # update the last change time
-                if False:   #check if the file closed
-                    print(1)
-            except:
+                with open(file_path, "r") as file:  # or just open
+                    break
+            # Code here
+            except IOError:
                 pass
+        print(1)
+        server_path_without_name = server_path[:server_path.rindex('\\')]
+        self.send_upload_request([file_path, server_path_without_name], True)
+        # raise error or print
+        # last_edited = os.path.getmtime(file_path)
+        # while True:
+        #     try:
+        #         if os.path.getmtime(file_path) != last_edited:
+        #             self.send_upload_request([file_path, server_path_without_name], True)
+        #             last_edited = os.path.getmtime(file_path)  # update the last change time
+        #         if False:   #check if the file closed
+        #             break
+        #     except:
+        #         pass
 
     def open_file(self, file_path):
         '''
@@ -371,9 +383,8 @@ class Logic:
             #open notepad
             osCommandString = f"notepad.exe {file_path}"
             os.system(osCommandString)
-        elif file_typ in word:
-            #open word
-            pass
+        elif file_typ in word or 1 == 1:
+            os.system(f'start {file_path}')
         elif file_typ in excel:
             #open excel
             pass
