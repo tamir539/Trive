@@ -11,7 +11,8 @@ class AESCipher(object):
         self.key = self.key.encode()
 
     def pad(self, s):
-        return s + b"\0" * (AES.block_size - len(s) % AES.block_size)
+        padding_size = AES.block_size - len(s) % AES.block_size
+        return s + b"\0" * padding_size, padding_size
 
     def encrypt(self, message):
         '''
@@ -21,10 +22,10 @@ class AESCipher(object):
         '''
         if type(message) is str:
             message = message.encode()
-        message = self.pad(message)
+        message, padding_size = self.pad(message)
         iv = Random.new().read(AES.block_size)
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        return (iv + cipher.encrypt(message))
+        return iv + cipher.encrypt(message) + bytes([padding_size])
 
     def decrypt(self, ciphertext, file = False):
         '''
@@ -35,9 +36,10 @@ class AESCipher(object):
         '''
         iv = ciphertext[:AES.block_size]
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        plaintext = cipher.decrypt(ciphertext[AES.block_size:])
+        plaintext = cipher.decrypt(ciphertext[AES.block_size:-1])
+        padding_size = ciphertext[-1] * (-1)
         if file:
-            return plaintext.rstrip(b"\0")
+            return plaintext[:padding_size]
         else:
             return plaintext.rstrip(b"\0").decode()
 
@@ -78,3 +80,16 @@ class Defi:
     def compute_secret(self, gb):
         return gb ** self.a % 100000
 
+if __name__ == '__main__':
+
+
+    key = AESCipher('jg')
+
+    # key.encrypt_file('C:\\temp\\try.docx', 'C:\\temp2\\')
+
+    enc = key.encrypt('tamir')
+
+    print(key.decrypt(enc))
+
+    #
+    # key.decrypt_file('C:\\temp2\\try.docx')

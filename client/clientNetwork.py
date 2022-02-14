@@ -88,15 +88,17 @@ class ClientCom:
             print(f'in send msg - {str(e)}')
             self.soc.close()
 
-    def send_file(self, filePath, server_path, file_name, key):
+    def send_file(self, filePath, server_path, file_name):
         '''
 
         :param filePath: path for file
         :return: sends the data to the server
         '''
+        print('uploafing networkkk', filePath)
         time.sleep(0.1)
         file = open(filePath, 'rb')
         data = file.read()
+        file.close()
         msg_after_protocol = prot.create_upload_file_msg(server_path, len(data), file_name)
         total_msg = str(len(msg_after_protocol)).zfill(3) + msg_after_protocol
         #035051336&D:\Trive\tamir&Encryption.py

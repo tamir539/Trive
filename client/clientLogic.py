@@ -205,6 +205,7 @@ class Logic:
         '''
         #path in this computer
         self.upload_path = args[0]
+        print('uploading ', args[0])
         self.file_name = self.upload_path[self.upload_path.rindex('\\') + 1:]
         #path to upload in the server
         self.upload_server_path = args[1]
@@ -214,24 +215,7 @@ class Logic:
         # send the msg
         self.network.send_msg(msg_encrypted)
 
-    def send_edit_request(self, args):
-        '''
-
-        :param args:file path to file
-        :return: send request to upload that file
-        '''
-        # path in this computer
-        self.upload_path = args[0]
-        self.file_name = self.upload_path[self.upload_path.rindex('\\') + 1:]
-        # path to upload in the server
-        self.upload_server_path = args[1]
-        msg_by_protocol = prot.create_upload_edit_request_msg()
-        # take to encryption
-        msg_encrypted = self.key.encrypt(msg_by_protocol)
-        # send the msg
-        self.network.send_msg(msg_encrypted)
-
-    def upload(self,port):
+    def upload(self, port):
         '''
     
         :param port: server port
@@ -239,8 +223,8 @@ class Logic:
         '''
         client_upload = ClientCom(server_ip, int(port), self.network_q)
         encrypted_path = self.key.encrypt_file(self.upload_path, 'C:\\Trive_uploads\\')
-        threading.Thread(target=client_upload.send_file, args= (encrypted_path, self.upload_server_path, self.file_name, self.key, )).start()
-        #client_upload.send_file(upload_path, upload_server_path, file_name, key)
+        print('encrypted updated!!')
+        threading.Thread(target=client_upload.send_file, args= (encrypted_path, self.upload_server_path, self.file_name, )).start()
 
     def send_add_to_folder(self, args):
         '''
@@ -352,7 +336,7 @@ class Logic:
             # Code here
             except IOError:
                 pass
-        print(1)
+        print(111111111111111111 , file_path)
         server_path_without_name = server_path[:server_path.rindex('\\')]
         self.send_upload_request([file_path, server_path_without_name], True)
         # raise error or print
