@@ -100,6 +100,7 @@ class ServerCom:
                         msg = current_socket.recv(int(msg_len))
                     except Exception as e:
                         print('in recv - ',self.port,  str(e))
+                        self.q.put(('disconnected', self.socs[current_socket]))
                         del self.socs[current_socket]
                     else:
                         if not self.upload_server:

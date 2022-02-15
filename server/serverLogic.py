@@ -41,6 +41,9 @@ def check_network_q(network_q):
             handle_upload_status(msg[1:])
         elif msg[0] == 'key':
             set_key(msg[1], msg[2])
+        elif msg[0] == 'disconnected':
+            if msg[1] in list(username_connected.keys()):
+                del username_connected[msg[1]]
         else:
             ip = msg[1]
             msg = msg[0]
@@ -71,6 +74,8 @@ def handle_login(args):
     if ip in trys_by_ip.keys() and trys_by_ip[ip] == 4:
         network.block_ip(ip)
         answer = 'blocked'
+    elif username in list(username_connected.values()):
+        answer = 'ac'
     elif myDB.check_username_exist(username) and hashlib.md5(password.encode()).hexdigest() == hashed_password:
         myDB.add_ip_for_username(username, ip)
         answer = 'ok' + ',' + myDB.get_email_of_user(username)

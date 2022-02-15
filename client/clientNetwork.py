@@ -94,7 +94,6 @@ class ClientCom:
         :param filePath: path for file
         :return: sends the data to the server
         '''
-        print('uploafing networkkk', filePath)
         time.sleep(0.1)
         file = open(filePath, 'rb')
         data = file.read()

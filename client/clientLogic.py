@@ -10,6 +10,8 @@ import psutil
 from Encryption import AESCipher
 from settings import SERVER_IP as server_ip
 import time
+import win32con
+import win32file
 
 class Logic:
     def __init__(self):
@@ -205,7 +207,6 @@ class Logic:
         '''
         #path in this computer
         self.upload_path = args[0]
-        print('uploading ', args[0])
         self.file_name = self.upload_path[self.upload_path.rindex('\\') + 1:]
         #path to upload in the server
         self.upload_server_path = args[1]
@@ -223,7 +224,6 @@ class Logic:
         '''
         client_upload = ClientCom(server_ip, int(port), self.network_q)
         encrypted_path = self.key.encrypt_file(self.upload_path, 'C:\\Trive_uploads\\')
-        print('encrypted updated!!')
         threading.Thread(target=client_upload.send_file, args= (encrypted_path, self.upload_server_path, self.file_name, )).start()
 
     def send_add_to_folder(self, args):
@@ -328,28 +328,31 @@ class Logic:
         :return: upload the file to the server in each change
         '''
         self.open_file(file_path)
-        time.sleep(3)
-        while True:
-            try:
-                with open(file_path, "r") as file:  # or just open
+        _file_list_dir = 1
+        # Create a watcher handle
+        _h_dir = win32file.CreateFile(file_path[:file_path.rindex('\\')], _file_list_dir, win32con.FILE_SHARE_READ | win32con.FILE_SHARE_WRITE |  win32con.FILE_SHARE_DELETE, None, win32con.OPEN_EXISTING, win32con.FILE_FLAG_BACKUP_SEMANTICS, None)
+        while 1:
+            #results = win32file.ReadDirectoryChangesW(_h_dir, 1024, True, win32con.FILE_NOTIFY_CHANGE_SIZE | win32con.FILE_NOTIFY_CHANGE_LAST_WRITE, None, None)
+            results = win32file.ReadDirectoryChangesW(
+                _h_dir,
+                1024,
+                True,
+                win32con.FILE_NOTIFY_CHANGE_FILE_NAME |
+                win32con.FILE_NOTIFY_CHANGE_DIR_NAME |
+                win32con.FILE_NOTIFY_CHANGE_ATTRIBUTES |
+                win32con.FILE_NOTIFY_CHANGE_SIZE |
+                win32con.FILE_NOTIFY_CHANGE_LAST_WRITE |
+                win32con.FILE_NOTIFY_CHANGE_SECURITY,
+                None,
+                None
+            )
+            for _action, _file in results:
+                if _action == 4 and 'docx' in _file:
+                    server_path_without_name = server_path[:server_path.rindex('\\')]
+                    self.send_upload_request([file_path, server_path_without_name], True)
+                if _action == 2 and 'docx' in _file:
                     break
-            # Code here
-            except IOError:
-                pass
-        print(111111111111111111 , file_path)
-        server_path_without_name = server_path[:server_path.rindex('\\')]
-        self.send_upload_request([file_path, server_path_without_name], True)
-        # raise error or print
-        # last_edited = os.path.getmtime(file_path)
-        # while True:
-        #     try:
-        #         if os.path.getmtime(file_path) != last_edited:
-        #             self.send_upload_request([file_path, server_path_without_name], True)
-        #             last_edited = os.path.getmtime(file_path)  # update the last change time
-        #         if False:   #check if the file closed
-        #             break
-        #     except:
-        #         pass
+
 
     def open_file(self, file_path):
         '''

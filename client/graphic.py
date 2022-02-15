@@ -262,6 +262,8 @@ class LoginPanel(wx.Panel):
         ans = answer.split(',')[0]
         if ans == 'no':
             self.errorMsg('Wrong username or password')
+        elif ans == 'ac':
+            self.errorMsg('You already connected from other device!')
         elif ans =='ok':
             email = answer.split(',')[1]
             self.frame.username = self.username
