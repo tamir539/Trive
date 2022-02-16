@@ -574,25 +574,28 @@ class LobyPanel(wx.Panel):
         :param event:  means  the upload btn pressed
         :return:
         '''
-        openFileDialog = wx.FileDialog(self, "Open", "", "", "",wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
-        openFileDialog.ShowModal()
-        #path of the selected file
-        path = openFileDialog.GetPath()
-        #name of the file
-        file_name = path[path.rindex('\\') + 1:]
-        openFileDialog.Destroy()
-        if self.uploading:
-            self.errorMsg('Wait the other upload to finish!')
-        elif self.getType(path.split('\\')[-1]) == 'no':
-            self.errorMsg('Trive doesnt support this type of files')
-        #check that the file isnt allready exists
-        elif file_name in self.scrollFiles.files[self.scrollFiles.path]:
-            self.errorMsg('File allready exists')
+        if 'recycle' in self.scrollFiles.path or 'shared' in self.scrollFiles.path:
+            self.errorMsg('Cant upload here')
         else:
-            self.frame.status_bar.SetBackgroundColour(wx.WHITE)
-            self.frame.status_bar.SetStatusText(f'Uploading {file_name}')
-            self.frame.q.put(('upload', [path, self.scrollFiles.path]))
-            self.uploading = True
+            openFileDialog = wx.FileDialog(self, "Open", "", "", "",wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+            openFileDialog.ShowModal()
+            #path of the selected file
+            path = openFileDialog.GetPath()
+            if path != '':
+                file_name = path[path.rindex('\\') + 1:]
+                openFileDialog.Destroy()
+                if self.uploading:
+                    self.errorMsg('Wait the other upload to finish!')
+                elif self.getType(path.split('\\')[-1]) == 'no':
+                    self.errorMsg('Trive doesnt support this type of files')
+                #check that the file isnt allready exists
+                elif file_name in self.scrollFiles.files[self.scrollFiles.path]:
+                    self.errorMsg('File allready exists')
+                else:
+                    self.frame.status_bar.SetBackgroundColour(wx.WHITE)
+                    self.frame.status_bar.SetStatusText(f'Uploading {file_name}')
+                    self.frame.q.put(('upload', [path, self.scrollFiles.path]))
+                    self.uploading = True
 
     def getType(self, fileName):
         '''
@@ -600,13 +603,17 @@ class LobyPanel(wx.Panel):
         :param fileName: name of file
         :return:  "img" if the file is some image, "file" if the file is some text file, "folder" if the fileName if folder, "no"
         '''
+
+        files = ['txt', 'py', 'java', 'word', 'bin', 'docx', 'doc', 'asm', 'pptx', 'xlxs']
+        images = ['jpg', 'bmp', 'png', 'svg']
+
         if not '.' in fileName:     #mean that the filename if folder
             return 'folder'
         else:
             typ = fileName.split('.')[1]
-            if typ == 'jpg' or typ == 'bmp' or typ == 'png' or typ == 'svg':
+            if typ in images:
                 return 'img'
-            elif typ == 'txt' or typ == 'py' or typ == 'java' or typ == 'word' or typ == 'bin' or typ == 'doc' or typ == 'docx' or typ == 'asm' or typ == 'pptx':
+            elif typ in files:
                 return 'file'
             else:
                 return 'no'
@@ -617,16 +624,19 @@ class LobyPanel(wx.Panel):
         :param event:  means  the upload file btn pressed
         :return:
         '''
-        dlg = wx.TextEntryDialog(None, 'Enter name for the folder: ', 'Create folder', '',style=wx.TextEntryDialogStyle)
+        if 'recycle' in self.scrollFiles.path or 'shared' in self.scrollFiles.path:
+            wx.MessageBox('Cant create folder here', 'Trive error', wx.OK | wx.ICON_ERROR)
+        else:
+            dlg = wx.TextEntryDialog(None, 'Enter name for the folder: ', 'Create folder', '',style=wx.TextEntryDialogStyle)
 
-        if dlg.ShowModal() == wx.ID_OK:
-            self.new_folder_name = dlg.GetValue()
-            if self.new_folder_name == 'shared':
-                wx.MessageBox('Unavailabale name', 'Trive Error', wx.OK | wx.ICON_ERROR)
-            else:
-                path = self.scrollFiles.path + '\\' + self.new_folder_name   #calculate the virtual path
-                self.frame.q.put(('create_folder', [path]))
-                pub.subscribe(self.handle_create_folder_answer, 'create_folder')
+            if dlg.ShowModal() == wx.ID_OK:
+                self.new_folder_name = dlg.GetValue()
+                if self.new_folder_name == 'shared':
+                    wx.MessageBox('Unavailabale name', 'Trive Error', wx.OK | wx.ICON_ERROR)
+                else:
+                    path = self.scrollFiles.path + '\\' + self.new_folder_name   #calculate the virtual path
+                    self.frame.q.put(('create_folder', [path]))
+                    pub.subscribe(self.handle_create_folder_answer, 'create_folder')
 
     def handle_account(self, event):
         '''
@@ -697,6 +707,8 @@ class LobyPanel(wx.Panel):
         copyied = self.scrollFiles.copying
         if copyied == '':
             self.errorMsg('No file or folder has been selected')
+        elif 'recycle' in self.scrollFiles.path or 'shared' in self.scrollFiles.path:
+            self.errorMsg('Cant paste here')
         else:
             self.frame.q.put(('add_to_folder', [copyied, self.scrollFiles.path]))
             pub.subscribe(self.add_to_folder_answer, 'add_to_folder')
@@ -809,7 +821,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         if self.getType(file) == 'back':
             fileImg.Bind(wx.EVT_LEFT_DOWN, self.handle_back)
 
-        elif file != 'shared':
+        elif file != 'shared' and file != 'recycle':
             fileImg.Bind(wx.EVT_RIGHT_DOWN, self.onFileClick)
 
         #add the name of the file\image\folder
@@ -828,15 +840,18 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         :return:  "image" if the file is some image, "file" if the file is some text file, "folder" if the fileName if folder, "no"
         '''
 
+        files = ['txt', 'py', 'java', 'word', 'bin', 'docx', 'doc', 'asm', 'pptx', 'xlxs']
+        images = ['jpg', 'bmp', 'png', 'svg']
+
         if fileName == 'back':
             return 'back'
-        elif not '.' in fileName:     #mean that the filename if folder
+        elif not '.' in fileName:  # mean that the filename if folder
             return 'folder'
         else:
             typ = fileName.split('.')[1]
-            if typ == 'jpg' or typ == 'bmp' or typ == 'png' or typ == 'svg':
-                return 'image'
-            elif typ == 'txt' or typ == 'py' or typ == 'java' or typ == 'word' or typ == 'bin' or typ == 'doc' or typ == 'docx' or typ == 'asm' or typ == 'pdf' or typ == 'pptx':
+            if typ in images:
+                return 'img'
+            elif typ in files:
                 return 'file'
             else:
                 return 'no'
@@ -1138,7 +1153,12 @@ class AccountPanel(wx.Panel):
             self.new_email = new_email
 
     def handle_logOut(self, event):
-        pass
+        '''
+
+        :param event:
+        :return: logout
+        '''
+        self.parent.frame.q.put(('logout', ''))
 
     def handle_change_details_ans(self, answer):
 
@@ -1238,13 +1258,6 @@ class OptionsMenu(wx.Menu):
             username = dlg.GetValue()
             self.parent.frame.q.put(('share', [self.path + '\\' + self.file_name, username]))
 
-    def addToFolder(self):
-        '''
-
-        :return:notify the logic to add this file to folder
-        '''
-        wx.MessageBox('Select folder to insert the file to', 'Add to folder', wx.OK | wx.ICON_INFORMATION)
-
     def delete(self):
         question = wx.MessageBox('Are you sure you want to delete this file? ', 'Trive Error', wx.YES | wx.NO | wx.ICON_WARNING)
         if question == wx.YES:
@@ -1262,20 +1275,12 @@ class OptionsMenu(wx.Menu):
         else:
             wx.MessageBox('Trive cant edit this file!', 'Trive Error', wx.OK | wx.ICON_ERROR)
 
-
     def copy_file(self):
         '''
 
         :return:change the now coping file in the parent
         '''
         self.parent.copying = self.path + '\\' + self.file_name
-
-    def paste_file(self):
-        '''
-
-        :return:move the copyied file or folder to this folder
-        '''
-        self.parent.frame.q.put(('add_to_folder'))
 
 
 if __name__ == '__main__':

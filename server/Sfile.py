@@ -1,6 +1,7 @@
 import os
 import shutil
 from Encryption import AESCipher
+from settings import TRIVE_LOCATION as trive_path
 
 def get_file_length(path):
     '''
@@ -41,16 +42,20 @@ def rename_file(path, new_name):
         return 'no'
 
 
-def delete_file(path):
+def delete_file(path, username):
     '''
 
     :param path:path to file or folder
     :return:delete the file or folder
     '''
     if os.path.isfile(path):
+        if 'recycle' not in path:
+            move_file(path, f'{trive_path}\\{username}\\recycle')
         os.remove(path)
         return 'ok'
     elif os.path.isdir(path):
+        if 'recycle' not in path:
+            move_file(path, f'{trive_path}\\{username}\\recycle')
         shutil.rmtree(path)
         return 'ok'
     return 'no'
@@ -100,7 +105,8 @@ def move_file(path, move_to):
         try:
             shutil.copy2(path, move_to)
             return 'ok'
-        except:
+        except Exception as e:
+            print('in move file file ', str(e))
             return 'no'
 
 

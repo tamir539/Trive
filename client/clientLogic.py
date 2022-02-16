@@ -48,22 +48,27 @@ class Logic:
                 key_str = msg.split('-')[1]
                 self.key = AESCipher(key_str)
             else:
-                #do decryption
-                decrypted_msg = self.key.decrypt(msg)
-                #unpack by protocol
-                msg_after_unpack = prot.unpack(decrypted_msg)
-                #the command from the server
-                command = msg_after_unpack[0]
-                #the arguments from the server
-                args = msg_after_unpack[1]
-                if command == 'upload_port':
-                    self.upload(args[0])
-                elif command == 'download':
-                    threading.Thread(target= self.download_answer, args = (args, )).start()
-                elif command == 'edit':
-                    threading.Thread(target=self.edit_answer, args=(args,)).start()
+                if msg == 'disconnect':
+                    pass
+                elif msg == 'logout':
+                    pass
                 else:
-                    wx.CallAfter(pub.sendMessage, command, answer = args[0])
+                    #do decryption
+                    decrypted_msg = self.key.decrypt(msg)
+                    #unpack by protocol
+                    msg_after_unpack = prot.unpack(decrypted_msg)
+                    #the command from the server
+                    command = msg_after_unpack[0]
+                    #the arguments from the server
+                    args = msg_after_unpack[1]
+                    if command == 'upload_port':
+                        self.upload(args[0])
+                    elif command == 'download':
+                        threading.Thread(target= self.download_answer, args = (args, )).start()
+                    elif command == 'edit':
+                        threading.Thread(target=self.edit_answer, args=(args,)).start()
+                    else:
+                        wx.CallAfter(pub.sendMessage, command, answer = args[0])
 
     def check_graphic_q(self, graphic_q):
         '''
@@ -73,11 +78,9 @@ class Logic:
         '''
         func_by_command = {'register': self.send_register, 'login': self.send_login, 'forgot_password': self.send_forgot_password, 'change_detail': self.send_change_detail,
                            'download': self.send_download, 'upload': self.send_upload_request, 'share': self.send_share, 'add_to_folder': self.send_add_to_folder, 'rename': self.send_rename,
-                           'delete': self.send_delete, 'create_folder': self.send_create_folder, 'edit': self.handle_edit}
+                           'delete': self.send_delete, 'create_folder': self.send_create_folder, 'edit': self.handle_edit, 'logout': self.send_logout}
         while True:
-            msg = graphic_q.get()
-            flag = msg[0]
-            args = msg[1]
+            flag, args = graphic_q.get()
             func_by_command[flag](args)
             #wx.CallAfter(pub.sendMessage, command, massage = args[0])
 
@@ -110,6 +113,16 @@ class Logic:
         msg_encrypted = self.key.encrypt(msg_by_protocol)
         # send the msg
         self.network.send_msg(msg_encrypted)
+
+    def send_logout(self, args):
+        '''
+
+        :return:send logout messgae to the server
+        '''
+        # msg_by_protocol = prot.create_logout_msg()
+        # encrypted_msg = self.key.encrypt(msg_by_protocol)
+        # self.network.send_msg(encrypted_msg)
+        pass
 
     def send_login(self, args):
         '''

@@ -33,7 +33,8 @@ def check_network_q(network_q):
     func_by_command = {'login': handle_login, 'register': handle_register, 'upload_request': handle_upload_request,
                        'download' : handle_download, 'delete': handle_delete, 'add_to_folder': handle_add_to_folder,
                        'create_folder':handle_create_folder, 'change_details': handle_change_details, 'share': handle_share,
-                       'change_name': handle_change_file_name, 'forgot_password': handle_forgot_password, 'edit': handle_edit}
+                       'change_name': handle_change_file_name, 'forgot_password': handle_forgot_password, 'edit': handle_edit,
+                       'logout' : handle_logout}
                        #'edit_upload'}
     while True:
         msg = network_q.get()
@@ -56,6 +57,15 @@ def check_network_q(network_q):
             #the ip
             args.append(ip)
             func_by_command[command](args)
+
+def handle_logout(args):
+    '''
+
+    :param args:ip of the disconnected client
+    :return:
+    '''
+    del username_connected[args[1]]
+    del key_by_ip[args[1]]
 
 
 def handle_login(args):
@@ -112,6 +122,7 @@ def handle_register(args):
         answer = 'ok'
         try:
             os.makedirs(f'{trive_location}\\{username}\\shared')
+            os.makedirs(f'{trive_location}\\{username}\\recycle')
         except:
             pass
     # send the answer to encryption
@@ -333,12 +344,14 @@ def handle_delete(args):
     now_name = path[path.rindex('\\') + 1:]
     ip = args[1]
 
-    ans = Sfile.delete_file(path)
+    ans = Sfile.delete_file(path, username_connected[ip])
     msg_by_protocol = prot.create_delete_file_response_msg(ans + ',' + now_name)
     # send the answer to encryption
     encrypted_msg = key_by_ip[ip].encrypt(msg_by_protocol)
     # send the answer
     network.send_msg(ip, encrypted_msg)
+    if ans == 'ok':
+        handle_send_all_files(username_connected[ip], ip)
 
 
 def handle_add_to_folder(args):

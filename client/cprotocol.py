@@ -44,6 +44,14 @@ def create_register_msg(username, password, email):
     return msg
 
 
+def create_logout_msg():
+    '''
+
+    :return:logout msg by the protocol
+    '''
+    return '20'
+
+
 def create_all_file_recive_msg(ans):
     '''
 
