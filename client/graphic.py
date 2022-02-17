@@ -501,6 +501,7 @@ class LobyPanel(wx.Panel):
         self.account = None
         self.scrollFiles = None
         self.uploading = False      #'true' - > upload in progress
+        self.editing = False
         self.new_folder_name = ''
         self.__create_screen__()
 
@@ -651,7 +652,7 @@ class LobyPanel(wx.Panel):
     def handle_account(self, event):
         '''
 
-        :param event:  means the upload btn pressed
+        :param event:  means the account btn pressed
         :return:
         '''
         if self.inAccount:
@@ -1269,7 +1270,11 @@ class OptionsMenu(wx.Menu):
         '''
         file_typ = self.file_name.split('.')[1]
         ok_files = ['txt', 'docx', 'xlsx', 'py', 'java', 'asm', 'pptx']
-        if file_typ in ok_files:
+        print(111111111)
+        if self.parent.parent.editing:
+            print(12334)
+            wx.MessageBox('Cant edit 2 files...', 'Trive error', wx.OK | wx.ICON_ERROR)
+        elif file_typ in ok_files:
             self.parent.frame.q.put(('edit', [self.path + '\\' + self.file_name]))
         else:
             wx.MessageBox('Trive cant edit this file!', 'Trive Error', wx.OK | wx.ICON_ERROR)

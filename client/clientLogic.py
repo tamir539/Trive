@@ -6,44 +6,59 @@ import wx
 from pubsub import pub
 import cprotocol as prot
 import os
-import psutil
 from Encryption import AESCipher
 from settings import SERVER_IP as server_ip
-import time
 import win32con
 import win32file
+import ctypes
+import psutil
+import time
 
 class Logic:
+    '''
+    logic of the client
+    '''
     def __init__(self):
-
+        '''
+            upload path -> path of the file to upload if there is one
+            upload_server_path -> place in the server to upload the file to
+            file_name -> name of the file that uploading now
+            key -> aes key with the server
+            network_q - > queue to recive msgs from the network
+            graphic_q -> queue to recive msgs from the graphic
+            network -> client network object
+        '''
         self.upload_path = ''
         self.upload_server_path = ''
         self.file_name = ''
         self.key = None
 
-        # queue to get massages from the self.network
         self.network_q = queue.Queue()
-        # queue to get massages from the graphic
-        graphic_q = queue.Queue()
+
+        self.graphic_q = queue.Queue()
 
         self.network = ClientCom(server_ip, 1111, self.network_q)
+
+        #create folder for the uploads
         try:
             os.makedirs('C:\\Trive_uploads')
+            # Hide folder
+            ctypes.windll.kernel32.SetFileAttributesW('C:\\Trive_uploads', 2)
         except:
             pass
-        threading.Thread(target=self.start_graphic, args=(graphic_q,)).start()
-        threading.Thread(target=self.check_network_q, args=(self.network_q,), daemon=True).start()
-        threading.Thread(target=self.check_graphic_q, args=(graphic_q,), daemon=True).start()
+
+        threading.Thread(target=self.start_graphic,).start()
+        threading.Thread(target=self.check_network_q, daemon=True).start()
+        threading.Thread(target=self.check_graphic_q, daemon=True).start()
         
-    def check_network_q(self, network_q):
+    def check_network_q(self):
         '''
-    
-        :param q:self.network queue
+
         :return: check if there is a new massage
         '''
         while True:
             #get the msg from the self.network
-            msg = network_q.get()
+            msg = self.network_q.get()
             if type(msg) is str and msg.startswith('key'):
                 key_str = msg.split('-')[1]
                 self.key = AESCipher(key_str)
@@ -66,32 +81,31 @@ class Logic:
                     elif command == 'edit':
                         threading.Thread(target=self.edit_answer, args=(args,)).start()
                     else:
+                        #notify the command to the graphic
                         wx.CallAfter(pub.sendMessage, command, answer = args[0])
 
-    def check_graphic_q(self, graphic_q):
+    def check_graphic_q(self):
         '''
-    
-        :param graphic_q:graphic q
+
         :return: check if there is a new massage
         '''
         func_by_command = {'register': self.send_register, 'login': self.send_login, 'forgot_password': self.send_forgot_password, 'change_detail': self.send_change_detail,
                            'download': self.send_download, 'upload': self.send_upload_request, 'share': self.send_share, 'add_to_folder': self.send_add_to_folder, 'rename': self.send_rename,
                            'delete': self.send_delete, 'create_folder': self.send_create_folder, 'edit': self.handle_edit}
         while True:
-            flag, args = graphic_q.get()
+            #recive msg from the graphic
+            flag, args = self.graphic_q.get()
             func_by_command[flag](args)
-            #wx.CallAfter(pub.sendMessage, command, massage = args[0])
 
-    def start_graphic(self, graphic_q):
+    def start_graphic(self):
         '''
-    
-        :param graphic_q:q to talk with the graphic
+
         :return: creates the graphic
         '''
         app = wx.App()
-        frame = graphic.MyFrame(graphic_q)
+        frame = graphic.MyFrame(self.graphic_q)
         app.MainLoop()
-        #kill all the threads
+        #kill all the threads when the graphic closed
         self.finish()
     
     def send_register(self, args):
@@ -100,14 +114,12 @@ class Logic:
         :param args: all the details for registration
         :return: send registration massage to the server
         '''
-    
         email = args[0]
         username = args[1]
         password = args[2]
         #create the msg by the protocol
         msg_by_protocol = prot.create_register_msg(username, password, email)
         #take to encryption
-        # take to encryption
         msg_encrypted = self.key.encrypt(msg_by_protocol)
         # send the msg
         self.network.send_msg(msg_encrypted)
@@ -134,9 +146,8 @@ class Logic:
         :return:
         '''
         file_path = args[0]
-
+        #create the massage by the protocol
         msg_by_protocol = prot.create_edit_file_request_msg(file_path)
-
         # take to encryption
         msg_encrypted = self.key.encrypt(msg_by_protocol)
         # send the msg
@@ -310,18 +321,65 @@ class Logic:
         length = int(args[1])
         path = args[2]
         file_name = path[path.rindex('\\') + 1:]
-        ready_q = queue.Queue()  # get massage in this q when the download finished
+        # get massage in this q when the download finished
+        ready_q = queue.Queue()
         try:
             os.makedirs('C:\\hidden')
+            # Hide folder
+            ctypes.windll.kernel32.SetFileAttributesW('C:\\hidden', 2)
         except:
             pass
         download_network = ClientCom(server_ip, port, ready_q, True)
         download_network.recv_file(length, file_name, self.key, path = 'C:\\hidden')
         finish = ready_q.get()
-        if finish:
-            threading.Thread(target = self.follow_file, args=(f'C:\\hidden\\{file_name}', path)).start()
 
-    def follow_file(self, file_path, server_path):
+        if finish:
+            #check if the file opens in notepad
+            if 'txt' in file_name or 'py' in file_name:
+                #q to notify to the monitor when the notepad file closed
+                closed_q = queue.Queue()
+                all_notepad_pids = []
+                for proc in psutil.process_iter():
+                    if 'notepad' in proc.name():
+                        all_notepad_pids.append(proc.pid)
+                threading.Thread(target = self.follow_notepad_file, args= (all_notepad_pids, f'C:\\hidden\\{file_name}', path )).start()
+            else:
+                threading.Thread(target = self.follow_office_file, args=(f'C:\\hidden\\{file_name}', path)).start()
+
+    def follow_notepad_file(self, all_notepad_pids, file_path, server_path):
+        '''
+
+        :param closed_q:queue
+        :param all_notepad_pids: all the pids of the files that were opened in notepad
+        :return: puts massage in the queue when the file has closed
+        '''
+        self.open_file(file_path)
+        now_notepad_pids = []
+
+        time.sleep(0.5)
+
+        for proc in psutil.process_iter():
+            if 'notepad' in proc.name():
+                now_notepad_pids.append(proc.pid)
+
+        #get the pid of the proccess
+        pid = list(set(now_notepad_pids) - set(all_notepad_pids))[0]
+
+        last_change = os.path.getmtime(file_path)
+
+        while True:
+            #check if the file updated
+            if os.path.getmtime(file_path) != last_change:
+                last_change = os.path.getmtime(file_path)
+                #upload the file
+                server_path_without_name = server_path[:server_path.rindex('\\')]
+                self.send_upload_request([file_path, server_path_without_name], True)
+
+            exists = psutil.pid_exists(pid)
+            if not exists:
+                break
+
+    def follow_office_file(self, file_path, server_path):
         '''
 
         :param path:path for file to  follow
@@ -329,6 +387,7 @@ class Logic:
         :return: upload the file to the server in each change
         '''
         self.open_file(file_path)
+        file_typ = file_path.split('.')[1]
         _file_list_dir = 1
         # Create a watcher handle
         _h_dir = win32file.CreateFile(file_path[:file_path.rindex('\\')], _file_list_dir, win32con.FILE_SHARE_READ | win32con.FILE_SHARE_WRITE |  win32con.FILE_SHARE_DELETE, None, win32con.OPEN_EXISTING, win32con.FILE_FLAG_BACKUP_SEMANTICS, None)
@@ -348,10 +407,12 @@ class Logic:
                 None
             )
             for _action, _file in results:
-                if _action == 4 and 'docx' in _file:
+                if _action == 4 and file_typ in _file:
+                    # the file saved -> upload to the server
                     server_path_without_name = server_path[:server_path.rindex('\\')]
                     self.send_upload_request([file_path, server_path_without_name], True)
-                if _action == 2 and 'docx' in _file:
+                if _action == 2 and file_typ in _file:
+                    # the file closed -> close the monitor
                     break
 
 
@@ -364,21 +425,15 @@ class Logic:
         file_typ = file_path.split('.')[1]
         #file_name = file_typ[file_path.rstrip('\\') + 1:]
         notepad = ['py', 'txt', 'java', 'asm']
-        word = ['doc', 'docx']
-        excel = ['xlsx']
-        power_point = ['pptm']
+        office = ['doc', 'docx', 'pptm', 'xlxs']
         if file_typ in notepad:
             #open notepad
-            osCommandString = f"notepad.exe {file_path}"
-            os.system(osCommandString)
-        elif file_typ in word or 1 == 1:
             os.system(f'start {file_path}')
-        elif file_typ in excel:
-            #open excel
-            pass
-        elif file_typ in power_point:
-            #open powerpoint
-            pass
+            return 'notepad'
+        elif file_typ in office:
+            os.system(f'start {file_path}')
+            return 'office'
+
 
     def finish(self):
         '''

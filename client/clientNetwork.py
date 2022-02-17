@@ -143,3 +143,10 @@ class ClientCom:
 
         self.soc.close()
 
+    def close(self):
+        '''
+
+        :return:close the network
+        '''
+        self.soc.close()
+
