@@ -33,8 +33,7 @@ def check_network_q(network_q):
     func_by_command = {'login': handle_login, 'register': handle_register, 'upload_request': handle_upload_request,
                        'download' : handle_download, 'delete': handle_delete, 'add_to_folder': handle_add_to_folder,
                        'create_folder':handle_create_folder, 'change_details': handle_change_details, 'share': handle_share,
-                       'change_name': handle_change_file_name, 'forgot_password': handle_forgot_password, 'edit': handle_edit,
-                       'logout' : handle_logout}
+                       'change_name': handle_change_file_name, 'forgot_password': handle_forgot_password, 'edit': handle_edit}
                        #'edit_upload'}
     while True:
         msg = network_q.get()
@@ -57,16 +56,6 @@ def check_network_q(network_q):
             #the ip
             args.append(ip)
             func_by_command[command](args)
-
-def handle_logout(args):
-    '''
-
-    :param args:ip of the disconnected client
-    :return:
-    '''
-    del username_connected[args[1]]
-    del key_by_ip[args[1]]
-
 
 def handle_login(args):
     '''

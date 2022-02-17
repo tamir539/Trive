@@ -68,7 +68,7 @@ class ClientCom:
                 msg = self.soc.recv(msg_len)
             except Exception as e:
                 print(f'in recv msg  - {str(e)}')
-                self.q.put()
+                self.q.put('disconnect')
                 self.soc.close()
                 exit()
             else:

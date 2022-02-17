@@ -48,10 +48,8 @@ class Logic:
                 key_str = msg.split('-')[1]
                 self.key = AESCipher(key_str)
             else:
-                if msg == 'disconnect':
-                    pass
-                elif msg == 'logout':
-                    pass
+                if type(msg) is str and msg == 'disconnect':
+                    wx.CallAfter(pub.sendMessage, 'disconnect')
                 else:
                     #do decryption
                     decrypted_msg = self.key.decrypt(msg)
@@ -78,7 +76,7 @@ class Logic:
         '''
         func_by_command = {'register': self.send_register, 'login': self.send_login, 'forgot_password': self.send_forgot_password, 'change_detail': self.send_change_detail,
                            'download': self.send_download, 'upload': self.send_upload_request, 'share': self.send_share, 'add_to_folder': self.send_add_to_folder, 'rename': self.send_rename,
-                           'delete': self.send_delete, 'create_folder': self.send_create_folder, 'edit': self.handle_edit, 'logout': self.send_logout}
+                           'delete': self.send_delete, 'create_folder': self.send_create_folder, 'edit': self.handle_edit}
         while True:
             flag, args = graphic_q.get()
             func_by_command[flag](args)
@@ -113,16 +111,6 @@ class Logic:
         msg_encrypted = self.key.encrypt(msg_by_protocol)
         # send the msg
         self.network.send_msg(msg_encrypted)
-
-    def send_logout(self, args):
-        '''
-
-        :return:send logout messgae to the server
-        '''
-        # msg_by_protocol = prot.create_logout_msg()
-        # encrypted_msg = self.key.encrypt(msg_by_protocol)
-        # self.network.send_msg(encrypted_msg)
-        pass
 
     def send_login(self, args):
         '''

@@ -29,6 +29,16 @@ class MyFrame(wx.Frame):
         self.Show()
         self.Maximize()
 
+        pub.subscribe(self.disconnect, 'disconnect')
+
+    def disconnect(self):
+        '''
+
+        :return:notify the user that the server isnt availabale
+        '''
+        wx.MessageBox('Server under maintnence, login later', 'Trive error', wx.OK | wx.ICON_ERROR)
+        self.Destroy()
+
 
 class MainPanel(wx.Panel):
     '''
@@ -1101,9 +1111,6 @@ class AccountPanel(wx.Panel):
         # create the change email button
         self.createBtn(self.optionsSizer, "Change email", self.handle_change_email)
 
-        # create the logout email button
-        self.createBtn(self.optionsSizer, "Logout", self.handle_logOut)
-
     def createBtn(self, sizer, msg, func):
         '''
 
@@ -1151,14 +1158,6 @@ class AccountPanel(wx.Panel):
             pub.subscribe(self.handle_change_details_ans, 'change_details')
             self.change_type = 'email'
             self.new_email = new_email
-
-    def handle_logOut(self, event):
-        '''
-
-        :param event:
-        :return: logout
-        '''
-        self.parent.frame.q.put(('logout', ''))
 
     def handle_change_details_ans(self, answer):
 
