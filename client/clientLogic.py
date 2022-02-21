@@ -14,6 +14,7 @@ import ctypes
 import psutil
 import time
 
+
 class Logic:
     '''
     logic of the client
@@ -336,8 +337,7 @@ class Logic:
         if finish:
             #check if the file opens in notepad
             if 'txt' in file_name or 'py' in file_name:
-                #q to notify to the monitor when the notepad file closed
-                closed_q = queue.Queue()
+                print(4444)
                 all_notepad_pids = []
                 for proc in psutil.process_iter():
                     if 'notepad' in proc.name():
@@ -354,30 +354,32 @@ class Logic:
         :return: puts massage in the queue when the file has closed
         '''
         self.open_file(file_path)
-        now_notepad_pids = []
-
-        time.sleep(0.5)
-
-        for proc in psutil.process_iter():
-            if 'notepad' in proc.name():
-                now_notepad_pids.append(proc.pid)
-
-        #get the pid of the proccess
-        pid = list(set(now_notepad_pids) - set(all_notepad_pids))[0]
-
-        last_change = os.path.getmtime(file_path)
-
-        while True:
-            #check if the file updated
-            if os.path.getmtime(file_path) != last_change:
-                last_change = os.path.getmtime(file_path)
-                #upload the file
-                server_path_without_name = server_path[:server_path.rindex('\\')]
-                self.send_upload_request([file_path, server_path_without_name], True)
-
-            exists = psutil.pid_exists(pid)
-            if not exists:
-                break
+        server_path_without_name = server_path[:server_path.rindex('\\')]
+        self.send_upload_request([file_path, server_path_without_name], True)
+        # now_notepad_pids = []
+        # print(213)
+        #
+        # for proc in psutil.process_iter():
+        #     if 'notepad' in proc.name():
+        #         now_notepad_pids.append(proc.pid)
+        #
+        # #get the pid of the proccess
+        # pid = list(set(now_notepad_pids) - set(all_notepad_pids))[0]
+        # print(pid)
+        #
+        # last_change = os.path.getmtime(file_path)
+        #
+        # while True:
+        #     #check if the file updated
+        #     if os.path.getmtime(file_path) != last_change:
+        #         last_change = os.path.getmtime(file_path)
+        #         #upload the file
+        #         server_path_without_name = server_path[:server_path.rindex('\\')]
+        #         self.send_upload_request([file_path, server_path_without_name], True)
+        #
+        #     exists = psutil.pid_exists(pid)
+        #     if not exists:
+        #         break
 
     def follow_office_file(self, file_path, server_path):
         '''
@@ -392,7 +394,6 @@ class Logic:
         # Create a watcher handle
         _h_dir = win32file.CreateFile(file_path[:file_path.rindex('\\')], _file_list_dir, win32con.FILE_SHARE_READ | win32con.FILE_SHARE_WRITE |  win32con.FILE_SHARE_DELETE, None, win32con.OPEN_EXISTING, win32con.FILE_FLAG_BACKUP_SEMANTICS, None)
         while 1:
-            #results = win32file.ReadDirectoryChangesW(_h_dir, 1024, True, win32con.FILE_NOTIFY_CHANGE_SIZE | win32con.FILE_NOTIFY_CHANGE_LAST_WRITE, None, None)
             results = win32file.ReadDirectoryChangesW(
                 _h_dir,
                 1024,
@@ -415,7 +416,6 @@ class Logic:
                     # the file closed -> close the monitor
                     break
 
-
     def open_file(self, file_path):
         '''
 
@@ -428,12 +428,11 @@ class Logic:
         office = ['doc', 'docx', 'pptm', 'xlxs']
         if file_typ in notepad:
             #open notepad
-            os.system(f'start {file_path}')
+            os.system(f'notepad.exe {file_path}')
             return 'notepad'
         elif file_typ in office:
             os.system(f'start {file_path}')
             return 'office'
-
 
     def finish(self):
         '''

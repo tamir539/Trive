@@ -67,6 +67,7 @@ class ServerCom:
         else:
             client_key.decrypt_file(path)
             server_key.encrypt_file(path)
+            self.q.put(('close_port', self.port))
 
     def recv_msg(self):
 
@@ -161,14 +162,14 @@ class ServerCom:
                 f.write(file_data)
                 f.close()
             if self.edit_server:
-                self.q.put(('upload', 'ok', True, file_path, file_name, self.socs[list(self.socs.keys())[0]]))
+                self.q.put(('upload', 'ok', True, file_path, file_name, self.port, self.socs[list(self.socs.keys())[0]]))
             else:
-                self.q.put(('upload', 'ok', False, file_path, file_name, self.socs[list(self.socs.keys())[0]]))
+                self.q.put(('upload', 'ok', False, file_path, file_name, self.port, self.socs[list(self.socs.keys())[0]]))
         else:
             if self.edit_server:
-                self.q.put(('upload', 'no', True, file_path, file_name, self.socs[list(self.socs.keys())[0]]))
+                self.q.put(('upload', 'no', True, file_path, file_name, self.port, self.socs[list(self.socs.keys())[0]]))
             else:
-                self.q.put(('upload', 'no', False, file_path, file_name, self.socs[list(self.socs.keys())[0]]))
+                self.q.put(('upload', 'no', False, file_path, file_name, self.port, self.socs[list(self.socs.keys())[0]]))
         self.servSoc.close()
         self.socs = {}
         self.running = False

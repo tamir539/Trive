@@ -861,7 +861,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         else:
             typ = fileName.split('.')[1]
             if typ in images:
-                return 'img'
+                return 'image'
             elif typ in files:
                 return 'file'
             else:

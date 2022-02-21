@@ -85,6 +85,6 @@ if __name__ == '__main__':
 
     my_key = AESCipher(key)
 
-    #my_key.encrypt_file('c:\\temp\\cat.png')
-    my_key.decrypt_file('c:\\temp\\cat.png')
+    #my_key.encrypt_file('c:\\temp\\aaa.py.txt')
+    my_key.decrypt_file('c:\\temp\\aaa.py.txt')
 

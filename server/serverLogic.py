@@ -37,13 +37,19 @@ def check_network_q(network_q):
                        #'edit_upload'}
     while True:
         msg = network_q.get()
+        #finish reciving file
         if msg[0] == 'upload':
             handle_upload_status(msg[1:])
+        #set key
         elif msg[0] == 'key':
             set_key(msg[1], msg[2])
+        #client disconnected
         elif msg[0] == 'disconnected':
             if msg[1] in list(username_connected.keys()):
                 del username_connected[msg[1]]
+        #download finish -> the port released
+        elif msg[0] == 'close_port':
+            taken_ports.remove(msg[1])
         else:
             ip = msg[1]
             msg = msg[0]
@@ -212,7 +218,7 @@ def handle_upload_status(args):
     :param args: args to the upload
     :return: recive the file and return answer to the client
     '''
-    status, edit, encrypted_path, file_name, ip = args
+    status, edit, encrypted_path, file_name, port, ip = args
     encrypted_path = encrypted_path  + '\\' + file_name
     if not edit:
         msg_by_protocol = prot.create_upload_file_response_msg(status+','+file_name)
@@ -226,6 +232,7 @@ def handle_upload_status(args):
         #encrypt the file with the server files key
         k = AESCipher(files_key)
         k.encrypt_file(encrypted_path)
+    taken_ports.remove(port)
 
 
 def handle_upload_request(args):
@@ -243,6 +250,8 @@ def handle_upload_request(args):
     port = random.randint(1000, 65000)
     while port in taken_ports:
         port = random.randint(1000, 65000)
+
+    taken_ports.append(port)
 
     msg_by_protocol = prot.create_upload_file_response_port_msg(str(port))
     # send the answer to encryption
