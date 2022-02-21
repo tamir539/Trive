@@ -13,6 +13,8 @@ import win32file
 import ctypes
 import psutil
 import time
+#finish comments!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 
 class Logic:
@@ -28,6 +30,7 @@ class Logic:
             network_q - > queue to recive msgs from the network
             graphic_q -> queue to recive msgs from the graphic
             network -> client network object
+            frame -> frame of the graphic
         '''
         self.upload_path = ''
         self.upload_server_path = ''
@@ -40,6 +43,8 @@ class Logic:
 
         self.network = ClientCom(server_ip, 1111, self.network_q)
 
+        self.frame = None
+
         #create folder for the uploads
         try:
             os.makedirs('C:\\Trive_uploads')
@@ -51,7 +56,7 @@ class Logic:
         threading.Thread(target=self.start_graphic,).start()
         threading.Thread(target=self.check_network_q, daemon=True).start()
         threading.Thread(target=self.check_graphic_q, daemon=True).start()
-        
+
     def check_network_q(self):
         '''
 
@@ -104,14 +109,14 @@ class Logic:
         :return: creates the graphic
         '''
         app = wx.App()
-        frame = graphic.MyFrame(self.graphic_q)
+        self.frame = graphic.MyFrame(self.graphic_q)
         app.MainLoop()
         #kill all the threads when the graphic closed
         self.finish()
-    
+
     def send_register(self, args):
         '''
-    
+
         :param args: all the details for registration
         :return: send registration massage to the server
         '''
@@ -127,7 +132,7 @@ class Logic:
 
     def send_login(self, args):
         '''
-    
+
         :param args: all the details for login
         :return: send login massage to the server
         '''
@@ -156,7 +161,7 @@ class Logic:
 
     def send_forgot_password(self, args):
         '''
-    
+
         :param args: email for the 1 time password
         :return: send forgot_password massage to the server
         '''
@@ -171,7 +176,7 @@ class Logic:
 
     def send_change_detail(self, args):
         '''
-    
+
         :param args:the new email or password
         :return: send the server msg to chande detail
         '''
@@ -185,12 +190,12 @@ class Logic:
 
     def send_download(self, args):
         '''
-    
+
         :param args:virtual file path to file
         :return: send request to download that file
         '''
         path = args[0]
-    
+
         msg_by_protocol = prot.create_download_file_request_msg(path)
 
         # take to encryption
@@ -200,7 +205,7 @@ class Logic:
 
     def send_rename(self, args):
         '''
-    
+
         :param args:virtual file path to file, new name to this file
         :return: send request to rename that file
         '''
@@ -214,7 +219,7 @@ class Logic:
 
     def send_upload_request(self, args, edit = False):
         '''
-    
+
         :param args:file path to file
         :return: send request to upload that file
         '''
@@ -231,38 +236,39 @@ class Logic:
 
     def upload(self, port):
         '''
-    
+
         :param port: server port
         :return: upload the file to the server in the port
         '''
+        #network to recive file
         client_upload = ClientCom(server_ip, int(port), self.network_q)
         encrypted_path = self.key.encrypt_file(self.upload_path, 'C:\\Trive_uploads\\')
         threading.Thread(target=client_upload.send_file, args= (encrypted_path, self.upload_server_path, self.file_name, )).start()
 
     def send_add_to_folder(self, args):
         '''
-    
+
         :param args:virtual file path to file, virtual file path to folder
         :return: send request to add that file to folder
         '''
         file_to_copy = args[0]
         copy_to = args[1]
-    
+
         msg_by_protocol = prot.create_add_file_to_folder_request_msg(file_to_copy, copy_to)
         # take to encryption
         msg_encrypted = self.key.encrypt(msg_by_protocol)
         # send the msg
         self.network.send_msg(msg_encrypted)
-    
+
     def send_share(self, args):
         '''
-    
+
         :param args:virtual file path to file, username to share with
         :return: send request to share that file
         '''
         path = args[0]
         username = args[1]
-    
+
         msg_by_protocol = prot.create_share_file_request_msg(path, username)
         # take to encryption
         msg_encrypted = self.key.encrypt(msg_by_protocol)
@@ -271,7 +277,7 @@ class Logic:
 
     def send_delete(self, args):
         '''
-    
+
         :param args:virtual file path to file
         :return: send request to delete that file
         '''
@@ -284,7 +290,7 @@ class Logic:
 
     def send_create_folder(self, args):
         '''
-    
+
         :param args:virtual path to create the folder
         :return: send request to create the folder
         '''
@@ -297,18 +303,20 @@ class Logic:
 
     def download_answer(self, args):
         '''
-    
+
         :param args:details for download file
         :return: create new self.network to recive the file and notify the graphic when finish
         '''
+        #port for download server
         port = int(args[0])
         length = int(args[1])
         path = args[2]
         file_name = path[path.rindex('\\') + 1:]
         ready_q = queue.Queue()     #get massage in this q when the download finished
-        download_network = ClientCom(server_ip, port, ready_q, True)
+        download_network = ClientCom(server_ip, port, ready_q, file = True)
         download_network.recv_file(length, file_name, self.key)
         while True:
+            #wait for download to finish
             finish = ready_q.get()
             wx.CallAfter(pub.sendMessage, 'finish_download', ans=finish)
 
@@ -318,6 +326,7 @@ class Logic:
         :param args:details for download server
         :return: download the file, open it and check for changes
         '''
+        #port for download server
         port = int(args[0])
         length = int(args[1])
         path = args[2]
@@ -337,7 +346,6 @@ class Logic:
         if finish:
             #check if the file opens in notepad
             if 'txt' in file_name or 'py' in file_name:
-                print(4444)
                 all_notepad_pids = []
                 for proc in psutil.process_iter():
                     if 'notepad' in proc.name():
@@ -353,33 +361,33 @@ class Logic:
         :param all_notepad_pids: all the pids of the files that were opened in notepad
         :return: puts massage in the queue when the file has closed
         '''
-        self.open_file(file_path)
+        #open the file
+        threading.Thread(target= self.open_file, args=(file_path, )).start()
+
         server_path_without_name = server_path[:server_path.rindex('\\')]
-        self.send_upload_request([file_path, server_path_without_name], True)
-        # now_notepad_pids = []
-        # print(213)
-        #
-        # for proc in psutil.process_iter():
-        #     if 'notepad' in proc.name():
-        #         now_notepad_pids.append(proc.pid)
-        #
-        # #get the pid of the proccess
-        # pid = list(set(now_notepad_pids) - set(all_notepad_pids))[0]
-        # print(pid)
-        #
-        # last_change = os.path.getmtime(file_path)
-        #
-        # while True:
-        #     #check if the file updated
-        #     if os.path.getmtime(file_path) != last_change:
-        #         last_change = os.path.getmtime(file_path)
-        #         #upload the file
-        #         server_path_without_name = server_path[:server_path.rindex('\\')]
-        #         self.send_upload_request([file_path, server_path_without_name], True)
-        #
-        #     exists = psutil.pid_exists(pid)
-        #     if not exists:
-        #         break
+
+        time.sleep(0.1)
+        now_notepad_pids = []
+
+        for proc in psutil.process_iter():
+            if 'notepad' in proc.name():
+                now_notepad_pids.append(proc.pid)
+
+        #get the pid of the proccess
+        pid = list(set(now_notepad_pids) - set(all_notepad_pids))[0]
+
+        last_change = os.path.getmtime(file_path)
+
+        while True:
+            #check if the file updated
+            if os.path.getmtime(file_path) != last_change:
+                last_change = os.path.getmtime(file_path)
+                #upload the file
+                self.send_upload_request([file_path, server_path_without_name], True)
+
+            if not psutil.pid_exists(pid):
+                #the file closed -> close the monitor
+                break
 
     def follow_office_file(self, file_path, server_path):
         '''
@@ -388,6 +396,7 @@ class Logic:
         :param server_path: the path of the file in the server
         :return: upload the file to the server in each change
         '''
+        #open the file
         self.open_file(file_path)
         file_typ = file_path.split('.')[1]
         _file_list_dir = 1
@@ -414,6 +423,7 @@ class Logic:
                     self.send_upload_request([file_path, server_path_without_name], True)
                 if _action == 2 and file_typ in _file:
                     # the file closed -> close the monitor
+                    self.frame.finish_edit()
                     break
 
     def open_file(self, file_path):
@@ -423,20 +433,19 @@ class Logic:
         :return: open the file
         '''
         file_typ = file_path.split('.')[1]
-        #file_name = file_typ[file_path.rstrip('\\') + 1:]
+
         notepad = ['py', 'txt', 'java', 'asm']
-        office = ['doc', 'docx', 'pptm', 'xlxs']
+        office = ['doc', 'docx', 'pptm', 'xlsx']
+
         if file_typ in notepad:
             #open notepad
             os.system(f'notepad.exe {file_path}')
-            return 'notepad'
         elif file_typ in office:
             os.system(f'start {file_path}')
-            return 'office'
 
     def finish(self):
         '''
-    
+
         :return: close all the threads and exit the program
         '''
         parent_pid = os.getpid()
@@ -445,6 +454,5 @@ class Logic:
             child.kill()
         parent.kill()
 
-
-
-Logic()
+if __name__ == '__main__':
+    Logic()

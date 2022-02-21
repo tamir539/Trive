@@ -15,9 +15,9 @@ class MyFrame(wx.Frame):
         self.status_bar.SetBackgroundColour(wx.BLACK)
 
         # create main panel - to put on the others panels
-        main_panel = MainPanel(self)
+        self.main_panel = MainPanel(self)
         box = wx.BoxSizer(wx.VERTICAL)
-        box.Add(main_panel, 1, wx.EXPAND)
+        box.Add(self.main_panel, 1, wx.EXPAND)
         self.q = q
 
         # loc = wx.IconLocation('draws\\logo.jpg', wx.BITMAP_TYPE_ICO)
@@ -38,6 +38,13 @@ class MyFrame(wx.Frame):
         '''
         wx.MessageBox('Server under maintnence, login later', 'Trive error', wx.OK | wx.ICON_ERROR)
         self.Destroy()
+
+    def finish_edit(self):
+        '''
+
+        :return: notify that the edit changed
+        '''
+        self.main_panel.loby.editing = False
 
 
 class MainPanel(wx.Panel):
@@ -615,7 +622,7 @@ class LobyPanel(wx.Panel):
         :return:  "img" if the file is some image, "file" if the file is some text file, "folder" if the fileName if folder, "no"
         '''
 
-        files = ['txt', 'py', 'java', 'word', 'bin', 'docx', 'doc', 'asm', 'pptx', 'xlxs']
+        files = ['txt', 'py', 'java', 'word', 'bin', 'docx', 'doc', 'asm', 'pptx', 'xlsx']
         images = ['jpg', 'bmp', 'png', 'svg']
 
         if not '.' in fileName:     #mean that the filename if folder
@@ -851,7 +858,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         :return:  "image" if the file is some image, "file" if the file is some text file, "folder" if the fileName if folder, "no"
         '''
 
-        files = ['txt', 'py', 'java', 'word', 'bin', 'docx', 'doc', 'asm', 'pptx', 'xlxs']
+        files = ['txt', 'py', 'java', 'word', 'bin', 'docx', 'doc', 'asm', 'pptx', 'xlsx']
         images = ['jpg', 'bmp', 'png', 'svg']
 
         if fileName == 'back':
@@ -1269,13 +1276,12 @@ class OptionsMenu(wx.Menu):
         :return:handle edit file
         '''
         file_typ = self.file_name.split('.')[1]
-        ok_files = ['txt', 'docx', 'xlsx', 'py', 'java', 'asm', 'pptx']
-        print(111111111)
+        ok_files = ['txt', 'docx', 'xlsx', 'py', 'pptx']
         if self.parent.parent.editing:
-            print(12334)
             wx.MessageBox('Cant edit 2 files...', 'Trive error', wx.OK | wx.ICON_ERROR)
         elif file_typ in ok_files:
             self.parent.frame.q.put(('edit', [self.path + '\\' + self.file_name]))
+            self.parent.parent.editing = True
         else:
             wx.MessageBox('Trive cant edit this file!', 'Trive Error', wx.OK | wx.ICON_ERROR)
 

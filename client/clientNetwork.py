@@ -12,20 +12,23 @@ class ClientCom:
     def __init__(self, serverIp, serverPort, q, file = False, key = None):
         '''
 
-        :param file: "true" if this network is to recv file and "false" otherwise
+        :param file(optional): "true" if this network is to recv file and "false" otherwise
         :param serverIp:ip of the server
         :param serverPort: port to talk with the server
         :param q: queue that for trnsger data between the network to the main client
+        :param key(optional): aes key
         '''
         self.file = file
         self.serverIp = serverIp
         self.serverPort = serverPort
         self.q = q
         self.soc = socket.socket()
+
         if not file and not key:
+            #need to switch keys with the server
             threading.Thread(target = self.switch_keys, daemon=True).start()
         elif file:
-
+            #already have a key -> just connect without switch keys
             self.connect()
         else:
             self.key = key
@@ -38,10 +41,14 @@ class ClientCom:
         :return:switch keys with the server
         '''
 
+        #create defi key
         defi = Defi()
         my_publish = defi.publish()
+
         try:
+            #connect to the server
             self.soc.connect((self.serverIp, self.serverPort))
+            #switch keys with the server
             server_publish = int(self.soc.recv(5).decode())
             self.soc.send(str(my_publish).encode())
         except Exception as e:
@@ -49,9 +56,14 @@ class ClientCom:
         else:
             key_str = str(defi.compute_secret(server_publish))
             self.q.put(f'key-{key_str}')
+            #start reciving messages
             threading.Thread(target=self.__recv_msg__(), daemon=True).start()
 
     def connect(self):
+        '''
+
+        :return:connect to the server
+        '''
         try:
             self.soc.connect((self.serverIp, self.serverPort))
         except Exception as e:
@@ -68,6 +80,7 @@ class ClientCom:
                 msg = self.soc.recv(msg_len)
             except Exception as e:
                 print(f'in recv msg  - {str(e)}')
+                #notify the logic that the server closed
                 self.q.put('disconnect')
                 self.soc.close()
                 exit()
@@ -96,12 +109,14 @@ class ClientCom:
         :return: sends the data to the server
         '''
         time.sleep(0.1)
-        file = open(filePath, 'rb')
-        data = file.read()
-        file.close()
+
+        with open(filePath, 'rb') as f:
+            #data of the file
+            data = f.read()
+
         msg_after_protocol = prot.create_upload_file_msg(server_path, len(data), file_name)
         total_msg = str(len(msg_after_protocol)).zfill(3) + msg_after_protocol
-        #035051336&D:\Trive\tamir&Encryption.py
+
         try:
             self.soc.send(total_msg.encode())
             self.soc.send(data)
