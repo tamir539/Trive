@@ -5,6 +5,7 @@ import os
 import time
 import cprotocol as prot
 from Encryption import Defi
+#finish comments!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 class ClientCom:
@@ -52,7 +53,8 @@ class ClientCom:
             server_publish = int(self.soc.recv(5).decode())
             self.soc.send(str(my_publish).encode())
         except Exception as e:
-            print(f'in recv msg - {str(e)}')
+            print(f'in switch_keys - {str(e)}')
+
         else:
             key_str = str(defi.compute_secret(server_publish))
             self.q.put(f'key-{key_str}')
@@ -68,6 +70,10 @@ class ClientCom:
             self.soc.connect((self.serverIp, self.serverPort))
         except Exception as e:
             print(f'in connect - {str(e)}')
+            # notify the logic that the server closed
+            self.q.put('disconnect')
+            self.soc.close()
+            exit()
 
     def __recv_msg__(self):
         '''
@@ -131,7 +137,7 @@ class ClientCom:
         '''
         file_data = bytearray()
         fileLen = int(fileLen)
-        #recv all the data
+        #recv all the data in blocks
         while len(file_data) < fileLen:
             size = fileLen - len(file_data)
             try:
@@ -146,22 +152,15 @@ class ClientCom:
                 self.soc.close()
                 file_data = None
                 break
-
+        #if recived the file -> put it in downloads
         if file_data is not None:
             if path is None:
                 path = os.path.expanduser('~/Downloads')
             with open(f'{path}\\{fileName}', 'wb') as f:
                 f.write(file_data)
 
+            #decrypt the file recived
             key.decrypt_file(f'{path}\\{fileName}')
             self.q.put('ok')
 
         self.soc.close()
-
-    def close(self):
-        '''
-
-        :return:close the network
-        '''
-        self.soc.close()
-
