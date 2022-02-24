@@ -2,6 +2,7 @@
 all the protocol functions of the server
 '''
 import os
+#finish comments!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 def pack_file_names(path):

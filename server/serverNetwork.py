@@ -3,35 +3,51 @@ import select
 import queue
 import threading
 import time
-import os
 import sprotocol as prot
 from Encryption import Defi
+#finish comments!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 class ServerCom:
-
+    '''
+    class for the network of the server
+    '''
     def __init__(self, port, q, upload_server = False, download_server = False, edit_server = False):
         '''
 
         :param port:port to talk with a client
-        :param q:
+        :param q:queue to talk with the logic
+        :param upload_server:"true" -> the object need to recv file, "false" otherwise
+        :param download_server:"true" -> the object need to send file, "False" otherwise
+        :param edit_server:"true" -> the object need to send file, "False" otherwise
+
+        servSoc -> server socket
+        port -> port of the server
+        q   -> queue to talk with the logic
+        socs    #socket -> his ip address
+        running  -> "True" -> the server is running, "False" otherwise
+        upload_server   #true - > need to recv file
+        download_server       #"true" -> need to send file
+        edit_server       #true - need to recive file with no answer to the client
+        has_client       #true -> client connected, false otherwise
         '''
-        self.servSoc = None
+        self.server_soc = None
         self.port = port
         self.q = q
-        self.socs = {}  #socket -> his ip adress
+        self.socs = {}
         self.running = True
-        self.upload_server = upload_server  #true - > need to recv file
-        self.download_server = download_server      #"true" -> need to send file
-        self.edit_server = edit_server      #true - need to recive file with no answer to the client
-        self.has_client = False     #true -> client connected, false otherwise
+        self.upload_server = upload_server
+        self.download_server = download_server
+        self.edit_server = edit_server
+        self.has_client = False
         threading.Thread(target=self.recv_msg).start()
 
     def send_msg(self, ip, msg):
         '''
 
-        :param soc:client socket
+        :param ip: client ip
         :param msg: string
-        :return: sends the string to the socket
+        :return: sends the string to the ip
         '''
         if type(msg) == 'str':
             msg = msg.encode()
@@ -49,9 +65,9 @@ class ServerCom:
         :param client_key: aes of the client to decrypt the file after sending
         :param server_key: aes of the server files to encrypt the file
         :param path:path to the file
-        :param soc: client socket
         :return: send the file to the client
         '''
+        #wait for client to connect to the download server
         while not self.has_client:
             pass
         time.sleep(0.2)
@@ -61,30 +77,36 @@ class ServerCom:
         try:
             list(self.socs.keys())[0].send(data)
             self.running = False
-            self.servSoc.close()
+            self.server_soc.close()
         except Exception as e:
             print(f'in send file - {str(e)}')
         else:
+            #return the file to the server files encryption
             client_key.decrypt_file(path)
             server_key.encrypt_file(path)
             self.q.put(('close_port', self.port))
 
     def recv_msg(self):
+        '''
 
-        self.servSoc = socket.socket()
-        self.servSoc.bind(('0.0.0.0',self.port))
-        self.servSoc.listen(3)
+        :return:recive msg from all the clients
+        '''
+        #create the socket
+        self.server_soc = socket.socket()
+        self.server_soc.bind(('0.0.0.0',self.port))
+        self.server_soc.listen(3)
 
         while self.running:
-            rlist, wlist, xlist = select.select(list(self.socs.keys())+[self.servSoc],list(self.socs.keys()),[],0.3)
+            rlist, wlist, xlist = select.select(list(self.socs.keys())+[self.server_soc],list(self.socs.keys()), [], 0.3)
             for current_socket in rlist:
-                if current_socket is self.servSoc:
+                if current_socket is self.server_soc:
                     # new client
                     try:
-                        client, address = self.servSoc.accept()
+                        client, address = self.server_soc.accept()
                     except Exception as e:
                         print(f'in accept client - {str(e)}')
                     else:
+                        #if this is the main server -> switch keys with the connected client
                         if not self.check_if_blocked(address[0]) and not self.upload_server and not self.download_server:
                             print(f'{address[0]} - connected')
                             threading.Thread(target= self.switch_keys, args= (client, address[0], )).start()
@@ -137,6 +159,7 @@ class ServerCom:
         '''
 
         :param file_len:length of the file to recive
+        :param file_path: path of the file to recive
         :param file_name: name of the file
         :return: recive all the file data, save it in the uploads folder, notify with msg in q when finish
         '''
@@ -158,6 +181,7 @@ class ServerCom:
                 break
 
         if file_data is not None:
+            #mean that the file recived
             with open(file_path + '\\' + file_name, 'wb') as f:
                 f.write(file_data)
                 f.close()
@@ -166,21 +190,23 @@ class ServerCom:
             else:
                 self.q.put(('upload', 'ok', False, file_path, file_name, self.port, self.socs[list(self.socs.keys())[0]]))
         else:
+            #meand there was problem with reciving the file
             if self.edit_server:
                 self.q.put(('upload', 'no', True, file_path, file_name, self.port, self.socs[list(self.socs.keys())[0]]))
             else:
                 self.q.put(('upload', 'no', False, file_path, file_name, self.port, self.socs[list(self.socs.keys())[0]]))
-        self.servSoc.close()
+        self.server_soc.close()
         self.socs = {}
         self.running = False
 
     def check_if_blocked(self, ip):
         '''
 
-        :param ip:ip
+        :param ip:client ip
         :return: "true" - if this ip is blocked and "false" otherwise
         '''
-        ips = open('blocked_ips.txt', 'r').read().split('\n')
+        with open('blocked_ips.txt', 'r') as f:
+            ips = f.read().split('\n')
         return ip in ips
 
     def block_ip(self, ip):
@@ -200,7 +226,6 @@ class ServerCom:
         :param ip:ip of user
         :return: the socket of this ip
         '''
-
         for soc in self.socs.keys():
             if self.socs[soc] == ip:
                 return soc

@@ -1,16 +1,24 @@
-import base64
 from Crypto.Cipher import AES
 from Crypto import Random
-import hashlib
 import random
+#finish comments!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 class AESCipher(object):
     def __init__(self, key):
+        '''
+
+        :param key:string to create the aes key with
+        '''
         self.key = key + (32 - len(key)) * ' '
         self.key = self.key.encode()
 
     def pad(self, s):
+        '''
+
+        :param s:string to pad
+        :return: pad the string to be ajusted to the encrypt
+        '''
         padding_size = AES.block_size - len(s) % AES.block_size
         return s + b"\0" * padding_size, padding_size
 
@@ -46,7 +54,7 @@ class AESCipher(object):
     def encrypt_file(self, file_path):
         '''
 
-        :param file_name:file path to encrypt
+        :param file_path: file path to encrypt
         :return: the new path to the encrypted file
         '''
         with open(file_path, 'rb') as fo:
@@ -73,9 +81,18 @@ class Defi:
         self.a = random.randint(1, 100000)
 
     def publish(self):
+        '''
+
+        :return:compute own number to send to the server
+        '''
         return 47 ** self.a % 100000
 
     def compute_secret(self, gb):
+        '''
+
+        :param gb:int recived from the server
+        :return: copute the recived integer with self integer and return the common integer
+        '''
         return gb ** self.a % 100000
 
 

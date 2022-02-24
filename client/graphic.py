@@ -3,6 +3,7 @@ import wx.lib.scrolledpanel as scrolled
 from pubsub import pub
 import queue
 import re
+#finish comments!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 class MyFrame(wx.Frame):
@@ -1008,7 +1009,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
     def rename_file(self, last_name, new_name):
         '''
 
-        :param file_name:name of file to rename
+        :param file_name: name of file to rename
         :return: change the name on the screen
         '''
         if self.get_type(last_name) == 'folder':
@@ -1040,9 +1041,11 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         :return:
         '''
         ans = answer.split(',')[0]
+        #name of the file that deleted
         file_name = answer.split(',')[1]
         if ans == 'ok':
             self.delete_file(file_name)
+            wx.MessageBox(f'{file_name} deleted successfully!', 'Trive error', wx.OK | wx.ICON_ERROR)
         else:
             wx.MessageBox('Delete error, try other name or try again later...', 'Trive error', wx.OK | wx.ICON_ERROR)
 
@@ -1074,8 +1077,6 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         '''
         if answer == 'ok':
             wx.MessageBox('Shared successfully', 'Trive error', wx.OK | wx.ICON_INFORMATION)
-        elif answer == 'un':
-            wx.MessageBox('Username not exists!', 'Trive error', wx.OK | wx.ICON_ERROR)
         else:
             wx.MessageBox('There was an error sharing the file, try again later...!', 'Trive error', wx.OK | wx.ICON_ERROR)\
 
@@ -1086,22 +1087,26 @@ class AccountPanel(wx.Panel):
     panel to the account
     '''
     def __init__(self, parent, frame):
-        panelDepth = wx.DisplaySize()[0] - 300
-        panelLength = wx.DisplaySize()[1] - 350
+        '''
 
-        screenDepth = wx.DisplaySize()[0]
+        new_email -> new email if the user changed his email
+        change_type ->  if last change was email -> 'email', otherwise - 'password'
+        '''
+        panel_depth = wx.DisplaySize()[0] - 300
+        panel_length = wx.DisplaySize()[1] - 350
+
+        screen_depth = wx.DisplaySize()[0]
 
         # create a new panel
-        wx.Panel.__init__(self, parent,pos =((screenDepth - panelDepth)//2, 200), size=(panelDepth, panelLength ), style=wx.SIMPLE_BORDER)
+        wx.Panel.__init__(self, parent,pos =((screen_depth - panel_depth)//2, 200), size=(panel_depth, panel_length), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
-        #in case that the user change his email
         self.new_email = ''
-        self.change_type = ''       #if last change was email -> 'email', otherwise - 'password'
+        self.change_type = ''
+        self.Hide()
         self.__create_screen__()
 
     def __create_screen__(self):
-        self.Hide()
         # create the main sizer of the panel
         self.sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -1113,9 +1118,11 @@ class AccountPanel(wx.Panel):
 
         #add the account logo
         user = wx.Image('draws\\userForLoby.png', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        user_img = wx.StaticBitmap(self, -1 ,user,  pos = (wx.DisplaySize()[0] - wx.DisplaySize()[0]//7, 30), size = (user.GetWidth(), user.GetHeight()))
+        user_img = wx.StaticBitmap(self, -1, user,  pos=(wx.DisplaySize()[0] - wx.DisplaySize()[0]//7, 30),
+                                   size=(user.GetWidth(), user.GetHeight()))
+        #all the options to the sizer
+        options_sizer = self.add_options()
 
-        self.addOptins()
         #create the email text
         self.email = wx.StaticText(self, -1, label= '')
         self.email.SetForegroundColour(wx.WHITE)
@@ -1126,31 +1133,33 @@ class AccountPanel(wx.Panel):
         self.username.SetForegroundColour(wx.WHITE)
         self.username.SetFont(self.font)
 
+        #add all the elements to the main sizer
         self.sizer.Add(user_img,0, wx.ALIGN_CENTER | wx.ALL, 5)
         self.sizer.Add(self.email,0,wx.ALL, 5)
         self.sizer.Add(self.username, 0, wx.ALL, 5)
         self.sizer.AddSpacer(100)
-        self.sizer.Add(self.optionsSizer, 0, wx.ALIGN_CENTER | wx.ALL, 5)
+        self.sizer.Add(options_sizer, 0, wx.ALIGN_CENTER | wx.ALL, 5)
 
         # arrange the screen
         self.SetSizer(self.sizer)
         self.Layout()
 
-    def addOptins(self):
+    def add_options(self):
         '''
 
         :return: add all the optins in the buttom to sizer
         '''
-        self.optionsSizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.optionsSizer.AddSpacer(80)
+        options_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        options_sizer.AddSpacer(80)
 
         # create the change password button
-        self.createBtn(self.optionsSizer, "Change password", self.handle_changePassword)
+        self.create_btn(options_sizer, "Change password", self.handle_change_password)
 
         # create the change email button
-        self.createBtn(self.optionsSizer, "Change email", self.handle_change_email)
+        self.create_btn(options_sizer, "Change email", self.handle_change_email)
+        return options_sizer
 
-    def createBtn(self, sizer, msg, func):
+    def create_btn(self, sizer, msg, func):
         '''
 
         :param sizer: sizer to put the Btn in
@@ -1159,16 +1168,16 @@ class AccountPanel(wx.Panel):
         :return:
         '''
         # create the button
-        Btn = wx.Button(self, wx.ID_ANY, label=msg, size=(250, 40))
+        btn = wx.Button(self, wx.ID_ANY, label=msg, size=(250, 40))
         # design the button
-        Btn.Font = self.font
-        Btn.BackgroundColour = wx.BLACK
-        Btn.ForegroundColour = wx.GREEN
-        Btn.Bind(wx.EVT_BUTTON, func)
-        sizer.Add(Btn)
+        btn.Font = self.font
+        btn.BackgroundColour = wx.BLACK
+        btn.ForegroundColour = wx.GREEN
+        btn.Bind(wx.EVT_BUTTON, func)
+        sizer.Add(btn)
         sizer.AddSpacer(50)
 
-    def handle_changePassword(self, event):
+    def handle_change_password(self, event):
         '''
 
         :param event:change password pressed
@@ -1199,24 +1208,40 @@ class AccountPanel(wx.Panel):
             self.new_email = new_email
 
     def handle_change_details_ans(self, answer):
+        '''
 
+        :param answer:answer to the change details
+        :return: show the answer to the user
+        '''
         if answer == 'ok':
             wx.MessageBox('change detail successfully', 'Trive', wx.OK | wx.ICON_INFORMATION)
             if self.change_type == 'email':
                 self.email.SetLabel(f'Email: {self.new_email}')
         else:
-            wx.MessageBox('there was an error changing the detail, try again later', 'Trive error', wx.OK | wx.ICON_ERROR)
+            wx.MessageBox('There was an error changing the detail, try again later', 'Trive error', wx.OK | wx.ICON_ERROR)
 
 
 class OptionsMenu(wx.Menu):
 
     def __init__(self, parent, file_typ, file_name, path):
+        '''
+
+        file_name -> name of the file that the options for
+        file_typ -> type of the file that the options for
+        path -> path of the file that the options for
+        font -> text font
+        command_by_id -> dictionary of the command to do and the value is the id
+        func_by_id -> dictionary of the id that selected and the function to call to
+        '''
         super(OptionsMenu, self).__init__()
 
         self.parent = parent
         self.file_name = file_name
         self.file_typ = file_typ
         self.path = path
+        self.font = None
+        self.command_by_id = None
+        self.func_by_id = None
         self.createOptions()
 
     def createOptions(self):
@@ -1224,50 +1249,60 @@ class OptionsMenu(wx.Menu):
 
         :return: create all the options
         '''
+        #font for the text
         self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
-        self.Bind(wx.EVT_MENU, self.getChosen)
+        self.Bind(wx.EVT_MENU, self.get_chosen)
+
         if self.file_typ == 'file':
-            self.commandById = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Copy', 5: 'Edit' ,6: 'Delete'}
-            self.funcById = {1: self.download, 2: self.rename, 3: self.share, 4:self.copy_file, 5:self.edit, 6: self.delete}  #button id -> function that handle if the button selected
+            self.command_by_id = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Copy', 5: 'Edit' ,6: 'Delete'}
+            self.func_by_id = {1: self.download, 2: self.rename, 3: self.share, 4:self.copy_file, 5:self.edit, 6: self.delete}  #button id -> function that handle if the button selected
         elif self.file_typ == 'image':
-            self.commandById = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Copy', 6: 'Delete'}
-            self.funcById = {1: self.download, 2: self.rename, 3: self.share, 4: self.copy_file, 6: self.delete}
-        else :
-            self.commandById = { 2: 'Rename', 3: 'Share', 4: 'Copy', 6: 'Delete'}
-            self.funcById = { 2: self.rename, 3: self.share, 4: self.copy_file, 6: self.delete}
+            self.command_by_id = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Copy', 6: 'Delete'}
+            self.func_by_id = {1: self.download, 2: self.rename, 3: self.share, 4: self.copy_file, 6: self.delete}
+        else:
+            self.command_by_id = {2: 'Rename', 3: 'Share', 4: 'Copy', 6: 'Delete'}
+            self.func_by_id = {2: self.rename, 3: self.share, 4: self.copy_file, 6: self.delete}
 
-        for id in self.commandById.keys():
-            self.createOption(id)
+        for command_id in self.command_by_id.keys():
+            self.create_option(command_id)
 
-    def createOption(self, id):
+    def create_option(self, id):
         '''
 
         :param id: id for the option
         :return: creates the option and add to the menu
         '''
-        popmenu = wx.MenuItem(self, id, self.commandById[id])
+        popmenu = wx.MenuItem(self, id, self.command_by_id[id])
         popmenu.SetBackgroundColour(wx.BLACK)
         popmenu.SetTextColour(wx.WHITE)
         popmenu.SetFont(self.font)
         self.Append(popmenu)
 
-    def getChosen(self, event):
+    def get_chosen(self, event):
         '''
 
         :param event:
         :return: return the id of the selected command
         '''
-        id = event.GetId()
-        self.funcById[id]()
+        command_id = event.GetId()
+        self.func_by_id[command_id]()
 
     def download(self):
+        '''
+
+        :return: notify the logic that the download button pressed
+        '''
         self.parent.frame.q.put(('download', [self.path + '\\' + self.file_name]))
         self.parent.frame.status_bar.SetBackgroundColour(wx.WHITE)
         self.parent.frame.status_bar.SetStatusText(f'Downloading {self.file_name}')
 
     def rename(self):
+        '''
 
+        :return: check the input and notify the logic that the rename button pressed
+        '''
+        #get new name to the file
         dlg = wx.TextEntryDialog(None, f'Enter new name for the {self.file_typ}(add extention): ', f'Rename {self.file_typ}', '',style=wx.TextEntryDialogStyle)
 
         if dlg.ShowModal() == wx.ID_OK:
@@ -1278,18 +1313,21 @@ class OptionsMenu(wx.Menu):
                 result = re.match(pattern, name)
             elif self.file_typ == 'file':
                 pattern = "^[\w,\s-]+\.[A-Za-z1-9_]{1,4}$"
-                result = re.match(pattern, name) and self.parent.getType(name) == 'file'
+                result = re.match(pattern, name) and self.parent.get_type(name) == 'file'
             else:
                 pattern = "^[\w,\s-]+\.[A-Za-z1-9_]{1,4}$"
-                result = re.match(pattern, name) and self.parent.getType(name) == 'image'
-
+                result = re.match(pattern, name) and self.parent.get_type(name) == 'image'
             if result:
                 self.parent.frame.q.put(('rename', [self.path + '\\' + self.file_name, name]))
             else:
                 wx.MessageBox('Invalid name', 'Trive Error', wx.OK | wx.ICON_ERROR)
 
     def share(self):
+        '''
 
+        :return:notify the logic that the share file pressed
+        '''
+        #get the username to share with
         dlg = wx.TextEntryDialog(None, f'Enter username to share with: ', f'Share {self.file_typ}', '',style=wx.TextEntryDialogStyle)
 
         if dlg.ShowModal() == wx.ID_OK:
@@ -1297,6 +1335,10 @@ class OptionsMenu(wx.Menu):
             self.parent.frame.q.put(('share', [self.path + '\\' + self.file_name, username]))
 
     def delete(self):
+        '''
+
+        :return: notify the logic that the delete file pressed
+        '''
         question = wx.MessageBox('Are you sure you want to delete this file? ', 'Trive Error', wx.YES | wx.NO | wx.ICON_WARNING)
         if question == wx.YES:
             self.parent.frame.q.put(('delete', [self.path + '\\' + self.file_name]))
@@ -1322,10 +1364,3 @@ class OptionsMenu(wx.Menu):
         :return:change the now coping file in the parent
         '''
         self.parent.copying = self.path + '\\' + self.file_name
-
-
-if __name__ == '__main__':
-    q = queue.Queue()
-    app = wx.App()
-    frame = MyFrame(q)
-    app.MainLoop()

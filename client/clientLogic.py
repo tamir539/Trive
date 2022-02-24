@@ -99,9 +99,13 @@ class Logic:
                            'download': self.send_download, 'upload': self.send_upload_request, 'share': self.send_share, 'add_to_folder': self.send_add_to_folder, 'rename': self.send_rename,
                            'delete': self.send_delete, 'create_folder': self.send_create_folder, 'edit': self.handle_edit}
         while True:
+
             #recive msg from the graphic
             flag, args = self.graphic_q.get()
-            func_by_command[flag](args)
+            if self.key:
+                func_by_command[flag](args)
+            else:
+                wx.CallAfter(pub.sendMessage, 'disconnect')
 
     def start_graphic(self):
         '''
@@ -387,6 +391,7 @@ class Logic:
 
             if not psutil.pid_exists(pid):
                 #the file closed -> close the monitor
+                self.frame.finish_edit()
                 break
 
     def follow_office_file(self, file_path, server_path):
