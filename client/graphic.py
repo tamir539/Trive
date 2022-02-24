@@ -1045,7 +1045,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         file_name = answer.split(',')[1]
         if ans == 'ok':
             self.delete_file(file_name)
-            wx.MessageBox(f'{file_name} deleted successfully!', 'Trive error', wx.OK | wx.ICON_ERROR)
+            wx.MessageBox(f'{file_name} deleted successfully!', 'Trive error', wx.OK | wx.ICON_INFORMATION)
         else:
             wx.MessageBox('Delete error, try other name or try again later...', 'Trive error', wx.OK | wx.ICON_ERROR)
 

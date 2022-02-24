@@ -361,9 +361,10 @@ class Logic:
     def follow_notepad_file(self, all_notepad_pids, file_path, server_path):
         '''
 
-        :param closed_q:queue
+        :param file_path: path of the file that editing
+        :param server_path: path for the upload
         :param all_notepad_pids: all the pids of the files that were opened in notepad
-        :return: puts massage in the queue when the file has closed
+        :return: upload the file to the server in each change
         '''
         #open the file
         threading.Thread(target= self.open_file, args=(file_path, )).start()
@@ -392,12 +393,13 @@ class Logic:
             if not psutil.pid_exists(pid):
                 #the file closed -> close the monitor
                 self.frame.finish_edit()
+                os.remove(file_path)
                 break
 
     def follow_office_file(self, file_path, server_path):
         '''
 
-        :param path:path for file to  follow
+        :param file_path:path for file to  follow
         :param server_path: the path of the file in the server
         :return: upload the file to the server in each change
         '''
@@ -429,6 +431,7 @@ class Logic:
                 if _action == 2 and file_typ in _file:
                     # the file closed -> close the monitor
                     self.frame.finish_edit()
+                    os.remove(file_path)
                     break
 
     def open_file(self, file_path):
