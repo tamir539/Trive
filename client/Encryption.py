@@ -1,7 +1,6 @@
 from Crypto.Cipher import AES
 from Crypto import Random
 import random
-#finish comments!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 class AESCipher(object):
@@ -13,7 +12,7 @@ class AESCipher(object):
 
         :param key:string of key to create the aes key with
         '''
-        #pad the key to 32 length
+        # pad the key to 32 length
         self.key = key + (32 - len(key)) * ' '
         self.key = self.key.encode()
 
@@ -58,7 +57,8 @@ class AESCipher(object):
     def encrypt_file(self, file_path, new_path):
         '''
 
-        :param file_name:file path to encrypt
+        :param file_path: file path to encrypt
+        :param new_path: the new path to put the encrypted file in
         :return: the new path to the encrypted file
         '''
         file_name = file_path[file_path.rindex('\\'):]
@@ -83,7 +83,11 @@ class AESCipher(object):
 
 
 class Defi:
+    '''
+    class for the defi helman switch keys
+    '''
     def __init__(self):
+        # choose random int
         self.a = random.randint(1, 100000)
 
     def publish(self):

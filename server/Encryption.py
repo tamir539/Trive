@@ -1,7 +1,6 @@
 from Crypto.Cipher import AES
 from Crypto import Random
 import random
-#finish comments!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 class AESCipher(object):
@@ -77,7 +76,11 @@ class AESCipher(object):
 
 
 class Defi:
+    '''
+    class for the defi helman switch keys
+    '''
     def __init__(self):
+        #  choose random int
         self.a = random.randint(1, 100000)
 
     def publish(self):
@@ -95,13 +98,4 @@ class Defi:
         '''
         return gb ** self.a % 100000
 
-
-
-if __name__ == '__main__':
-    key = 'tamir'
-
-    my_key = AESCipher(key)
-
-    #my_key.encrypt_file('c:\\temp\\aaa.py.txt')
-    my_key.decrypt_file('c:\\temp\\aaa.py.txt')
 

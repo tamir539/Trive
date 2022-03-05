@@ -5,7 +5,6 @@ import os
 import time
 import cprotocol as prot
 from Encryption import Defi
-#finish comments!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 class ClientCom:
@@ -26,10 +25,10 @@ class ClientCom:
         self.soc = socket.socket()
 
         if not file and not key:
-            #need to switch keys with the server
-            threading.Thread(target = self.switch_keys, daemon=True).start()
+            # need to switch keys with the server
+            threading.Thread(target=self.switch_keys, daemon=True).start()
         elif file:
-            #already have a key -> just connect without switch keys
+            # already have a key -> just connect without switch keys
             self.connect()
         else:
             self.key = key
@@ -42,14 +41,14 @@ class ClientCom:
         :return:switch keys with the server
         '''
 
-        #create defi key
+        # create defi key
         defi = Defi()
         my_publish = defi.publish()
 
         try:
-            #connect to the server
+            # connect to the server
             self.soc.connect((self.serverIp, self.serverPort))
-            #switch keys with the server
+            # switch keys with the server
             server_publish = int(self.soc.recv(5).decode())
             self.soc.send(str(my_publish).encode())
         except Exception as e:
@@ -58,7 +57,7 @@ class ClientCom:
         else:
             key_str = str(defi.compute_secret(server_publish))
             self.q.put(f'key-{key_str}')
-            #start reciving messages
+            # start reciving messages
             threading.Thread(target=self.__recv_msg__(), daemon=True).start()
 
     def connect(self):
@@ -70,7 +69,7 @@ class ClientCom:
             self.soc.connect((self.serverIp, self.serverPort))
         except Exception as e:
             print(f'in connect - {str(e)}')
-            # notify the logic that the server closed
+            #  notify the logic that the server closed
             self.q.put('disconnect')
             self.soc.close()
             exit()
@@ -86,7 +85,7 @@ class ClientCom:
                 msg = self.soc.recv(msg_len)
             except Exception as e:
                 print(f'in recv msg  - {str(e)}')
-                #notify the logic that the server closed
+                # notify the logic that the server closed
                 self.q.put('disconnect')
                 self.soc.close()
                 exit()
@@ -99,7 +98,7 @@ class ClientCom:
         :param msg: string
         :return: sends the msg to the server
         '''
-        if type(msg) == 'str':
+        if type(msg) == str:
             msg = msg.encode()
         try:
             self.soc.send(str(len(msg)).zfill(3).encode())
@@ -108,16 +107,18 @@ class ClientCom:
             print(f'in send msg - {str(e)}')
             self.soc.close()
 
-    def send_file(self, filePath, server_path, file_name):
+    def send_file(self, file_path, server_path, file_name):
         '''
 
-        :param filePath: path for file
+        :param file_path: path for file
+        :param server_path: path to put in the server
+        :param file_name: name of the file
         :return: sends the data to the server
         '''
         time.sleep(0.1)
 
-        with open(filePath, 'rb') as f:
-            #data of the file
+        with open(file_path, 'rb') as f:
+            # data of the file
             data = f.read()
 
         msg_after_protocol = prot.create_upload_file_msg(server_path, len(data), file_name)
@@ -130,16 +131,16 @@ class ClientCom:
             print(f'in send file - {str(e)}')
             self.soc.close()
 
-    def recv_file(self, fileLen, fileName, key, path = None):
+    def recv_file(self, file_len, file_name, key, path = None):
         '''
 
         :return:recv file from the server, download the file to downloads and add msg to q when finish recive
         '''
         file_data = bytearray()
-        fileLen = int(fileLen)
-        #recv all the data in blocks
-        while len(file_data) < fileLen:
-            size = fileLen - len(file_data)
+        file_len = int(file_len)
+        # recv all the data in blocks
+        while len(file_data) < file_len:
+            size = file_len - len(file_data)
             try:
                 if size >= 1024:
                     file_data.extend(self.soc.recv(1024))
@@ -152,15 +153,15 @@ class ClientCom:
                 self.soc.close()
                 file_data = None
                 break
-        #if recived the file -> put it in downloads
+        # if recived the file -> put it in downloads
         if file_data is not None:
             if path is None:
                 path = os.path.expanduser('~/Downloads')
-            with open(f'{path}\\{fileName}', 'wb') as f:
+            with open(f'{path}\\{file_name}', 'wb') as f:
                 f.write(file_data)
 
-            #decrypt the file recived
-            key.decrypt_file(f'{path}\\{fileName}')
+            # decrypt the file recived
+            key.decrypt_file(f'{path}\\{file_name}')
             self.q.put('ok')
 
         self.soc.close()

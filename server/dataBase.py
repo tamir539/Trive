@@ -1,5 +1,4 @@
 import sqlite3
-#finish comments!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 class DB:
@@ -18,19 +17,20 @@ class DB:
         self.ips_table = 'TriveIps'
         self.conn = None
         self.cursor = None
-        self.create_db()
+        self.__create_db__()
 
-    def create_db(self):
+    def __create_db__(self):
         '''
 
         :return: create a new database
         '''
-        #connect to the data_base
+        # connect to the data_base
         self.conn = sqlite3.connect(self.db_name)
         self.cursor = self.conn.cursor()
 
         self.__create_users_table__()
         self.__create_ips_table__()
+        self.conn.commit()
 
     def __create_users_table__(self):
         '''
@@ -39,7 +39,6 @@ class DB:
         '''
         users = F"CREATE TABLE IF NOT EXISTS {self.users_table} (Username TEXT, Email TEXT, Password TEXT)"
         self.cursor.execute(users)
-        self.conn.commit()
 
     def __create_ips_table__(self):
         '''
@@ -48,7 +47,6 @@ class DB:
         '''
         ips = F"CREATE TABLE IF NOT EXISTS {self.ips_table} (Username TEXT, Ip TEXT)"
         self.cursor.execute(ips)
-        self.conn.commit()
 
     def check_username_exist(self, username):
         '''
@@ -90,7 +88,7 @@ class DB:
             return 'ok'
         return 'no'
 
-    def change_email(self, username, newEmail):
+    def change_email(self, username, new_email):
         '''
 
         :param username:
@@ -98,7 +96,7 @@ class DB:
         :return: change the email for the username
         '''
         if self.check_username_exist(username):
-            sql = f"UPDATE {self.users_table} set Email = '{newEmail}' Where Username = '{username}'"
+            sql = f"UPDATE {self.users_table} set Email = '{new_email}' Where Username = '{username}'"
             self.cursor.execute(sql)
             self.conn.commit()
             return 'ok'
@@ -169,10 +167,17 @@ class DB:
         :return: delete the user with username from the table
         '''
         ret = False
-        #check that the username is in the table
+        # check that the username is in the table
         if self.check_username_exist(username):
             sql = f"DELETE from {self.ips_table} where Ip = '{ip}'"
             self.cursor.execute(sql)
             self.conn.commit()
             ret = True
         return ret
+    
+    def close_db(self):
+        '''
+        
+        :return:close the data_base 
+        '''
+        pass
