@@ -2,7 +2,6 @@
 all the protocol functions of the server
 '''
 import os
-#finish comments!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 def pack_file_names(path):
@@ -12,21 +11,21 @@ def pack_file_names(path):
     :return: pack the folder by the protocol
     '''
     list_of_files = []
-    #get all the files and dirs in the path
+    # get all the files and dirs in the path
     for (dirpath, dirnames, filenames) in os.walk(path):
 
-        #add the current directory path that we are in
+        # add the current directory path that we are in
         list_of_files.append(dirpath)
 
-        #add all the directories in the current directory
+        # add all the directories in the current directory
         for dir in dirnames:
             list_of_files.append(dir)
 
-        # add all the files in the current directory
+        #  add all the files in the current directory
         for filename in filenames:
             list_of_files.append(filename)
 
-    #from the list build the string to send
+    # from the list build the string to send
     return '04' + ",".join(x for x in list_of_files)
 
 
@@ -50,10 +49,10 @@ def unpack_msg(msg):
                        '10': 'change_details', '11': 'share', '13': 'change_name', '14': 'forgot_password', '17': 'edit', '18': 'edit_upload'}
     if type(msg) is bytes:
         msg = msg.decode()
-    #the code of the msg
+    # the code of the msg
     code = msg[:2]
     msg = msg[2:]
-    #all the arguments of the msg
+    # all the arguments of the msg
     args = msg.split('&')
 
     return command_by_code[code], args

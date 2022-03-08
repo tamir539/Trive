@@ -1,7 +1,6 @@
 '''
 all the protocol functions of the cient
 '''
-#finish comments!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 def unpack(msg):

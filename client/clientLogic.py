@@ -84,7 +84,7 @@ class Logic:
                         threading.Thread(target=self.edit_answer, args=(args,)).start()
                     else:
                         # notify the command to the graphic
-                        wx.CallAfter(pub.sendMessage, command, answer = args[0])
+                        wx.CallAfter(pub.sendMessage, command, answer=args[0])
 
     def check_graphic_q(self):
         '''
@@ -398,7 +398,9 @@ class Logic:
         file_typ = file_path.split('.')[1]
         _file_list_dir = 1
         #  Create a watcher handle
-        _h_dir = win32file.CreateFile(file_path[:file_path.rindex('\\')], _file_list_dir, win32con.FILE_SHARE_READ | win32con.FILE_SHARE_WRITE |  win32con.FILE_SHARE_DELETE, None, win32con.OPEN_EXISTING, win32con.FILE_FLAG_BACKUP_SEMANTICS, None)
+        _h_dir = win32file.CreateFile(file_path[:file_path.rindex('\\')], _file_list_dir, win32con.FILE_SHARE_READ |
+                                      win32con.FILE_SHARE_WRITE | win32con.FILE_SHARE_DELETE, None,
+                                      win32con.OPEN_EXISTING, win32con.FILE_FLAG_BACKUP_SEMANTICS, None)
         while 1:
             results = win32file.ReadDirectoryChangesW(
                 _h_dir,
@@ -432,8 +434,8 @@ class Logic:
         '''
         file_typ = file_path.split('.')[1]
 
-        notepad = ['py', 'txt', 'java', 'asm']
-        office = ['doc', 'docx', 'pptm', 'xlsx']
+        notepad = ['py', 'txt']
+        office = ['docx', 'pptm', 'xlsx']
 
         if file_typ in notepad:
             # open notepad

@@ -3,7 +3,7 @@ import wx.lib.scrolledpanel as scrolled
 from pubsub import pub
 import queue
 import re
-#finish comments!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# finish comments!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 class MyFrame(wx.Frame):
@@ -16,7 +16,7 @@ class MyFrame(wx.Frame):
         status_bar -> status bar of the frame
         main_panel -> main panel
         '''
-        #create the frame
+        # create the frame
         super(MyFrame, self).__init__(None, title="Trive", size=wx.DisplaySize())
 
         self.username = ''
@@ -24,16 +24,16 @@ class MyFrame(wx.Frame):
         self.status_bar = self.CreateStatusBar(1)
         self.status_bar.SetBackgroundColour(wx.BLACK)
 
-        # create main panel - to put on the others panels
+        #  create main panel - to put on the others panels
         self.main_panel = MainPanel(self)
         box = wx.BoxSizer(wx.VERTICAL)
         box.Add(self.main_panel, 1, wx.EXPAND)
         self.q = q
 
-        # loc = wx.IconLocation('draws\\logo.jpg', wx.BITMAP_TYPE_ICO)
-        # self.SetIcon(loc)
+        #  loc = wx.IconLocation('draws\\logo.jpg', wx.BITMAP_TYPE_ICO)
+        #  self.SetIcon(loc)
 
-        # arrange the frame
+        #  arrange the frame
         self.SetSizer(box)
         self.Layout()
         self.Show()
@@ -75,14 +75,14 @@ class MainPanel(wx.Panel):
         self.SetBackgroundColour(wx.BLACK)
         self.v_box = wx.BoxSizer()
 
-        # create object for each panel
+        #  create object for each panel
         self.login = LoginPanel(self, self.frame)
         self.registration = RegisterPanel(self, self.frame)
         self.loby = LobyPanel(self,self.frame)
 
         self.v_box.Add(self.login)
 
-        # The first panel to show
+        #  The first panel to show
         self.login.Show()
         self.SetSizer(self.v_box)
         self.Layout()
@@ -98,7 +98,7 @@ class LoginPanel(wx.Panel):
 
         username -> username of the connected user
         '''
-        # create a new panel
+        #  create a new panel
         wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=wx.DisplaySize(), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
@@ -107,48 +107,48 @@ class LoginPanel(wx.Panel):
 
     def __create_screen__(self):
 
-        # create the main sizer of the panel
+        #  create the main sizer of the panel
         self.sizer = wx.BoxSizer(wx.VERTICAL)
-        # change background colour to black
+        #  change background colour to black
         self.SetBackgroundColour(wx.BLACK)
 
-        #add the Trive logo
+        # add the Trive logo
         png = wx.Image('draws\\logo.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         trive = wx.StaticBitmap(self, -1, png, (650, -2), (png.GetWidth(), png.GetHeight()))
 
-        # wait for answer from the logic
+        #  wait for answer from the logic
         pub.subscribe(self.handle_answer, 'login')
 
-        #font
+        # font
         self.font = wx.Font(22, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
-        #create sizer for the username logo and textfield
+        # create sizer for the username logo and textfield
         name_box = wx.BoxSizer(wx.HORIZONTAL)
 
         self.create_username_field()
 
-        # add the user logo
+        #  add the user logo
         user = wx.Image('draws\\user.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         user_logo = wx.StaticBitmap(self, -1, user, (565, 275), (user.GetWidth(), user.GetHeight()))
 
-        #update the username sizer
+        # update the username sizer
         name_box.Add(user_logo, 0, wx.ALL, 0)
         name_box.Add(self.username_field, 0, wx.ALL, 5)
 
-        #create sizer for the password
+        # create sizer for the password
         pass_box = wx.BoxSizer(wx.HORIZONTAL)
 
         self.create_password_field()
 
-        # add the fingerprint logo
+        #  add the fingerprint logo
         finger = wx.Image('draws\\finger.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         finger_logo = wx.StaticBitmap(self, -1, finger, (565, 383), (finger.GetWidth(), finger.GetHeight()))
 
-        #update the password sizer
+        # update the password sizer
         pass_box.Add(finger_logo, 0, wx.ALL, 0)
         pass_box.Add(self.passWordField, 0, wx.ALL, 5)
 
-        # add all elements to sizer
+        #  add all elements to sizer
         self.sizer.Add(trive,0, wx.CENTER | wx.ALL, 5)
         self.sizer.AddSpacer(100)
         self.sizer.Add(name_box,0, wx.CENTER | wx.ALL, 5)
@@ -156,7 +156,7 @@ class LoginPanel(wx.Panel):
         self.sizer.AddSpacer(20)
         self.add_buttons()
 
-        # arrange the screen
+        #  arrange the screen
         self.SetSizer(self.sizer)
         self.Layout()
         self.Hide()
@@ -179,7 +179,7 @@ class LoginPanel(wx.Panel):
 
         self.create_btn('Not a member? sign up!', self.handle_reg, (400, 40))
 
-        # size down the font for the forgot your password button
+        #  size down the font for the forgot your password button
         self.font = wx.Font(10, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
         self.create_btn('forgot your password?', self.handle_forgot_password, (250, 30))
@@ -192,9 +192,9 @@ class LoginPanel(wx.Panel):
         :param size: the size of the button
         :return:
         '''
-        # create the button
+        #  create the button
         btn = wx.Button(self, wx.ID_ANY, label=msg, size=size)
-        # design the button
+        #  design the button
         if msg == 'Login':
             btn.Font = self.font.Bold()
         elif msg == 'forgot your password?':
@@ -211,10 +211,10 @@ class LoginPanel(wx.Panel):
 
         :return:create and design the userName textField
         '''
-        #create the tet field
+        # create the tet field
         self.username_field = wx.TextCtrl(self, 10, name="username", style=wx.TEXT_ATTR_BULLET_STYLE_ROMAN_UPPER, size=(500, 38))
 
-        # design the username text field
+        #  design the username text field
         self.username_field.SetHint('username:')
         self.username_field.SetBackgroundColour(wx.BLACK)
         self.username_field.SetForegroundColour(wx.WHITE)
@@ -225,10 +225,10 @@ class LoginPanel(wx.Panel):
 
         :return:create and design the password textField
         '''
-        # create the password text field
+        #  create the password text field
         self.passWordField = wx.TextCtrl(self, -1, name="password", style=wx.TE_PASSWORD, size=(500, 38))
 
-        # design the password text field
+        #  design the password text field
         self.passWordField.SetHint('password:')
         self.passWordField.SetBackgroundColour(wx.BLACK)
         self.passWordField.SetForegroundColour(wx.WHITE)
@@ -286,7 +286,7 @@ class LoginPanel(wx.Panel):
             email = answer.split(',')[1]
             self.frame.username = self.username
             self.frame.email = email
-            #move to loby
+            # move to loby
             self.Hide()
             self.parent.loby.Show()
         else:
@@ -300,69 +300,69 @@ class RegisterPanel(wx.Panel):
     '''
 
     def __init__(self, parent, frame):
-        # create a new panel
+        #  create a new panel
         wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=wx.DisplaySize(), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
         self.__create_screen__()
 
     def __create_screen__(self):
-        # create the main sizer of the panel
+        #  create the main sizer of the panel
         self.sizer = wx.BoxSizer(wx.VERTICAL)
 
-        # change background colour to black
+        #  change background colour to black
         self.SetBackgroundColour(wx.BLACK)
 
-        # add the Trive logo
+        #  add the Trive logo
         png = wx.Image('draws\\logo.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         logo = wx.StaticBitmap(self, -1, png, (650, -2), (png.GetWidth(), png.GetHeight()))
 
-        # talk with the logic client
+        #  talk with the logic client
         pub.subscribe(self.handle_answer, 'register')
 
-        # font for the text
+        #  font for the text
         self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
-        # create sizer for the email
+        #  create sizer for the email
         email_box = wx.BoxSizer(wx.HORIZONTAL)
 
         self.create_email_field()
 
-        # add the email logo
+        #  add the email logo
         email = wx.Image('draws\\email.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         email_logo = wx.StaticBitmap(self, -1, email, (565, 275), (email.GetWidth(), email.GetHeight()))
 
-        #update the email sizer
+        # update the email sizer
         email_box.Add(email_logo, 0, wx.ALL, 0)
         email_box.Add(self.email_field, 0, wx.ALL, 0)
 
-        # create sizer for the username
+        #  create sizer for the username
         name_box = wx.BoxSizer(wx.HORIZONTAL)
 
         self.create_username_field()
 
-        # add the user logo
+        #  add the user logo
         user = wx.Image('draws\\user.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         user_logo = wx.StaticBitmap(self, -1, user, (565, 275), (user.GetWidth(), user.GetHeight()))
 
-        # update the username sizer
+        #  update the username sizer
         name_box.Add(user_logo, 0, wx.ALL, 0)
         name_box.Add(self.username_field, 0, wx.ALL, 5)
 
-        # create sizer for the password
+        #  create sizer for the password
         pass_box = wx.BoxSizer(wx.HORIZONTAL)
 
         self.create_password_field()
 
-        # add the fingerprint logo
+        #  add the fingerprint logo
         finger = wx.Image('draws\\finger.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         finger_logo = wx.StaticBitmap(self, -1, finger, (565, 383), (finger.GetWidth(), finger.GetHeight()))
 
-        #update the password sizer
+        # update the password sizer
         pass_box.Add(finger_logo, 0, wx.ALL, 0)
         pass_box.Add(self.password_field, 0, wx.ALL, 5)
 
-        #add all the elements to the main sizer
+        # add all the elements to the main sizer
         self.sizer.Add(logo, 0, wx.CENTER | wx.ALL, 5)
         self.sizer.AddSpacer(100)
         self.sizer.Add(email_box, 0, wx.CENTER | wx.ALL, 5)
@@ -371,7 +371,7 @@ class RegisterPanel(wx.Panel):
         self.sizer.AddSpacer(20)
         self.add_buttons()
 
-        # arrange the screen
+        #  arrange the screen
         self.SetSizer(self.sizer)
         self.Layout()
         self.Hide()
@@ -402,9 +402,9 @@ class RegisterPanel(wx.Panel):
         :param size: size of the new button
         :return:creates the new button
         '''
-        # create the button
+        #  create the button
         btn = wx.Button(self, wx.ID_ANY, label=msg, size=size)
-        # design the button
+        #  design the button
         if msg == 'Register':
             btn.Font = self.font.Bold()
         else:
@@ -419,10 +419,10 @@ class RegisterPanel(wx.Panel):
 
         :return:create and design the userName textField
         '''
-        #create the tet field
+        # create the tet field
         self.username_field = wx.TextCtrl(self, 10, name="username", style=wx.TEXT_ATTR_BULLET_STYLE_ROMAN_UPPER, size=(500, 38))
 
-        # design the username text field
+        #  design the username text field
         self.username_field.SetHint('username:')
         self.username_field.SetBackgroundColour(wx.BLACK)
         self.username_field.SetForegroundColour(wx.WHITE)
@@ -433,10 +433,10 @@ class RegisterPanel(wx.Panel):
 
         :return:create and design the password textField
         '''
-        # create the password text field
+        #  create the password text field
         self.password_field = wx.TextCtrl(self, -1, name="password", style=wx.TE_PASSWORD, size=(500, 38))
 
-        # design the password text field
+        #  design the password text field
         self.password_field.SetHint('password:')
         self.password_field.SetBackgroundColour(wx.BLACK)
         self.password_field.SetForegroundColour(wx.WHITE)
@@ -447,10 +447,10 @@ class RegisterPanel(wx.Panel):
 
         :return:create and design the email textField
         '''
-        # create the email text field
+        #  create the email text field
         self.email_field = wx.TextCtrl(self, -1, name="email", size=(500, 38))
 
-        # design the email text field
+        #  design the email text field
         self.email_field.SetFont(self.font)
         self.email_field.SetHint('email:')
         self.email_field.SetBackgroundColour(wx.BLACK)
@@ -462,12 +462,12 @@ class RegisterPanel(wx.Panel):
         :param event: event that happend on the screen
         :return:take care the event when pressing registration button and calling the registration screen
         '''
-        # mean someone create account
+        #  mean someone create account
         username = self.username_field.GetValue()
         password = self.password_field.GetValue()
         email = self.email_field.GetValue()
 
-        #check email input
+        # check email input
         pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
         result = re.match(pattern, email)
 
@@ -489,6 +489,11 @@ class RegisterPanel(wx.Panel):
         self.parent.login.Show()
 
     def handle_answer(self, answer):
+        '''
+
+        :param answer: answer from the server
+        :return: show the answer to the user
+        '''
         if answer == 'un':
             self.error_msg('This username is already taken')
         else:
@@ -512,7 +517,7 @@ class LobyPanel(wx.Panel):
         new_folder_name -> when create new folder -> her new name
 
         '''
-        # create a new panel
+        #  create a new panel
         wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=wx.DisplaySize(), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
@@ -526,37 +531,37 @@ class LobyPanel(wx.Panel):
         self.__create_screen__()
 
     def __create_screen__(self):
-        # create the main sizer of the panel
+        #  create the main sizer of the panel
         self.sizer = wx.BoxSizer(wx.VERTICAL)
 
-        # change background colour to black
+        #  change background colour to black
         self.SetBackgroundColour(wx.BLACK)
 
-        # add the Trive logo
+        #  add the Trive logo
         png = wx.Image('draws\\logo.jpg', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         logo = wx.StaticBitmap(self, -1, png, (650, -2), (png.GetWidth(), png.GetHeight()))
 
-        # font for the text
+        #  font for the text
         self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
-        #wait for answer from the logic to upload
+        # wait for answer from the logic to upload
         pub.subscribe(self.uplod_answer, 'upload')
 
-        #create the files scroller
+        # create the files scroller
         self.scroll_files = ScrollFilesPanel(self, self.parent.frame)
 
-        # create the files scroller
+        #  create the files scroller
         self.account = AccountPanel(self, self.parent.frame)
 
-        #add the options
+        # add the options
         self.add_options()
 
-        #add all the elements to the sizer
+        # add all the elements to the sizer
         self.sizer.Add(logo, 0, wx.CENTER | wx.ALL, 5)
         self.sizer.AddSpacer(wx.DisplaySize()[1] - png.GetHeight() - 140)
         self.sizer.Add(self.options_sizer, 0, wx.CENTER | wx.ALL)
 
-        # arrange the screen
+        #  arrange the screen
         self.SetSizer(self.sizer)
         self.Layout()
 
@@ -568,16 +573,16 @@ class LobyPanel(wx.Panel):
         self.options_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.options_sizer.AddSpacer(80)
 
-        # create the paste button
+        #  create the paste button
         self.create_btn(self.options_sizer, "Paste here", self.handle_paste)
 
-        # create the account button
+        #  create the account button
         self.account_or_files = self.create_btn(self.options_sizer, "Account", self.handle_account)
 
-        # create the upload button
+        #  create the upload button
         self.create_btn(self.options_sizer, "Upload file", self.handle_upload)
 
-        # create the add folder button
+        #  create the add folder button
         self.create_btn(self.options_sizer, "Create folder", self.handle_create_folder)
 
     def create_btn(self, sizer, msg, func):
@@ -588,9 +593,9 @@ class LobyPanel(wx.Panel):
         :param func: function to bind to the button
         :return:
         '''
-        # create the button
+        #  create the button
         btn = wx.Button(self, wx.ID_ANY, label=msg, size=(250, 40))
-        # design the button
+        #  design the button
         btn.Font = self.font
         btn.BackgroundColour = wx.BLACK
         btn.ForegroundColour = wx.GREEN
@@ -610,21 +615,21 @@ class LobyPanel(wx.Panel):
         else:
             open_file_dialog = wx.FileDialog(self, "Open", "", "", "",wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
             open_file_dialog.ShowModal()
-            #path of the selected file
+            # path of the selected file
             path = open_file_dialog.GetPath()
             if path != '':
-                #name of the selected file
+                # name of the selected file
                 file_name = path[path.rindex('\\') + 1:]
                 open_file_dialog.Destroy()
                 if self.uploading:
                     self.error_msg('Wait the other upload to finish!')
                 elif self.get_type(path.split('\\')[-1]) == 'no':
                     self.error_msg('Trive doesnt support this type of files')
-                #check that the file isnt allready exists
+                # check that the file isnt allready exists
                 elif file_name in self.scroll_files.files[self.scroll_files.path]:
                     self.error_msg('File allready exists')
                 else:
-                    #update the status_bar that upload started
+                    # update the status_bar that upload started
                     self.frame.status_bar.SetBackgroundColour(wx.WHITE)
                     self.frame.status_bar.SetStatusText(f'Uploading {file_name}')
                     self.frame.q.put(('upload', [path, self.scroll_files.path]))
@@ -648,7 +653,7 @@ class LobyPanel(wx.Panel):
                 return 'file'
             else:
                 return 'no'
-        # mean that the filename if folder
+        #  mean that the filename if folder
         else:
             return 'folder'
 
@@ -669,7 +674,7 @@ class LobyPanel(wx.Panel):
                 if self.new_folder_name == 'shared':
                     wx.MessageBox('Unavailabale name', 'Trive Error', wx.OK | wx.ICON_ERROR)
                 else:
-                    # calculate the virtual path
+                    #  calculate the virtual path
                     path = self.scroll_files.path + '\\' + self.new_folder_name
                     self.frame.q.put(('create_folder', [path]))
                     pub.subscribe(self.handle_create_folder_answer, 'create_folder')
@@ -687,7 +692,7 @@ class LobyPanel(wx.Panel):
         else:
             self.account.Show()
             self.scroll_files.Hide()
-            #set the username and email of the user
+            # set the username and email of the user
             self.account.username.SetLabel(f'Username: {self.frame.username}')
             self.account.email.SetLabel(f'Email: {self.frame.email}')
             self.account_or_files.SetLabel('Files')
@@ -753,10 +758,10 @@ class LobyPanel(wx.Panel):
         :return:show the answer to the client
         '''
         if answer == 'ok':
-            #path to the file that last copyied
+            # path to the file that last copyied
             copyied = self.scroll_files.copying
             copyied_name = copyied[copyied.rindex('\\') + 1:]
-            #add the file to the selected folder
+            # add the file to the selected folder
             self.scroll_files.add_file(copyied_name)
         else:
             self.error_msg('There was an error with pasting the file here')
@@ -779,7 +784,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         panel_length = wx.DisplaySize()[1] - 350
         screen_depth = wx.DisplaySize()[0]
 
-        # create a new panel
+        #  create a new panel
         scrolled.ScrolledPanel.__init__(self, parent,pos =((screen_depth - panel_depth)/2, 200), size=(panel_depth, panel_length ), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
@@ -791,13 +796,13 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         self.__create_screen__()
 
     def __create_screen__(self):
-        # change background colour to black
+        #  change background colour to black
         self.SetBackgroundColour(wx.BLACK)
 
-        # font for the text
+        #  font for the text
         self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
-        #wait for answers from the logic
+        # wait for answers from the logic
         pub.subscribe(self.download_ans, 'finish_download')
         pub.subscribe(self.get_files, 'get_all_files')
         pub.subscribe(self.rename_ans, 'rename')
@@ -812,7 +817,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         :param index: index in self.files dictionary
         :return: show in the screen the files that are on top of the directories
         '''
-        #vetrical sizer for all the horizontal sizers
+        # vetrical sizer for all the horizontal sizers
         place_files_sizer = wx.BoxSizer(wx.VERTICAL)
         files_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -821,9 +826,9 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         place_files_sizer.AddSpacer(20)
 
         for file in files:
-            # check that there are not more then 7 files in a row
+            #  check that there are not more then 7 files in a row
             if char_count + len(file) > 70 or items_in_sizer_count > 6:
-                #mean the horizontal sizer full -> create new one and add this one to the vertical of the horizontals
+                # mean the horizontal sizer full -> create new one and add this one to the vertical of the horizontals
                 place_files_sizer.Add(files_sizer)
                 files_sizer = wx.BoxSizer(wx.HORIZONTAL)
                 place_files_sizer.AddSpacer(50)
@@ -844,26 +849,26 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         @:param file: name of the file
         :return: create sizer for file(file image, file name)
         '''
-        #sizer to the current file
+        # sizer to the current file
         file_sizer = wx.BoxSizer(wx.VERTICAL)
 
-        # add the file\image\folder logo
+        #  add the file\image\folder logo
         img = wx.Image(f'draws\\{self.get_type(file)}.png', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-        fileImg = wx.StaticBitmap(self, -1, img, (650, -2), (img.GetWidth(), img.GetHeight()))
-        fileImg.SetName(file)
+        file_img = wx.StaticBitmap(self, -1, img, (650, -2), (img.GetWidth(), img.GetHeight()))
+        file_img.SetName(file)
 
-        file_sizer.Add(fileImg, 0, wx.CENTER | wx.ALL)
+        file_sizer.Add(file_img, 0, wx.CENTER | wx.ALL)
 
         if self.get_type(file) == 'folder':
-            fileImg.Bind(wx.EVT_LEFT_DCLICK, self.get_into_folder)
+            file_img.Bind(wx.EVT_LEFT_DCLICK, self.get_into_folder)
 
         if self.get_type(file) == 'back':
-            fileImg.Bind(wx.EVT_LEFT_DOWN, self.handle_back)
+            file_img.Bind(wx.EVT_LEFT_DOWN, self.handle_back)
 
         elif file != 'shared' and file != 'recycle':
-            fileImg.Bind(wx.EVT_RIGHT_DOWN, self.on_file_click)
+            file_img.Bind(wx.EVT_RIGHT_DOWN, self.on_file_click)
 
-        #add the name of the file\image\folder
+        # add the name of the file\image\folder
         file_name = wx.StaticText(self, -1, label=file)
         file_name.SetForegroundColour(wx.WHITE)
         file_name.SetFont(self.font)
@@ -874,7 +879,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
     def get_type(self, file_name):
         '''
 
-        :param fileName: name of file
+        :param file_name: name of file
         :return:  "image" if the file is some image, "file" if the file is some text file, "folder" if the fileName if folder, "no"
         '''
 
@@ -914,7 +919,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         widget = event.GetEventObject()
         folder_name = widget.GetName()
 
-        #reset the screen
+        # reset the screen
         self.DestroyChildren()
 
         self.path += '\\' + folder_name
@@ -974,7 +979,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
             self.path = current_dir
 
         for f in lst:
-            # means that we enter new directory
+            #  means that we enter new directory
             if '\\' in f:
                 if in_top:
                     in_top = False
@@ -982,7 +987,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
                 self.files[current_dir] = []
                 if not in_top:
                     self.files[current_dir].append('back')
-            # means that f is file or folder in the current directory
+            #  means that f is file or folder in the current directory
             else:
                 self.files[current_dir].append(f)
 
@@ -1016,9 +1021,9 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
             self.change_folder_name(last_name, new_name)
         files: list = self.files[self.path]
         files[files.index(last_name)] = new_name
-        #reset the screen
+        # reset the screen
         self.DestroyChildren()
-        # create the screen
+        #  create the screen
         self.create_files_sizer(self.files[self.path])
 
     def delete_file(self, file_name):
@@ -1029,9 +1034,9 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         '''
         files: list = self.files[self.path]
         files.remove(file_name)
-        # reset the screen
+        #  reset the screen
         self.DestroyChildren()
-        #create the screen
+        # create the screen
         self.create_files_sizer(self.files[self.path])
 
     def delete_ans(self, answer):
@@ -1041,7 +1046,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         :return:
         '''
         ans = answer.split(',')[0]
-        #name of the file that deleted
+        # name of the file that deleted
         file_name = answer.split(',')[1]
         if ans == 'ok':
             self.delete_file(file_name)
@@ -1057,7 +1062,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
         :return:rename the folder securly
         '''
         new_dict = {}
-        #every path that contains the lsat name: rename it to the new name
+        # every path that contains the lsat name: rename it to the new name
         for key in self.files.keys():
             if last_name in key:
                 new_key = key.replace(last_name, new_name)
@@ -1097,7 +1102,7 @@ class AccountPanel(wx.Panel):
 
         screen_depth = wx.DisplaySize()[0]
 
-        # create a new panel
+        #  create a new panel
         wx.Panel.__init__(self, parent,pos =((screen_depth - panel_depth)//2, 200), size=(panel_depth, panel_length), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
@@ -1107,40 +1112,40 @@ class AccountPanel(wx.Panel):
         self.__create_screen__()
 
     def __create_screen__(self):
-        # create the main sizer of the panel
+        #  create the main sizer of the panel
         self.sizer = wx.BoxSizer(wx.VERTICAL)
 
-        # change background colour to black
+        #  change background colour to black
         self.SetBackgroundColour(wx.BLACK)
 
-        # font for the text
+        #  font for the text
         self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
-        #add the account logo
+        # add the account logo
         user = wx.Image('draws\\userForLoby.png', wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         user_img = wx.StaticBitmap(self, -1, user,  pos=(wx.DisplaySize()[0] - wx.DisplaySize()[0]//7, 30),
                                    size=(user.GetWidth(), user.GetHeight()))
-        #all the options to the sizer
+        # all the options to the sizer
         options_sizer = self.add_options()
 
-        #create the email text
+        # create the email text
         self.email = wx.StaticText(self, -1, label= '')
         self.email.SetForegroundColour(wx.WHITE)
         self.email.SetFont(self.font)
 
-        # create the username text
+        #  create the username text
         self.username = wx.StaticText(self, -1, label = '')
         self.username.SetForegroundColour(wx.WHITE)
         self.username.SetFont(self.font)
 
-        #add all the elements to the main sizer
+        # add all the elements to the main sizer
         self.sizer.Add(user_img,0, wx.ALIGN_CENTER | wx.ALL, 5)
         self.sizer.Add(self.email,0,wx.ALL, 5)
         self.sizer.Add(self.username, 0, wx.ALL, 5)
         self.sizer.AddSpacer(100)
         self.sizer.Add(options_sizer, 0, wx.ALIGN_CENTER | wx.ALL, 5)
 
-        # arrange the screen
+        #  arrange the screen
         self.SetSizer(self.sizer)
         self.Layout()
 
@@ -1152,10 +1157,10 @@ class AccountPanel(wx.Panel):
         options_sizer = wx.BoxSizer(wx.HORIZONTAL)
         options_sizer.AddSpacer(80)
 
-        # create the change password button
+        #  create the change password button
         self.create_btn(options_sizer, "Change password", self.handle_change_password)
 
-        # create the change email button
+        #  create the change email button
         self.create_btn(options_sizer, "Change email", self.handle_change_email)
         return options_sizer
 
@@ -1167,9 +1172,9 @@ class AccountPanel(wx.Panel):
         :param func: function to bind to the button
         :return:
         '''
-        # create the button
+        #  create the button
         btn = wx.Button(self, wx.ID_ANY, label=msg, size=(250, 40))
-        # design the button
+        #  design the button
         btn.Font = self.font
         btn.BackgroundColour = wx.BLACK
         btn.ForegroundColour = wx.GREEN
@@ -1249,14 +1254,14 @@ class OptionsMenu(wx.Menu):
 
         :return: create all the options
         '''
-        #font for the text
+        # font for the text
         self.font = wx.Font(20, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
 
         self.Bind(wx.EVT_MENU, self.get_chosen)
 
         if self.file_typ == 'file':
             self.command_by_id = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Copy', 5: 'Edit' ,6: 'Delete'}
-            self.func_by_id = {1: self.download, 2: self.rename, 3: self.share, 4:self.copy_file, 5:self.edit, 6: self.delete}  #button id -> function that handle if the button selected
+            self.func_by_id = {1: self.download, 2: self.rename, 3: self.share, 4:self.copy_file, 5:self.edit, 6: self.delete}  # button id -> function that handle if the button selected
         elif self.file_typ == 'image':
             self.command_by_id = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Copy', 6: 'Delete'}
             self.func_by_id = {1: self.download, 2: self.rename, 3: self.share, 4: self.copy_file, 6: self.delete}
@@ -1302,14 +1307,14 @@ class OptionsMenu(wx.Menu):
 
         :return: check the input and notify the logic that the rename button pressed
         '''
-        #get new name to the file
+        # get new name to the file
         dlg = wx.TextEntryDialog(None, f'Enter new name for the {self.file_typ}(add extention): ', f'Rename {self.file_typ}', '',style=wx.TextEntryDialogStyle)
 
         if dlg.ShowModal() == wx.ID_OK:
             name = dlg.GetValue()
-            #check input for the new name
+            # check input for the new name
             if self.file_typ == 'folder':
-                pattern = "^[A-Za-z1-9_!#&]*$"
+                pattern = "^[A-Za-z1-9_!# &]*$"
                 result = re.match(pattern, name)
             elif self.file_typ == 'file':
                 pattern = "^[\w,\s-]+\.[A-Za-z1-9_]{1,4}$"
@@ -1327,7 +1332,7 @@ class OptionsMenu(wx.Menu):
 
         :return:notify the logic that the share file pressed
         '''
-        #get the username to share with
+        # get the username to share with
         dlg = wx.TextEntryDialog(None, f'Enter username to share with: ', f'Share {self.file_typ}', '',style=wx.TextEntryDialogStyle)
 
         if dlg.ShowModal() == wx.ID_OK:
