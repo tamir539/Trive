@@ -13,6 +13,7 @@ import win32file
 import ctypes
 import psutil
 import time
+import datetime
 
 
 class Logic:
@@ -236,7 +237,7 @@ class Logic:
         :return: upload the file to the server in the port
         '''
         # network to recive file
-        client_upload = ClientCom(server_ip, int(port), self.network_q)
+        client_upload = ClientCom(server_ip, int(port), self.network_q, file=True)
         encrypted_path = self.key.encrypt_file(self.upload_path, 'C:\\Trive_uploads\\')
         threading.Thread(target=client_upload.send_file, args= (encrypted_path, self.upload_server_path, self.file_name, )).start()
 
@@ -382,6 +383,7 @@ class Logic:
 
             if not psutil.pid_exists(pid):
                 # the file closed -> close the monitor
+                time.sleep(1)
                 self.frame.finish_edit()
                 os.remove(file_path)
                 break
@@ -401,6 +403,9 @@ class Logic:
         _h_dir = win32file.CreateFile(file_path[:file_path.rindex('\\')], _file_list_dir, win32con.FILE_SHARE_READ |
                                       win32con.FILE_SHARE_WRITE | win32con.FILE_SHARE_DELETE, None,
                                       win32con.OPEN_EXISTING, win32con.FILE_FLAG_BACKUP_SEMANTICS, None)
+
+        server_path_without_name = server_path[:server_path.rindex('\\')]
+
         while 1:
             results = win32file.ReadDirectoryChangesW(
                 _h_dir,
@@ -415,16 +420,24 @@ class Logic:
                 None,
                 None
             )
+            exit_while = False
             for _action, _file in results:
                 if _action == 4 and file_typ in _file:
                     #  the file saved -> upload to the server
-                    server_path_without_name = server_path[:server_path.rindex('\\')]
                     self.send_upload_request([file_path, server_path_without_name], True)
                 if _action == 2 and file_typ in _file:
                     #  the file closed -> close the monitor
                     self.frame.finish_edit()
-                    os.remove(file_path)
+                    time.sleep(0.5)
+                    try:
+                        os.remove(file_path)
+                    except Exception as e:
+                        print('in office follow - ', str(e))
+                    exit_while = True
                     break
+            if exit_while:
+                break
+
 
     def open_file(self, file_path):
         '''

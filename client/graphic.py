@@ -161,7 +161,7 @@ class LoginPanel(wx.Panel):
         self.Layout()
         self.Hide()
 
-    def errorMsg(self, msg):
+    def error_msg(self, msg):
         '''
 
         :param msg:massage to shoe in the error
@@ -244,7 +244,7 @@ class LoginPanel(wx.Panel):
         password = self.passWordField.GetValue()
 
         if not username or not password:
-            self.errorMsg('You must enter username and password!')
+            self.error_msg('You must enter username and password!')
         else:
             self.username = username
             self.frame.q.put(('login', [username, password]))
@@ -264,7 +264,8 @@ class LoginPanel(wx.Panel):
         :param event: event that happend on the screen
         :return:take care the event when pressing forgot password
         '''
-        dlg = wx.TextEntryDialog(None, 'Enter username: ','get new password to your email', '',style=wx.TextEntryDialogStyle)
+        dlg = wx.TextEntryDialog(None, 'Enter username: ','get new password to your email', '',
+                                 style=wx.TextEntryDialogStyle)
 
         if dlg.ShowModal() == wx.ID_OK:
             email = dlg.GetValue()
@@ -279,9 +280,9 @@ class LoginPanel(wx.Panel):
         '''
         ans = answer.split(',')[0]
         if ans == 'no':
-            self.errorMsg('Wrong username or password')
+            self.error_msg('Wrong username or password')
         elif ans == 'ac':
-            self.errorMsg('You already connected from other device!')
+            self.error_msg('You already connected from other device!')
         elif ans == 'ok':
             email = answer.split(',')[1]
             self.frame.username = self.username
@@ -290,7 +291,7 @@ class LoginPanel(wx.Panel):
             self.Hide()
             self.parent.loby.Show()
         else:
-            self.errorMsg('This ip has been blocked!')
+            self.error_msg('This ip has been blocked!')
             self.frame.Destroy()
 
 
