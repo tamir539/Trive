@@ -181,3 +181,17 @@ class DB:
         :return:close the data_base 
         '''
         pass
+
+    def username_exist_in_ips(self, username):
+        '''
+
+        :param username:username
+        :return: 'True' if the username in the ips table
+        '''
+        sql = f"SELECT Username from {self.ips_table}"
+        self.cursor.execute(sql)
+        usernames = self.cursor.fetchall()
+        username_list = []
+        for tup in usernames:
+            username_list.append(tup[0])
+        return username in username_list

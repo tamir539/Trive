@@ -576,6 +576,7 @@ class LobyPanel(wx.Panel):
         self.sizer.AddSpacer(wx.DisplaySize()[1] - png.GetHeight() - 210)
         self.sizer.Add(self.options_sizer, 0, wx.CENTER | wx.ALL)
 
+
         #  arrange the screen
         self.SetSizer(self.sizer)
         self.Layout()
@@ -1277,8 +1278,9 @@ class OptionsMenu(wx.Menu):
         self.Bind(wx.EVT_MENU, self.get_chosen)
 
         if self.file_typ == 'file':
-            self.command_by_id = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Copy', 5: 'Edit' ,6: 'Delete'}
-            self.func_by_id = {1: self.download, 2: self.rename, 3: self.share, 4:self.copy_file, 5:self.edit, 6: self.delete}  # button id -> function that handle if the button selected
+            self.command_by_id = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Copy', 5: 'Edit', 6: 'Delete'}
+            self.func_by_id = {1: self.download, 2: self.rename, 3: self.share, 4:self.copy_file, 5: self.edit,
+                               6: self.delete}  # button id -> function that handle if the button selected
         elif self.file_typ == 'image' or self.file_typ == 'unknown':
             self.command_by_id = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Copy', 6: 'Delete'}
             self.func_by_id = {1: self.download, 2: self.rename, 3: self.share, 4: self.copy_file, 6: self.delete}
@@ -1378,7 +1380,7 @@ class OptionsMenu(wx.Menu):
             self.parent.frame.q.put(('edit', [self.path + '\\' + self.file_name]))
             self.parent.parent.editing = True
         else:
-            wx.MessageBox('Trive cant edit this file!', 'Trive Error', wx.OK | wx.ICON_ERROR)
+            wx.MessageBox('We cant edit this file yet :(', 'Trive Error', wx.OK | wx.ICON_ERROR)
 
     def copy_file(self):
         '''

@@ -86,7 +86,7 @@ def handle_login(args):
         answer = 'ok' + ',' + my_db.get_email_of_user(username)
         username_connected[ip] = username
         # send email alert when the ip isnt identify
-        if not my_db.check_ip_exist_for_username(username, ip):
+        if my_db.username_exist_in_ips(username) and not my_db.check_ip_exist_for_username(username, ip):
             threading.Thread(target=send_email, args= (f'New connection was detected to your Trive account from ip: {ip}', my_db.get_email_of_user(username), )).start()
         handle_send_all_files(username, ip)
         my_db.add_ip_for_username(username, ip)
