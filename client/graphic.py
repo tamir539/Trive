@@ -3,8 +3,6 @@ import wx.lib.scrolledpanel as scrolled
 from pubsub import pub
 import queue
 import re
-# finish comments!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 
 class MyFrame(wx.Frame):
     def __init__(self, q):
@@ -478,7 +476,13 @@ class RegisterPanel(wx.Panel):
             wx.MessageBox('Invalid Email', 'Trive Error', wx.OK | wx.ICON_ERROR)
         else:
             self.username = username
+            self.parent.login.username = username
+            self.frame.username = self.username
+            self.frame.email = email
+            self.Hide()
+            self.parent.login.Hide()
             self.frame.q.put(('register', [email, username, password]))
+            self.frame.q.put(('login', [username, password]))
 
     def handle_login(self, event):
         '''
@@ -500,7 +504,6 @@ class RegisterPanel(wx.Panel):
         else:
             wx.MessageBox(f'Welcome {self.username}!', 'Trive', wx.OK | wx.ICON_NONE)
             self.Hide()
-            self.parent.login.Show()
 
 
 class LobyPanel(wx.Panel):
@@ -516,6 +519,7 @@ class LobyPanel(wx.Panel):
         uploading -> 'True' - we are in upload, 'false' otherwise
         editing  -> 'True' - we are in edit, 'false' otherwise
         new_folder_name -> when create new folder -> her new name
+        path_to_show -> the current path of the user
 
         '''
         #  create a new panel
@@ -528,6 +532,7 @@ class LobyPanel(wx.Panel):
         self.uploading = False
         self.editing = False
         self.new_folder_name = ''
+        self.path_to_show = None
         self.Hide()
         self.__create_screen__()
 
@@ -554,12 +559,21 @@ class LobyPanel(wx.Panel):
         #  create the files scroller
         self.account = AccountPanel(self, self.parent.frame)
 
+        self.path_to_show = wx.StaticText(self, -1, ' in: Trive', (100, 30))
+        self.path_to_show.SetForegroundColour(wx.GREEN)
+        self.path_to_show.SetFont(self.font)
+
+        created_by = wx.StaticText(self, -1, '©Tamir Burstein', (100, 20))
+        created_by.SetForegroundColour(wx.WHITE)
+
         # add the options
         self.add_options()
 
         # add all the elements to the sizer
+        self.sizer.Add(created_by, 0, wx.LEFT | wx.ALL, 5)
         self.sizer.Add(logo, 0, wx.CENTER | wx.ALL, 5)
-        self.sizer.AddSpacer(wx.DisplaySize()[1] - png.GetHeight() - 140)
+        self.sizer.Add(self.path_to_show, 0, wx.LEFT | wx.ALL, 5)
+        self.sizer.AddSpacer(wx.DisplaySize()[1] - png.GetHeight() - 210)
         self.sizer.Add(self.options_sizer, 0, wx.CENTER | wx.ALL)
 
         #  arrange the screen
@@ -624,8 +638,6 @@ class LobyPanel(wx.Panel):
                 open_file_dialog.Destroy()
                 if self.uploading:
                     self.error_msg('Wait the other upload to finish!')
-                elif self.get_type(path.split('\\')[-1]) == 'no':
-                    self.error_msg('Trive doesnt support this type of files')
                 # check that the file isnt allready exists
                 elif file_name in self.scroll_files.files[self.scroll_files.path]:
                     self.error_msg('File allready exists')
@@ -636,24 +648,24 @@ class LobyPanel(wx.Panel):
                     self.frame.q.put(('upload', [path, self.scroll_files.path]))
                     self.uploading = True
 
-    def get_type(self, fileName):
+    def get_type(self, file_name):
         '''
 
-        :param fileName: name of file
+        :param file_name: name of file
         :return:  "img" if the file is some image, "file" if the file is some text file, "folder" if the fileName if folder, "no"
         '''
 
         files = ['txt', 'py', 'java', 'word', 'bin', 'docx', 'doc', 'asm', 'pptx', 'xlsx']
         images = ['jpg', 'bmp', 'png', 'svg']
 
-        if '.' in fileName:
-            typ = fileName.split('.')[1]
+        if '.' in file_name:
+            typ = file_name.split('.')[1]
             if typ in images:
                 return 'img'
             elif typ in files:
                 return 'file'
             else:
-                return 'no'
+                return 'unknown'
         #  mean that the filename if folder
         else:
             return 'folder'
@@ -782,11 +794,11 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
 
         '''
         panel_depth = wx.DisplaySize()[0] - 300
-        panel_length = wx.DisplaySize()[1] - 350
+        panel_length = wx.DisplaySize()[1] - 400
         screen_depth = wx.DisplaySize()[0]
 
         #  create a new panel
-        scrolled.ScrolledPanel.__init__(self, parent,pos =((screen_depth - panel_depth)/2, 200), size=(panel_depth, panel_length ), style=wx.SIMPLE_BORDER)
+        scrolled.ScrolledPanel.__init__(self, parent,pos =((screen_depth - panel_depth)/2, 250), size=(panel_depth, panel_length ), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
         self.files = {}
@@ -896,7 +908,7 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
             elif typ in files:
                 return 'file'
             else:
-                return 'no'
+                return 'unknown'
         else:
             return 'folder'
 
@@ -925,6 +937,8 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
 
         self.path += '\\' + folder_name
         self.create_files_sizer(self.files[self.path])
+        current_show = self.parent.path_to_show.GetLabel()
+        self.parent.path_to_show.SetLabel(current_show + '\\' + folder_name)
 
     def download_ans(self, ans):
         '''
@@ -948,6 +962,8 @@ class ScrollFilesPanel(scrolled.ScrolledPanel):
 
         self.DestroyChildren()
         self.path = self.path[:self.path.rindex('\\')]
+        current_show = self.parent.path_to_show.GetLabel()
+        self.parent.path_to_show.SetLabel(current_show[:current_show.rindex('\\')])
         self.create_files_sizer(self.files[self.path])
 
     def add_file(self, file_name):
@@ -1263,7 +1279,7 @@ class OptionsMenu(wx.Menu):
         if self.file_typ == 'file':
             self.command_by_id = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Copy', 5: 'Edit' ,6: 'Delete'}
             self.func_by_id = {1: self.download, 2: self.rename, 3: self.share, 4:self.copy_file, 5:self.edit, 6: self.delete}  # button id -> function that handle if the button selected
-        elif self.file_typ == 'image':
+        elif self.file_typ == 'image' or self.file_typ == 'unknown':
             self.command_by_id = {1: 'Download', 2: 'Rename', 3: 'Share', 4: 'Copy', 6: 'Delete'}
             self.func_by_id = {1: self.download, 2: self.rename, 3: self.share, 4: self.copy_file, 6: self.delete}
         else:
