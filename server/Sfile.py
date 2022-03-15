@@ -4,7 +4,6 @@ all the files functions
 import os
 import shutil
 from settings import TRIVE_LOCATION as trive_path
-#finish comments!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 def get_file_length(path):

@@ -3,6 +3,7 @@ import wx.lib.scrolledpanel as scrolled
 from pubsub import pub
 import queue
 import re
+import hashlib
 
 class MyFrame(wx.Frame):
     def __init__(self, q):
@@ -13,12 +14,14 @@ class MyFrame(wx.Frame):
         email -> email of the connected user
         status_bar -> status bar of the frame
         main_panel -> main panel
+        password -> hash password of the current user
         '''
         # create the frame
         super(MyFrame, self).__init__(None, title="Trive", size=wx.DisplaySize())
 
         self.username = ''
         self.email = ''
+        self.password = ''
         self.status_bar = self.CreateStatusBar(1)
         self.status_bar.SetBackgroundColour(wx.BLACK)
 
@@ -244,6 +247,7 @@ class LoginPanel(wx.Panel):
         if not username or not password:
             self.error_msg('You must enter username and password!')
         else:
+            self.frame.password = hashlib.md5(password.encode()).hexdigest()
             self.username = username
             self.frame.q.put(('login', [username, password]))
 
@@ -469,11 +473,16 @@ class RegisterPanel(wx.Panel):
         # check email input
         pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
         result = re.match(pattern, email)
+        username_pattern = r'^[A-Za-z0-9._]*$'
+        username_result = re.match(username_pattern, username)
 
         if not username or not password or not email:
             self.error_msg('You must enter username, password and email')
         elif not result:
             wx.MessageBox('Invalid Email', 'Trive Error', wx.OK | wx.ICON_ERROR)
+        elif not username_result:
+            wx.MessageBox('Invalid Username', 'Trive Error', wx.OK | wx.ICON_ERROR)
+
         else:
             self.username = username
             self.parent.login.username = username
@@ -1116,12 +1125,11 @@ class AccountPanel(wx.Panel):
         change_type ->  if last change was email -> 'email', otherwise - 'password'
         '''
         panel_depth = wx.DisplaySize()[0] - 300
-        panel_length = wx.DisplaySize()[1] - 350
-
+        panel_length = wx.DisplaySize()[1] - 400
         screen_depth = wx.DisplaySize()[0]
 
         #  create a new panel
-        wx.Panel.__init__(self, parent,pos =((screen_depth - panel_depth)//2, 200), size=(panel_depth, panel_length), style=wx.SIMPLE_BORDER)
+        wx.Panel.__init__(self, parent,pos =((screen_depth - panel_depth)//2, 250), size=(panel_depth, panel_length), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
         self.new_email = ''
@@ -1206,13 +1214,34 @@ class AccountPanel(wx.Panel):
         :param event:change password pressed
         :return: get the new password and notify the logic
         '''
-        dlg = wx.TextEntryDialog(None, 'Enter new Password: ', 'Change Password', '',style=wx.TE_PASSWORD | wx.OK | wx.CANCEL)
+        dlg = wx.TextEntryDialog(None, 'Enter your current Password: ', 'Change Password', '',
+                                 style=wx.TE_PASSWORD | wx.OK | wx.CANCEL)
 
-        if dlg.ShowModal() == wx.ID_OK:
-            new_password = dlg.GetValue()
-            self.frame.q.put(('change_detail', [f'password:{new_password}']))
-            pub.subscribe(self.handle_change_details_ans, 'change_details')
-            self.change_type = 'password'
+        if dlg.ShowModal() == wx.ID_OK and (hashlib.md5(str(dlg.GetValue()).encode()).hexdigest()) == self.frame.password:
+            while True:
+                # get the new password
+                dlg = wx.TextEntryDialog(None, 'Enter new Password: ', 'Change Password', '', style=wx.TE_PASSWORD | wx.OK | wx.CANCEL)
+                if dlg.ShowModal() == wx.ID_OK:
+                    password1 = dlg.GetValue()
+                else:
+                    break
+                # get the new password again
+                dlg = wx.TextEntryDialog(None, 'Enter new Password again: ', 'Change Password', '', style=wx.TE_PASSWORD | wx.OK | wx.CANCEL)
+                if dlg.ShowModal() == wx.ID_OK:
+                    password2 = dlg.GetValue()
+                else:
+                    break
+                    # check if the passwords are match
+                if password1 == password2:
+                    new_password = dlg.GetValue()
+                    self.frame.q.put(('change_detail', [f'password:{new_password}']))
+                    pub.subscribe(self.handle_change_details_ans, 'change_details')
+                    self.change_type = 'password'
+                    break
+                else:
+                    wx.MessageBox("The passwords aren't matching", 'Trive error', wx.OK | wx.ICON_ERROR)
+        elif dlg.ShowModal() == wx.ID_OK:
+            wx.MessageBox('Wrong password!', 'Trive error', wx.OK | wx.ICON_ERROR)
 
     def handle_change_email(self, event):
         '''

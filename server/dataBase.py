@@ -30,6 +30,7 @@ class DB:
 
         self.__create_users_table__()
         self.__create_ips_table__()
+        self.__create_files_key_table()
         self.conn.commit()
 
     def __create_users_table__(self):
@@ -47,6 +48,28 @@ class DB:
         '''
         ips = F"CREATE TABLE IF NOT EXISTS {self.ips_table} (Username TEXT, Ip TEXT)"
         self.cursor.execute(ips)
+
+    def __create_files_key_table(self):
+        '''
+
+        :return: creates the table for the file aes key
+        '''
+        files_key = F"CREATE TABLE IF NOT EXISTS files_key (Key TEXT)"
+        self.cursor.execute(files_key)
+        key = 'asdfghjk' * 4
+        sql = f"INSERT INTO files_key VALUES ('{key}')"
+        self.cursor.execute(sql)
+
+    def get_files_key(self):
+        '''
+
+        :return: the string of the aes files key
+        '''
+        sql = f"SELECT Key FROM files_key"
+        self.cursor.execute(sql)
+        key = self.cursor.fetchall()
+        return key[0][0]
+
 
     def check_username_exist(self, username):
         '''

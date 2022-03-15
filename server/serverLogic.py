@@ -10,7 +10,6 @@ import Sfile
 import os
 from Encryption import AESCipher
 from settings import TRIVE_LOCATION as trive_location
-from settings import FILES_KEY as files_key
 
 
 def create_trive_directory(path):
@@ -259,6 +258,8 @@ def handle_upload_status(args):
     :param args: args to the upload
     :return: recive the file and return answer to the client
     '''
+    myDB = DB('Trive')
+    files_key = myDB.get_files_key()
     status, edit, encrypted_path, file_name, port, ip = args
     encrypted_path = encrypted_path + '\\' + file_name
     if not edit:
@@ -274,6 +275,7 @@ def handle_upload_status(args):
         k = AESCipher(files_key)
         k.encrypt_file(encrypted_path)
     taken_ports.remove(port)
+    myDB.close_db()
 
 
 def handle_upload_request(args):
@@ -310,6 +312,9 @@ def handle_download(args):
     '''
     path, ip = args
 
+    my_db = DB('Trive')
+    files_key = my_db.get_files_key()
+
     # length of the file to send
     length = Sfile.get_file_length(path)
 
@@ -339,6 +344,7 @@ def handle_download(args):
 
     # send the file
     threading.Thread(target = send_netwotk.send_file, args= (path, key_by_ip[ip], k )).start()
+    my_db.close_db()
 
 
 def handle_edit(args):
@@ -355,6 +361,9 @@ def handle_edit(args):
     port = random.randint(1000, 65000)
     while port in taken_ports:
         port = random.randint(1000, 65000)
+
+    my_db = DB('Trive')
+    files_key = my_db.get_files_key()
 
     msg_by_protocol = prot.create_edit_response_msg(str(length), str(port), path)
     #  send the answer to encryption
@@ -373,6 +382,7 @@ def handle_edit(args):
 
     # send the file
     threading.Thread(target=send_netwotk.send_file, args=(path, key_by_ip[ip], k)).start()
+    my_db.close_db()
 
 
 def handle_delete(args):
@@ -489,7 +499,6 @@ trys_by_ip = {}
 taken_ports = []
 #  client ip -> aes key
 key_by_ip = {}
-
 
 network = ServerCom(1111, network_q)
 # ip -> the username that are now connected
