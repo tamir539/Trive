@@ -469,11 +469,16 @@ class RegisterPanel(wx.Panel):
         # check email input
         pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
         result = re.match(pattern, email)
+        username_pattern = r'^[A-Za-z0-9._]*$'
+        username_result = re.match(username_pattern, username)
 
         if not username or not password or not email:
             self.error_msg('You must enter username, password and email')
         elif not result:
             wx.MessageBox('Invalid Email', 'Trive Error', wx.OK | wx.ICON_ERROR)
+        elif not username_result:
+            wx.MessageBox('Invalid Username', 'Trive Error', wx.OK | wx.ICON_ERROR)
+
         else:
             self.username = username
             self.parent.login.username = username
@@ -1116,12 +1121,11 @@ class AccountPanel(wx.Panel):
         change_type ->  if last change was email -> 'email', otherwise - 'password'
         '''
         panel_depth = wx.DisplaySize()[0] - 300
-        panel_length = wx.DisplaySize()[1] - 350
-
+        panel_length = wx.DisplaySize()[1] - 400
         screen_depth = wx.DisplaySize()[0]
 
         #  create a new panel
-        wx.Panel.__init__(self, parent,pos =((screen_depth - panel_depth)//2, 200), size=(panel_depth, panel_length), style=wx.SIMPLE_BORDER)
+        wx.Panel.__init__(self, parent,pos =((screen_depth - panel_depth)//2, 250), size=(panel_depth, panel_length), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
         self.new_email = ''
