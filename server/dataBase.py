@@ -70,7 +70,6 @@ class DB:
         key = self.cursor.fetchall()
         return key[0][0]
 
-
     def check_username_exist(self, username):
         '''
 

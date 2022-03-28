@@ -1223,6 +1223,9 @@ class AccountPanel(wx.Panel):
                 dlg = wx.TextEntryDialog(None, 'Enter new Password: ', 'Change Password', '', style=wx.TE_PASSWORD | wx.OK | wx.CANCEL)
                 if dlg.ShowModal() == wx.ID_OK:
                     password1 = dlg.GetValue()
+                    if len(password1) == 0:
+                        wx.MessageBox('Not availabale password', 'Trive error', wx.OK | wx.ICON_ERROR)
+                        break
                 else:
                     break
                 # get the new password again
